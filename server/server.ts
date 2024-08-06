@@ -3,7 +3,7 @@ import express from "express";
 const app = express();
 const port = 8080;
 
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.send("Hello World!");
 });
 
