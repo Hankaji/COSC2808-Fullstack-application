@@ -1,7 +1,13 @@
-const HomePage = () => {
-  return (
-    <div>HomePage</div>
-  )
-}
+import SideNavBar from "../../components/SideNavBar";
 
-export default HomePage
+const HomePage = () => {
+	return (
+		<div className="flex min-h-svh gap-2 w-full">
+			<SideNavBar />
+			<div></div>
+			<div></div>
+		</div>
+	);
+};
+
+export default HomePage;
