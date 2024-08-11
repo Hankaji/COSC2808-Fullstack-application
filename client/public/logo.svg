@@ -1,29 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    version="1.0"
-   width="24pt"
-   height="24.000002pt"
-   viewBox="0 0 24 24.000002"
+   width="1024pt"
+   height="1024pt"
+   viewBox="0 0 1024 1024"
    preserveAspectRatio="xMidYMid"
    id="svg1"
-   sodipodi:docname="pls.svg"
-   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
-   inkscape:export-filename="logo.png"
-   inkscape:export-xdpi="72"
-   inkscape:export-ydpi="72"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
      id="defs1">
     <linearGradient
-       id="linearGradient36652"
-       inkscape:collect="always">
+       id="linearGradient36652">
       <stop
          style="stop-color:#ed54e6;stop-opacity:1;"
-         offset="0.15243986"
+         offset="0.24504206"
          id="stop36652" />
       <stop
          style="stop-color:#3c28ea;stop-opacity:1;"
@@ -31,17 +23,16 @@
          id="stop36654" />
       <stop
          style="stop-color:#74e2f0;stop-opacity:1;"
-         offset="0.8467831"
+         offset="0.75130212"
          id="stop36653" />
     </linearGradient>
     <linearGradient
-       inkscape:collect="always"
        xlink:href="#linearGradient36652"
        id="linearGradient36653"
-       x1="216.36885"
-       y1="217.79005"
-       x2="823.63861"
-       y2="816.34186"
+       x1="0"
+       y1="0"
+       x2="1016.5353"
+       y2="999.92773"
        gradientUnits="userSpaceOnUse" />
     <mask
        maskUnits="userSpaceOnUse"
@@ -97,30 +88,13 @@
       </g>
     </mask>
   </defs>
-  <sodipodi:namedview
-     id="namedview1"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:document-units="pt"
-     inkscape:zoom="13.689145"
-     inkscape:cx="8.2547155"
-     inkscape:cy="16.801633"
-     inkscape:window-width="1910"
-     inkscape:window-height="1036"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg1" />
-  <path
+  <rect
+     style="fill:url(#linearGradient36653);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.75;stroke-opacity:1"
      id="rect818"
+     width="1024"
+     height="1024"
+     x="0"
+     y="0"
      mask="url(#mask36662)"
-     style="display:inline;fill:url(#linearGradient36653);stroke-width:0.75"
-     transform="matrix(0.03952115,0,0,0.04009678,-8.5511457,-8.73268)"
-     d="M 216.36885,217.79006 H 823.63863 V 816.34191 H 216.36885 Z"
-     sodipodi:nodetypes="ccccc" />
+     transform="matrix(1.6862358,0,0,1.7107959,-364.84889,-372.59433)" />
 </svg>
