@@ -1,40 +1,61 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    './src/**/*.{js,jsx,ts,tsx}'
-  ],
-  theme: {
-    extend: {
-      colors: {
-        "primary": {
-          50: "#E4DCF9",
-          100: "#C6BEEE",
-          200: "#8881D5",
-          300: "#4D4DB7",
-          400: "#3A3F79",
-          500: "#24283B",
-          600: "#191B34",
-          700: "#101028",
-          800: "#0A091B",
-          900: "#060410",
-          950: "#030209"
-        },
-        "secondary": {
-          50: "#F1F0FF",
-          100: "#E1E0FF",
-          200: "#C7CBFF",
-          300: "#A8B5FF",
-          400: "#8FA9FF",
-          500: "#7AA2F7",
-          600: "#295BFF",
-          700: "#0021DB",
-          800: "#000A94",
-          900: "#010047",
-          950: "#040024"
-        }
-      }
-    },
-  },
-  plugins: [],
-}
-
+	content: ["./src/**/*.{js,jsx,ts,tsx}"],
+	theme: {
+		extend: {
+			colors: {
+				border: "hsl(var(--border))",
+				input: "hsl(var(--border))",
+				ring: "hsl(var(--ring))",
+				background: "hsl(var(--background))",
+				foreground: "hsl(var(--foreground))",
+				primary: {
+					DEFAULT: "hsl(var(--primary))",
+					foreground: "hsl(var(--primary-foreground))",
+				},
+				secondary: {
+					DEFAULT: "hsl(var(--secondary))",
+					foreground: "hsl(var(--secondary-foreground))",
+				},
+				danger: {
+					DEFAULT: "hsl(var(--danger))",
+					foreground: "hsl(var(--danger-foreground))",
+				},
+				warning: {
+					DEFAULT: "hsl(var(--warning))",
+					foreground: "hsl(var(--warning-foreground))",
+				},
+				success: {
+					DEFAULT: "hsl(var(--success))",
+					foreground: "hsl(var(--success-foreground))",
+				},
+				info: {
+					DEFAULT: "hsl(var(--info))",
+					foreground: "hsl(var(--info-foreground))",
+				},
+				muted: {
+					DEFAULT: "hsl(var(--muted))",
+					foreground: "hsl(var(--muted-foreground))",
+				},
+				accent: {
+					DEFAULT: "hsl(var(--accent))",
+					foreground: "hsl(var(--accent-foreground))",
+				},
+				popover: {
+					DEFAULT: "hsl(var(--popover))",
+					foreground: "hsl(var(--popover-foreground))",
+				},
+				card: {
+					DEFAULT: "hsl(var(--card))",
+					foreground: "hsl(var(--card-foreground))",
+				},
+			},
+			borderRadius: {
+				lg: `var(--radius)`,
+				md: `calc(var(--radius) - 2px)`,
+				sm: "calc(var(--radius) - 4px)",
+			},
+		},
+	},
+	plugins: [],
+};
