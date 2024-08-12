@@ -1,7 +1,15 @@
-import { Bell, Earth, Home, LogOut, LucideIcon, Settings } from "lucide-react";
-import { ButtonHTMLAttributes, FC } from "react";
+import {
+	Bell,
+	Earth,
+	Home,
+	LogOut,
+	LucideIcon,
+	Settings,
+	SquarePlus,
+} from "lucide-react";
+import { ButtonHTMLAttributes, FC, useState } from "react";
 
-type SideBarItem = {
+export type SideBarItem = {
 	logo: LucideIcon;
 	name: string;
 	onClick?: () => void;
@@ -23,6 +31,10 @@ const items: SideBarItem[] = [
 		logo: Bell,
 		name: "Notifications",
 	},
+	{
+		logo: SquarePlus,
+		name: "Create post",
+	},
 ];
 
 const bottomActions: SideBarItem[] = [
@@ -37,8 +49,10 @@ const bottomActions: SideBarItem[] = [
 ];
 
 const SideNavBar = () => {
+	const [selected, setSelected] = useState<number>(0);
+
 	return (
-		<nav className="flex flex-col justify-start items-start min-h-svh p-12 gap-8">
+		<nav className="flex flex-col justify-start items-start sticky max-h-svh p-12 gap-8 w-2/5">
 			{/* Logo */}
 			<div className="flex items-center gap-5">
 				<img
@@ -50,13 +64,16 @@ const SideNavBar = () => {
 				<span className="font-bold text-3xl">SnapMate</span>
 			</div>
 			{/* Avatar */}
-			<div></div>
+			{/* <div></div> */}
 			{/* Navigation items */}
-			<ul className="flex flex-col gap-6">
+			<ul className="flex flex-col gap-6 w-full">
 				{items.map((item, idx) => {
 					return (
 						<li key={idx}>
-							<SideBarButton data={item} />
+							<SideBarButton
+								className={selected == idx ? "bg-secondary" : ""}
+								data={item}
+							/>
 						</li>
 					);
 				})}
@@ -86,9 +103,12 @@ const SideBarButton: FC<SideBarButtonProps> = ({ data, ...props }) => {
 		<button
 			{...props}
 			onClick={data.onClick}
-			className="flex justify-start items-center gap-4 hover:bg-primary p-4 w-full rounded-lg transition-all"
+			className={
+				"flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all" +
+				` ${props.className}`
+			}
 		>
-			<data.logo size={36} />
+			<data.logo size={32} />
 			<span className="text-2xl">{data.name}</span>
 		</button>
 	);
