@@ -55,6 +55,16 @@ export default {
 				md: `calc(var(--radius) - 2px)`,
 				sm: "calc(var(--radius) - 4px)",
 			},
+			keyframes: {
+				scale: {
+					"0%": { transform: "scale(0.80)" },
+					"50%": { transform: "scale(1.2)" },
+					"100%": { transform: "scale(1)" },
+				},
+			},
+			animation: {
+				scale: "scale 300ms ease-in-out forwards",
+			},
 		},
 	},
 	plugins: [],
