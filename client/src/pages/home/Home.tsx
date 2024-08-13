@@ -1,7 +1,17 @@
-const HomePage = () => {
-  return (
-    <div>HomePage</div>
-  )
-}
+import HomePanel from "../../components/HomePanel";
+import PostsView from "../../components/PostsView";
+import RightSideBar from "../../components/RightSideBar";
+import SideNavBar from "../../components/SideNavBar";
 
-export default HomePage
+const HomePage = () => {
+	return (
+		<div className="flex min-h-svh gap-4 w-full justify-between">
+			<SideNavBar />
+			{/* <PostsView /> */}
+			<HomePanel />
+			<RightSideBar />
+		</div>
+	);
+};
+
+export default HomePage;

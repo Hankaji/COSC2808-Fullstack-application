@@ -49,7 +49,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 							className="size-12 object-cover mx-auto"
 							style={{ maskSize: "cover", WebkitMaskSize: "cover" }}
 							src="/logo.svg"
-							alt="Logo here"
+							alt="SnapMate logo"
 						/>
 						<p className="font-bold text-xl">SnapMate</p>
 					</div>
@@ -75,7 +75,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 							<label htmlFor="password">Password</label>
 							<Input
 								className="p-4 py-6 rounded-lg w-[25vw]"
-								type="text"
+								type="password"
 								name="password"
 								id="password"
 								placeholder="Enter your Password"
@@ -86,7 +86,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 								<label htmlFor="retype-password">Re-enter Password</label>
 								<Input
 									className="p-4 py-6 rounded-lg w-[25vw]"
-									type="text"
+									type="password"
 									name="retype-password"
 									id="retype-password"
 									placeholder="Re-enter your Password"
@@ -174,7 +174,7 @@ const NavItem = ({
 					width: `${width.width.toString()}px`,
 				});
 			}}
-			className="z-10 py-4 px-20 rounded-full mix-blend-difference"
+			className="z-10 py-4 px-20 rounded-full"
 			type="button"
 		>
 			{children}
