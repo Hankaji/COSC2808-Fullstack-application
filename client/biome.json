@@ -1,0 +1,16 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+	"files": {
+		"include": ["./src/**/*.tsx"]
+	},
+	"organizeImports": {
+		"enabled": true
+	},
+  "formatter": {
+    "indentStyle": "tab",
+    "indentWidth": 2
+  },
+	"linter": {
+		"enabled": false
+	}
+}
