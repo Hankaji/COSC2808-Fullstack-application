@@ -1,13 +1,13 @@
-import { FC } from "react";
-import { Input } from "../../components/Input";
-import { mergeClassNames } from "../../utils";
+import { FC } from 'react';
+import { Input } from '../../components/Input';
+import { mergeClassNames } from '../../utils';
 
 const HomeRightSide: FC<{ className?: string }> = ({ className }) => {
   return (
     <div
       className={mergeClassNames(
-        "flex flex-col w-full gap-4 justify-start items-start",
-        className
+        'flex flex-col w-full gap-4 justify-start items-start',
+        className,
       )}
     >
       {/* Search bar */}

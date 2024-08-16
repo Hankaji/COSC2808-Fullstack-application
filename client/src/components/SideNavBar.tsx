@@ -6,8 +6,8 @@ import {
   LucideIcon,
   Settings,
   SquarePlus,
-} from "lucide-react";
-import { ButtonHTMLAttributes, FC, useState } from "react";
+} from 'lucide-react';
+import { ButtonHTMLAttributes, FC, useState } from 'react';
 
 export type SideBarItem = {
   Logo: LucideIcon;
@@ -18,30 +18,30 @@ export type SideBarItem = {
 const items: SideBarItem[] = [
   {
     Logo: Home,
-    name: "Home",
+    name: 'Home',
   },
   {
     Logo: Earth,
-    name: "Explore",
+    name: 'Explore',
   },
   {
     Logo: Bell,
-    name: "Notifications",
+    name: 'Notifications',
   },
   {
     Logo: SquarePlus,
-    name: "Create post",
+    name: 'Create post',
   },
 ];
 
 const bottomActions: SideBarItem[] = [
   {
     Logo: LogOut,
-    name: "Logout",
+    name: 'Logout',
   },
   {
     Logo: Settings,
-    name: "Settings",
+    name: 'Settings',
   },
 ];
 
@@ -54,7 +54,7 @@ const SideNavBar = () => {
       <div className="flex items-center gap-5">
         <img
           className="size-10 object-cover mx-auto"
-          style={{ maskSize: "cover", WebkitMaskSize: "cover" }}
+          style={{ maskSize: 'cover', WebkitMaskSize: 'cover' }}
           src="/logo.svg"
           alt="SnapMate logo"
         />
@@ -67,7 +67,7 @@ const SideNavBar = () => {
           return (
             <li key={idx}>
               <SideBarButton
-                className={selected === idx ? "bg-secondary" : ""}
+                className={selected === idx ? 'bg-secondary' : ''}
                 data={item}
               />
             </li>
@@ -102,7 +102,7 @@ const SideBarButton: FC<SideBarButtonProps> = ({
     <button
       {...props}
       className={
-        "flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all" +
+        'flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all' +
         ` ${props.className}`
       }
     >
