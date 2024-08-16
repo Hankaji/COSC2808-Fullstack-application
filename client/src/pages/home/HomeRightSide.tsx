@@ -1,8 +1,15 @@
-import { Input } from './Input';
+import { FC } from 'react';
+import { Input } from '../../components/Input';
+import { mergeClassNames } from '../../utils';
 
-const RightSideBar = () => {
+const HomeRightSide: FC<{ className?: string }> = ({ className }) => {
   return (
-    <div className="flex flex-col w-full p-8 gap-4 justify-start items-start">
+    <div
+      className={mergeClassNames(
+        'flex flex-col w-full gap-4 justify-start items-start',
+        className,
+      )}
+    >
       {/* Search bar */}
       <Input
         className="border-none bg-secondary text-2xl p-6"
@@ -32,4 +39,4 @@ const RightSideBar = () => {
   );
 };
 
-export default RightSideBar;
+export default HomeRightSide;

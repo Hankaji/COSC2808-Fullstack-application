@@ -2,7 +2,7 @@ import { FC, HTMLAttributes } from 'react';
 import Post from './Post';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
-  data: any;
+  data: any; // TODO: add real type
 }
 
 const PostsView: FC<Props> = ({ ...props }) => {

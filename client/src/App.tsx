@@ -1,7 +1,8 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './App.css';
 import LoginRegisterForm from './LoginRegisterForm';
-import HomePage from './pages/home/Home';
+import HomePage from './pages/home';
+import FriendsPage from './pages/Friends';
 
 const router = createBrowserRouter([
   {
@@ -17,7 +18,11 @@ const router = createBrowserRouter([
     // element: <LoginRegisterForm />,
   },
   {
-    path: '/profile',
+    path: '/friends',
+    element: <FriendsPage />,
+  },
+  {
+    path: '/profile', // TODO: remove this page
     children: [
       {
         // Show people profile through this link
@@ -38,8 +43,6 @@ const router = createBrowserRouter([
 function App() {
   return (
     <div className="App text-foreground bg-background min-h-svh">
-      {/* <LoginRegisterForm /> */}
-      {/* <HomePage /> */}
       <RouterProvider router={router} />
     </div>
   );

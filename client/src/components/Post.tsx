@@ -56,7 +56,7 @@ const Post: FC<Props> = ({ className }) => {
         {/* TODO: Change placeholder */}
         <div className="flex flex-col justify-start items-start gap-2">
           <p>New artwork</p>
-          <div className="overflow-hidden w-[600px] aspect-auto rounded-lg">
+          <div className="overflow-hidden aspect-auto rounded-lg">
             <img
               className="object-cover"
               src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
