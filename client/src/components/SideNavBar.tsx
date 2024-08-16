@@ -10,40 +10,37 @@ import {
 import { ButtonHTMLAttributes, FC, useState } from "react";
 
 export type SideBarItem = {
-  logo: LucideIcon;
+  Logo: LucideIcon;
   name: string;
-  onClick?: () => void;
+  onClick?: () => void; // TODO: replace this with href
 };
 
 const items: SideBarItem[] = [
   {
-    logo: Home,
+    Logo: Home,
     name: "Home",
-    onClick() {
-      console.log("hello");
-    },
   },
   {
-    logo: Earth,
+    Logo: Earth,
     name: "Explore",
   },
   {
-    logo: Bell,
+    Logo: Bell,
     name: "Notifications",
   },
   {
-    logo: SquarePlus,
+    Logo: SquarePlus,
     name: "Create post",
   },
 ];
 
 const bottomActions: SideBarItem[] = [
   {
-    logo: LogOut,
+    Logo: LogOut,
     name: "Logout",
   },
   {
-    logo: Settings,
+    Logo: Settings,
     name: "Settings",
   },
 ];
@@ -52,7 +49,7 @@ const SideNavBar = () => {
   const [selected, setSelected] = useState<number>(0);
 
   return (
-    <nav className="flex flex-col justify-start items-start sticky max-h-svh p-12 gap-8 w-2/5">
+    <nav className="flex flex-col p-10 gap-8 border-r-2 border-border">
       {/* Logo */}
       <div className="flex items-center gap-5">
         <img
@@ -63,10 +60,9 @@ const SideNavBar = () => {
         />
         <span className="font-bold text-3xl">SnapMate</span>
       </div>
-      {/* Avatar */}
-      {/* <div></div> */}
+
       {/* Navigation items */}
-      <ul className="flex flex-col gap-6 w-full">
+      <ul className="flex flex-col gap-3 w-full">
         {items.map((item, idx) => {
           return (
             <li key={idx}>
@@ -80,7 +76,7 @@ const SideNavBar = () => {
       </ul>
       {/* Bottom actions */}
       <div className="flex flex-col justify-end h-full w-full">
-        <ul className="flex flex-col gap-6">
+        <ul className="flex flex-col gap-3">
           {bottomActions.map((item, idx) => {
             return (
               <li key={idx}>
@@ -98,18 +94,20 @@ interface SideBarButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   data: SideBarItem;
 }
 
-const SideBarButton: FC<SideBarButtonProps> = ({ data, ...props }) => {
+const SideBarButton: FC<SideBarButtonProps> = ({
+  data: { name, Logo },
+  ...props
+}) => {
   return (
     <button
       {...props}
-      onClick={data.onClick}
       className={
         "flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all" +
         ` ${props.className}`
       }
     >
-      <data.logo size={32} />
-      <span className="text-2xl">{data.name}</span>
+      <Logo size={28} />
+      <span className="text-lg">{name}</span>
     </button>
   );
 };

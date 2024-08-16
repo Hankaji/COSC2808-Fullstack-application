@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
-import PostCreationPanel from './PostCreationPanel';
-import PostsView from './PostsView';
+import { FC, useCallback, useEffect, useState } from "react";
+import PostCreationPanel from "../../components/PostCreationPanel";
+import PostsView from "../../components/PostsView";
 
-const HomePanel = () => {
-  const endpoint = 'https://localhost:3000/posts'; // Placeholder, not real endpoint
+const HomePanel: FC<{ className?: string }> = ({ className }) => {
+  const endpoint = "https://localhost:3000/posts"; // Placeholder, not real endpoint
 
   const [postData, setPostData] = useState<any>([]);
   const [page, setPage] = useState<number>(0);
@@ -11,9 +11,9 @@ const HomePanel = () => {
   const getPosts = useCallback(async () => {
     try {
       const response = await fetch(endpoint, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'content-type': 'application/json;charset=UTF-8',
+          "content-type": "application/json;charset=UTF-8",
         },
       });
 
@@ -26,14 +26,14 @@ const HomePanel = () => {
     } catch (err) {
       console.error(err);
     }
-  }, [page]);
+  }, []);
 
   useEffect(() => {
     getPosts();
   }, [getPosts]);
 
   return (
-    <div className="w-full p-8">
+    <div className={className}>
       {/* Post something */}
       <PostCreationPanel />
       <PostsView data={null} />

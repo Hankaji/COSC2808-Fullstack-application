@@ -1,40 +1,40 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import './App.css';
-import LoginRegisterForm from './LoginRegisterForm';
-import HomePage from './pages/home/Home';
-import FriendsPage from './pages/Friends';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import "./App.css";
+import LoginRegisterForm from "./LoginRegisterForm";
+import HomePage from "./pages/home";
+import FriendsPage from "./pages/Friends";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <HomePage />,
   },
   {
-    path: '/login',
+    path: "/login",
     element: <LoginRegisterForm />,
   },
   {
-    path: '/register',
+    path: "/register",
     // element: <LoginRegisterForm />,
   },
   {
-    path: '/friends',
+    path: "/friends",
     element: <FriendsPage />,
   },
   {
-    path: '/profile', // TODO: remove this page
+    path: "/profile", // TODO: remove this page
     children: [
       {
         // Show people profile through this link
-        path: '/profile/:userId',
+        path: "/profile/:userId",
       },
     ],
   },
   {
-    path: '/group',
+    path: "/group",
     children: [
       {
-        path: '/group/:groupId',
+        path: "/group/:groupId",
       },
     ],
   },
