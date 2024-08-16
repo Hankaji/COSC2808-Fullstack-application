@@ -1,244 +1,244 @@
 import {
-	Angry,
-	Edit,
-	Heart,
-	Laugh,
-	LucideIcon,
-	MessageCircle,
-	Share2,
-	ThumbsUp,
-} from "lucide-react";
+  Angry,
+  Edit,
+  Heart,
+  Laugh,
+  LucideIcon,
+  MessageCircle,
+  Share2,
+  ThumbsUp,
+} from 'lucide-react';
 import {
-	ButtonHTMLAttributes,
-	CSSProperties,
-	FC,
-	HTMLAttributes,
-	useState,
-} from "react";
+  ButtonHTMLAttributes,
+  CSSProperties,
+  FC,
+  HTMLAttributes,
+  useState,
+} from 'react';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {}
 
 const Post: FC<Props> = ({ className }) => {
-	const [isPopup, setIsPopup] = useState<boolean>(false);
+  const [isPopup, setIsPopup] = useState<boolean>(false);
 
-	const handlePostClick = () => {
-		setIsPopup(true);
-	};
+  const handlePostClick = () => {
+    setIsPopup(true);
+  };
 
-	return (
-		<>
-			<div
-				onClick={handlePostClick}
-				className={`flex flex-col gap-4 w-full h-fit p-4 my-4 border-border border-solid border-2 rounded-lg bg-card hover:bg-secondary/25 hover:cursor-pointer ${className}`}
-			>
-				{/* Author */}
-				<div className="flex gap-2">
-					{/* TODO fix image */}
-					<img
-						className="rounded-full bg-gray-500 size-12"
-						src="https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6"
-						alt="User avatar"
-					/>
-					<div className="flex flex-col justify-center items-start">
-						<h1 className="text-xl font-semibold">
-							Anonymous
-							<span className="text-muted-foreground"> • 1h</span>
-						</h1>
-						<p className="text-sm text-muted-foreground font-semibold">
-							@UngaBunga
-						</p>
-					</div>
-					<div className="flex ml-auto">
-						<Edit className="text-primary" />
-					</div>
-				</div>
-				{/* Content */}
-				{/* TODO: Change placeholder */}
-				<div className="flex flex-col justify-start items-start gap-2">
-					<p>New artwork</p>
-					<div className="overflow-hidden w-[600px] aspect-auto rounded-lg">
-						<img
-							className="object-cover"
-							src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
-						/>
-					</div>
-				</div>
-				{/* Post actions */}
-				<div className="flex gap-4">
-					<Reactions />
-					{/* <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full"> */}
-					{/* 	<Heart className="" /> */}
-					{/* 	1.3k */}
-					{/* </button> */}
-					<button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
-						<MessageCircle className="" />
-						817
-					</button>
-					<button className="flex transition-colors gap-1 p-2 hover:text-success hover:bg-success/25 rounded-full">
-						<Share2 className="" />
-						462
-					</button>
-				</div>
-			</div>
-			{isPopup && <PostPopup closePopup={setIsPopup} />}
-		</>
-	);
+  return (
+    <>
+      <div
+        onClick={handlePostClick}
+        className={`flex flex-col gap-4 w-full h-fit p-4 my-4 border-border border-solid border-2 rounded-lg bg-card hover:bg-secondary/25 hover:cursor-pointer ${className}`}
+      >
+        {/* Author */}
+        <div className="flex gap-2">
+          {/* TODO fix image */}
+          <img
+            className="rounded-full bg-gray-500 size-12"
+            src="https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6"
+            alt="User avatar"
+          />
+          <div className="flex flex-col justify-center items-start">
+            <h1 className="text-xl font-semibold">
+              Anonymous
+              <span className="text-muted-foreground"> • 1h</span>
+            </h1>
+            <p className="text-sm text-muted-foreground font-semibold">
+              @UngaBunga
+            </p>
+          </div>
+          <div className="flex ml-auto">
+            <Edit className="text-primary" />
+          </div>
+        </div>
+        {/* Content */}
+        {/* TODO: Change placeholder */}
+        <div className="flex flex-col justify-start items-start gap-2">
+          <p>New artwork</p>
+          <div className="overflow-hidden w-[600px] aspect-auto rounded-lg">
+            <img
+              className="object-cover"
+              src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
+            />
+          </div>
+        </div>
+        {/* Post actions */}
+        <div className="flex gap-4">
+          <Reactions />
+          {/* <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full"> */}
+          {/* 	<Heart className="" /> */}
+          {/* 	1.3k */}
+          {/* </button> */}
+          <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
+            <MessageCircle className="" />
+            817
+          </button>
+          <button className="flex transition-colors gap-1 p-2 hover:text-success hover:bg-success/25 rounded-full">
+            <Share2 className="" />
+            462
+          </button>
+        </div>
+      </div>
+      {isPopup && <PostPopup closePopup={setIsPopup} />}
+    </>
+  );
 };
 
 const PostPopup = ({ closePopup }: { closePopup: any }) => {
-	return (
-		<div
-			onClick={() => {
-				closePopup(false);
-			}}
-			className="fixed top-0 left-0 w-svw h-svh backdrop-blur-[2px] flex justify-center items-center px-[15%]"
-		>
-			<div className="overflow-hidden h-[80%] w-[60%] aspect-auto rounded-lg rounded-tr-none rounded-br-none">
-				<img
-					className="object-cover w-full h-full"
-					src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
-				/>
-			</div>
-			<div
-				className={`flex flex-col gap-4 w-full h-[80%] rounded-tl-none rounded-bl-none p-4 my-4 border-border border-solid border-2 rounded-lg bg-card`}
-			>
-				{/* Author */}
-				<div className="flex gap-2">
-					{/* TODO fix image */}
-					<img
-						className="rounded-full bg-gray-500 size-12"
-						src="https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6"
-						alt="User avatar"
-					/>
-					<div className="flex flex-col justify-center items-start">
-						<h1 className="text-xl font-semibold">
-							Anonymous
-							<span className="text-muted-foreground"> • 1h</span>
-						</h1>
-						<p className="text-sm text-muted-foreground font-semibold">
-							@UngaBunga
-						</p>
-					</div>
-					<div className="flex ml-auto">
-						<Edit className="text-primary" />
-					</div>
-				</div>
-				{/* Content */}
-				{/* TODO: Change placeholder */}
-				<div className="flex flex-col justify-start items-start gap-2">
-					<p>New artwork</p>
-				</div>
-				{/* Post actions */}
-				<div className="flex gap-4">
-					<Reactions />
-					{/* <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full"> */}
-					{/* <Heart className="" /> */}
-					{/* 1.3k */}
-					{/* </button> */}
-					<button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
-						<MessageCircle className="" />
-						817
-					</button>
-					<button className="flex transition-colors gap-1 p-2 hover:text-success hover:bg-success/25 rounded-full">
-						<Share2 className="" />
-						462
-					</button>
-				</div>
-				<div className="border-border border-solid border-2"></div>
-				{/* Comments */}
-				<div className="overflow-y-scroll h-full w-full">
-					<div className="flex flex-col justify-start items-start gap-2">
-						<div className="flex gap-2">
-							{/* TODO fix image */}
-							<img
-								className="rounded-full bg-gray-500 size-12"
-								src="https://pbs.twimg.com/profile_images/1581014308397502464/NPogKMyk_400x400.jpg"
-								alt="User avatar"
-							/>
-							<div className="flex flex-col justify-center items-start">
-								<h1 className="text-xl font-semibold">
-									Greg
-									<span className="text-muted-foreground"> • 23m</span>
-								</h1>
-								<p className="text-sm text-muted-foreground font-semibold">
-									@TheRealGreg
-								</p>
-							</div>
-						</div>
-						<p>Love the art, such a masterpiece!</p>
-						{/* Comment actions */}
-						<div className="flex gap-4">
-							<button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
-								<Heart className="" />
-								87
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	);
+  return (
+    <div
+      onClick={() => {
+        closePopup(false);
+      }}
+      className="fixed top-0 left-0 w-svw h-svh backdrop-blur-[2px] flex justify-center items-center px-[15%]"
+    >
+      <div className="overflow-hidden h-[80%] w-[60%] aspect-auto rounded-lg rounded-tr-none rounded-br-none">
+        <img
+          className="object-cover w-full h-full"
+          src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
+        />
+      </div>
+      <div
+        className={`flex flex-col gap-4 w-full h-[80%] rounded-tl-none rounded-bl-none p-4 my-4 border-border border-solid border-2 rounded-lg bg-card`}
+      >
+        {/* Author */}
+        <div className="flex gap-2">
+          {/* TODO fix image */}
+          <img
+            className="rounded-full bg-gray-500 size-12"
+            src="https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6"
+            alt="User avatar"
+          />
+          <div className="flex flex-col justify-center items-start">
+            <h1 className="text-xl font-semibold">
+              Anonymous
+              <span className="text-muted-foreground"> • 1h</span>
+            </h1>
+            <p className="text-sm text-muted-foreground font-semibold">
+              @UngaBunga
+            </p>
+          </div>
+          <div className="flex ml-auto">
+            <Edit className="text-primary" />
+          </div>
+        </div>
+        {/* Content */}
+        {/* TODO: Change placeholder */}
+        <div className="flex flex-col justify-start items-start gap-2">
+          <p>New artwork</p>
+        </div>
+        {/* Post actions */}
+        <div className="flex gap-4">
+          <Reactions />
+          {/* <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full"> */}
+          {/* <Heart className="" /> */}
+          {/* 1.3k */}
+          {/* </button> */}
+          <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
+            <MessageCircle className="" />
+            817
+          </button>
+          <button className="flex transition-colors gap-1 p-2 hover:text-success hover:bg-success/25 rounded-full">
+            <Share2 className="" />
+            462
+          </button>
+        </div>
+        <div className="border-border border-solid border-2"></div>
+        {/* Comments */}
+        <div className="overflow-y-scroll h-full w-full">
+          <div className="flex flex-col justify-start items-start gap-2">
+            <div className="flex gap-2">
+              {/* TODO fix image */}
+              <img
+                className="rounded-full bg-gray-500 size-12"
+                src="https://pbs.twimg.com/profile_images/1581014308397502464/NPogKMyk_400x400.jpg"
+                alt="User avatar"
+              />
+              <div className="flex flex-col justify-center items-start">
+                <h1 className="text-xl font-semibold">
+                  Greg
+                  <span className="text-muted-foreground"> • 23m</span>
+                </h1>
+                <p className="text-sm text-muted-foreground font-semibold">
+                  @TheRealGreg
+                </p>
+              </div>
+            </div>
+            <p>Love the art, such a masterpiece!</p>
+            {/* Comment actions */}
+            <div className="flex gap-4">
+              <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
+                <Heart className="" />
+                87
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const Reactions = () => {
-	const [reactedReaction, setReactedReaction] = useState<number>(0);
+  const [reactedReaction, setReactedReaction] = useState<number>(0);
 
-	return (
-		<div className="flex gap-2">
-			<ReactionButton color="#7aa2f7" amount={27} Icon={ThumbsUp} />
-			<ReactionButton color="#f7768e" amount={405} Icon={Heart} />
-			<ReactionButton color="#e0af68" amount={32} Icon={Laugh} />
-			<ReactionButton color="#f7768e" amount={1} Icon={Angry} />
-		</div>
-	);
+  return (
+    <div className="flex gap-2">
+      <ReactionButton color="#7aa2f7" amount={27} Icon={ThumbsUp} />
+      <ReactionButton color="#f7768e" amount={405} Icon={Heart} />
+      <ReactionButton color="#e0af68" amount={32} Icon={Laugh} />
+      <ReactionButton color="#f7768e" amount={1} Icon={Angry} />
+    </div>
+  );
 };
 
 interface ReactionBtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-	color: string;
-	amount: number;
-	Icon: LucideIcon;
+  color: string;
+  amount: number;
+  Icon: LucideIcon;
 }
 
 const ReactionButton: FC<ReactionBtnProps> = ({
-	color,
-	amount,
-	Icon,
-	className,
-	...props
+  color,
+  amount,
+  Icon,
+  className,
+  ...props
 }) => {
-	const [isActive, setIsActive] = useState<boolean>(false);
+  const [isActive, setIsActive] = useState<boolean>(false);
 
-	let baseStyle = {
-		fill: "transparent",
-		color: "white",
-	} as CSSProperties;
+  let baseStyle = {
+    fill: 'transparent',
+    color: 'white',
+  } as CSSProperties;
 
-	let activeStyle = isActive
-		? ({
-				// color: color,
-				fill: color,
-			} as CSSProperties)
-		: {};
+  let activeStyle = isActive
+    ? ({
+        // color: color,
+        fill: color,
+      } as CSSProperties)
+    : {};
 
-	return (
-		<button
-			onClick={(e) => {
-				e.stopPropagation();
-				setIsActive((prev) => !prev);
-			}}
-			{...props}
-			className={`flex justify-center items-center group gap-2 p-2 rounded-lg hover:bg-secondary ${className}`}
-		>
-			<Icon
-				style={{
-					...baseStyle,
-					...activeStyle,
-				}}
-				className={`transition-all group-active:animate-scale`}
-			/>
-			{amount}
-		</button>
-	);
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsActive((prev) => !prev);
+      }}
+      {...props}
+      className={`flex justify-center items-center group gap-2 p-2 rounded-lg hover:bg-secondary ${className}`}
+    >
+      <Icon
+        style={{
+          ...baseStyle,
+          ...activeStyle,
+        }}
+        className={`transition-all group-active:animate-scale`}
+      />
+      {amount}
+    </button>
+  );
 };
 
 export default Post;
