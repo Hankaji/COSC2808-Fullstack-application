@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import express from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -5,6 +6,7 @@ import cors from "cors";
 
 import userRouter from "./routes/userRoutes";
 
+dotenv.config();
 const app = express();
 const port = 8080;
 
