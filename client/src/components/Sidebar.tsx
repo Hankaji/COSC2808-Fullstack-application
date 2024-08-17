@@ -1,7 +1,7 @@
-import { Home, LogOut, LucideIcon, Users } from "lucide-react";
-import { FC } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { mergeClassNames } from "../utils";
+import { Home, LogOut, LucideIcon, Users } from 'lucide-react';
+import { FC } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { mergeClassNames } from '../utils';
 
 type SidebarItemBase = {
   Logo: LucideIcon;
@@ -19,20 +19,20 @@ type SidebarActionItem = SidebarItemBase & {
 const internalLinkItems: SidebarInternalLinkItem[] = [
   {
     Logo: Home,
-    name: "Home",
-    path: "/",
+    name: 'Home',
+    path: '/',
   },
   {
     Logo: Users,
-    name: "Friends",
-    path: "/friends",
+    name: 'Friends',
+    path: '/friends',
   },
 ];
 
 const bottomActions: SidebarActionItem[] = [
   {
     Logo: LogOut,
-    name: "Logout",
+    name: 'Logout',
     onClick: () => {
       // TODO: add logic here
     },
@@ -48,7 +48,7 @@ const Sidebar = () => {
       <Link to="/" className="cursor-pointer flex items-center gap-3">
         <img
           className="size-10 object-cover mx-auto"
-          style={{ maskSize: "cover", WebkitMaskSize: "cover" }}
+          style={{ maskSize: 'cover', WebkitMaskSize: 'cover' }}
           src="/logo.svg"
           alt="SnapMate logo"
         />
@@ -103,8 +103,8 @@ const SidebarButton: FC<SidebarButtonProps> = ({
       <Link
         to={href}
         className={mergeClassNames(
-          "flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all",
-          isActive ? "bg-secondary" : ""
+          'flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all',
+          isActive ? 'bg-secondary' : '',
         )}
       >
         <Logo size={28} />
@@ -116,8 +116,8 @@ const SidebarButton: FC<SidebarButtonProps> = ({
   return (
     <button
       className={mergeClassNames(
-        "flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all",
-        isActive ? "bg-secondary" : ""
+        'flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all',
+        isActive ? 'bg-secondary' : '',
       )}
       onClick={onClick}
     >

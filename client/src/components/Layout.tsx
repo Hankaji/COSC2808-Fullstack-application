@@ -1,5 +1,5 @@
-import { FC, PropsWithChildren } from "react";
-import Sidebar from "./Sidebar";
+import { FC, PropsWithChildren } from 'react';
+import Sidebar from './Sidebar';
 
 const Layout: FC<
   PropsWithChildren & {

@@ -1,5 +1,5 @@
-import { FC } from "react";
-import Sidebar from "../components/Sidebar";
+import { FC } from 'react';
+import Sidebar from '../components/Sidebar';
 
 const FriendsPage: FC = () => {
   return (
