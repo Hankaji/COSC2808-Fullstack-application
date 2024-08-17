@@ -9,13 +9,13 @@ const Layout: FC<
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
-      <div className="flex-1 flex gap-10 h-screen overflow-hidden scrollbar-hide p-10 pb-0">
-        <main className="flex-[2] overflow-y-auto scrollbar-hide">
-          {children}
-        </main>
-        {stickyRightSideCmp && (
-          <aside className="flex-[1] h-screen">{stickyRightSideCmp}</aside>
-        )}
+      <div className="flex-1 h-screen overflow-hidden scrollbar-hide p-10">
+        <div className="flex gap-10 mx-auto max-w-[1000px] h-screen overflow-hidden pb-20">
+          <main className="flex-[2] overflow-y-auto pr-4">{children}</main>
+          {stickyRightSideCmp && (
+            <aside className="flex-[1] h-screen">{stickyRightSideCmp}</aside>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './App.css';
 import LoginRegisterForm from './LoginRegisterForm';
 import HomePage from './pages/home';
-import FriendsPage from './pages/Friends';
+import FriendsPage from './pages/friends';
 
 const router = createBrowserRouter([
   {
