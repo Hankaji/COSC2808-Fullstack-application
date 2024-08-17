@@ -63,7 +63,7 @@ const FriendListItem: FC<FriendListItemProps> = ({
   onRemove,
 }) => {
   return (
-    <div className="border-e border-border rounded-2xl flex items-center justify-between">
+    <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
         <img
           src={imgUrl}
@@ -77,7 +77,7 @@ const FriendListItem: FC<FriendListItemProps> = ({
       </div>
       <button
         onClick={onRemove}
-        className="rounded-full bg-white hover:bg-slate-300 text-black px-4 py-2 text-sm"
+        className="rounded-full bg-white hover:bg-slate-300 text-black px-4 py-2 text-sm font-bold"
       >
         Remove
       </button>

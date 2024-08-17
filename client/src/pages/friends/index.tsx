@@ -1,10 +1,17 @@
 import { FC } from 'react';
 import Layout from '../../components/Layout';
 import FriendList from './FriendList';
+import FriendRequestList from './FriendRequestList';
 
 const FriendsPage: FC = () => {
   return (
-    <Layout stickyRightSideCmp={<div>right side</div>}>
+    <Layout
+      stickyRightSideCmp={
+        <div>
+          <FriendRequestList />
+        </div>
+      }
+    >
       <FriendList />
     </Layout>
   );
