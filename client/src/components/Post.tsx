@@ -203,7 +203,7 @@ const Reactions = () => {
     // {/* </div> */ }
     <DropDownMenu
       triggerType="hover"
-      Content={
+      content={
         <DropDownMenuContent layout="horizontal">
           <DropDownItem asChild>
             <ReactionButton

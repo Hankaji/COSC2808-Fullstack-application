@@ -15,14 +15,14 @@ import { mergeClassNames } from '../utils';
 interface MenuProps extends PropsWithChildren {
   triggerType: 'click' | 'hover';
   asChild?: boolean;
-  Content: ReactNode;
+  content: ReactElement;
 }
 
 const DropDownMenu: FC<MenuProps> = ({
   children,
   triggerType,
   asChild = false,
-  Content,
+  content,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -60,7 +60,7 @@ const DropDownMenu: FC<MenuProps> = ({
       )}
     >
       {children}
-      {isOpen && Content}
+      {isOpen && content}
     </div>
   );
 };
@@ -80,6 +80,7 @@ const DropDownMenuContent: FC<ContentProps> = ({
       className={mergeClassNames(
         'flex gap-2 absolute top-[calc(100%+0.25rem)] left-0 mx-auto',
         'bg-background p-2 border-border bodeer-solid border-2 rounded-lg',
+        // 'invisible opacity-0 transition-opacity duration-300',
         layout == 'verticle' ? 'flex-col' : '',
         className,
       )}
