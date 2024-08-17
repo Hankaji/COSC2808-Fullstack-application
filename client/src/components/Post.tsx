@@ -6,6 +6,7 @@ import {
   LucideIcon,
   MessageCircle,
   Share2,
+  SmilePlus,
   ThumbsUp,
 } from 'lucide-react';
 import {
@@ -15,8 +16,13 @@ import {
   HTMLAttributes,
   useState,
 } from 'react';
+import {
+  DropDownItem,
+  DropDownMenu,
+  DropDownMenuContent,
+} from './DropDownMenu';
 
-interface Props extends HTMLAttributes<HTMLDivElement> {}
+interface Props extends HTMLAttributes<HTMLDivElement> { }
 
 const Post: FC<Props> = ({ className }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
@@ -74,10 +80,6 @@ const Post: FC<Props> = ({ className }) => {
             <MessageCircle className="" />
             817
           </button>
-          <button className="flex transition-colors gap-1 p-2 hover:text-success hover:bg-success/25 rounded-full">
-            <Share2 className="" />
-            462
-          </button>
         </div>
       </div>
       {isPopup && <PostPopup closePopup={setIsPopup} />}
@@ -126,7 +128,7 @@ const PostPopup = ({ closePopup }: { closePopup: any }) => {
         {/* Content */}
         {/* TODO: Change placeholder */}
         <div className="flex flex-col justify-start items-start gap-2">
-          <p>New artwork</p>
+          <p>New artwork Heheheh</p>
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
@@ -138,10 +140,6 @@ const PostPopup = ({ closePopup }: { closePopup: any }) => {
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
             817
-          </button>
-          <button className="flex transition-colors gap-1 p-2 hover:text-success hover:bg-success/25 rounded-full">
-            <Share2 className="" />
-            462
           </button>
         </div>
         <div className="border-border border-solid border-2"></div>
@@ -181,50 +179,118 @@ const PostPopup = ({ closePopup }: { closePopup: any }) => {
 };
 
 const Reactions = () => {
-  const [reactedReaction, setReactedReaction] = useState<number>(0);
+  const enum ReactionTypes {
+    NULL,
+    LIKE,
+    LOVE,
+    HAHA,
+    ANGRY,
+  }
+  const [reactedReaction, setReactedReaction] = useState<ReactionTypes>(
+    ReactionTypes.NULL,
+  );
+
+  const changeReaction = (to: ReactionTypes) => {
+    if (to === reactedReaction) setReactedReaction(ReactionTypes.NULL);
+    else setReactedReaction(to);
+  };
 
   return (
-    <div className="flex gap-2">
-      <ReactionButton color="#7aa2f7" amount={27} Icon={ThumbsUp} />
-      <ReactionButton color="#f7768e" amount={405} Icon={Heart} />
-      <ReactionButton color="#e0af68" amount={32} Icon={Laugh} />
-      <ReactionButton color="#f7768e" amount={1} Icon={Angry} />
-    </div>
+    //   {/* <div className="flex gap-2"> */ }
+    // {/*   <ReactionButton color="#f7768e" amount={405} Icon={Heart} /> */ }
+    // {/*   <ReactionButton color="#e0af68" amount={32} Icon={Laugh} /> */ }
+    // {/*   <ReactionButton color="#f7768e" amount={1} Icon={Angry} /> */ }
+    // {/* </div> */ }
+    <DropDownMenu
+      triggerType="hover"
+      Content={
+        <DropDownMenuContent layout="horizontal">
+          <DropDownItem asChild>
+            <ReactionButton
+              isSelected={reactedReaction == ReactionTypes.LIKE}
+              onClick={() => {
+                changeReaction(ReactionTypes.LIKE);
+              }}
+              color="#7aa2f7"
+              amount={2496}
+              Icon={ThumbsUp}
+            />
+          </DropDownItem>
+          <DropDownItem asChild>
+            <ReactionButton
+              isSelected={reactedReaction == ReactionTypes.LOVE}
+              onClick={() => {
+                changeReaction(ReactionTypes.LOVE);
+              }}
+              color="#f7768e"
+              amount={5070}
+              Icon={Heart}
+            />
+          </DropDownItem>
+          <DropDownItem asChild>
+            <ReactionButton
+              isSelected={reactedReaction == ReactionTypes.HAHA}
+              onClick={() => {
+                changeReaction(ReactionTypes.HAHA);
+              }}
+              color="#e0af68"
+              amount={156}
+              Icon={Laugh}
+            />
+          </DropDownItem>
+          <DropDownItem asChild>
+            <ReactionButton
+              isSelected={reactedReaction == ReactionTypes.ANGRY}
+              onClick={() => {
+                changeReaction(ReactionTypes.ANGRY);
+              }}
+              color="#f7768e"
+              amount={78}
+              Icon={Angry}
+            />
+          </DropDownItem>
+        </DropDownMenuContent>
+      }
+    >
+      {/* <ReactionButton color="#7aa2f7" amount={27} Icon={ThumbsUp} /> */}
+      <SmilePlus />
+      7.8k
+    </DropDownMenu>
   );
 };
 
 interface ReactionBtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  isSelected?: boolean;
   color: string;
   amount: number;
   Icon: LucideIcon;
 }
 
 const ReactionButton: FC<ReactionBtnProps> = ({
+  isSelected = false,
   color,
   amount,
+  onClick,
   Icon,
   className,
   ...props
 }) => {
-  const [isActive, setIsActive] = useState<boolean>(false);
-
   let baseStyle = {
     fill: 'transparent',
     color: 'white',
   } as CSSProperties;
 
-  let activeStyle = isActive
+  let activeStyle = isSelected
     ? ({
-        // color: color,
-        fill: color,
-      } as CSSProperties)
+      fill: color,
+    } as CSSProperties)
     : {};
 
   return (
     <button
       onClick={(e) => {
         e.stopPropagation();
-        setIsActive((prev) => !prev);
+        onClick && onClick(e);
       }}
       {...props}
       className={`flex justify-center items-center group gap-2 p-2 rounded-lg hover:bg-secondary ${className}`}
