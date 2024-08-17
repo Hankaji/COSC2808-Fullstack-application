@@ -26,7 +26,7 @@ const HomePanel: FC<{ className?: string }> = ({ className }) => {
     } catch (err) {
       console.error(err);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
     getPosts();
