@@ -1,6 +1,7 @@
 import {
   Angry,
   Edit,
+  Ellipsis,
   Heart,
   Laugh,
   LucideIcon,
@@ -22,7 +23,7 @@ import {
   DropDownMenuContent,
 } from './DropDownMenu';
 
-interface Props extends HTMLAttributes<HTMLDivElement> { }
+interface Props extends HTMLAttributes<HTMLDivElement> {}
 
 const Post: FC<Props> = ({ className }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
@@ -38,7 +39,7 @@ const Post: FC<Props> = ({ className }) => {
         className={`flex flex-col gap-4 w-full h-fit p-4 my-4 border-border border-solid border-2 rounded-lg bg-card hover:bg-secondary/25 hover:cursor-pointer ${className}`}
       >
         {/* Author */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           {/* TODO fix image */}
           <img
             className="rounded-full bg-gray-500 size-12"
@@ -55,7 +56,17 @@ const Post: FC<Props> = ({ className }) => {
             </p>
           </div>
           <div className="flex ml-auto">
-            <Edit className="text-primary" />
+            {/* <Edit className="text-primary" /> */}
+            <DropDownMenu
+              content={
+                <DropDownMenuContent className="-translate-x-1/2">
+                  <DropDownItem>Edit post</DropDownItem>
+                  <DropDownItem>History</DropDownItem>
+                </DropDownMenuContent>
+              }
+            >
+              <Ellipsis />
+            </DropDownMenu>
           </div>
         </div>
         {/* Content */}
@@ -196,11 +207,6 @@ const Reactions = () => {
   };
 
   return (
-    //   {/* <div className="flex gap-2"> */ }
-    // {/*   <ReactionButton color="#f7768e" amount={405} Icon={Heart} /> */ }
-    // {/*   <ReactionButton color="#e0af68" amount={32} Icon={Laugh} /> */ }
-    // {/*   <ReactionButton color="#f7768e" amount={1} Icon={Angry} /> */ }
-    // {/* </div> */ }
     <DropDownMenu
       triggerType="hover"
       content={
@@ -282,8 +288,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-      fill: color,
-    } as CSSProperties)
+        fill: color,
+      } as CSSProperties)
     : {};
 
   return (
