@@ -1,6 +1,7 @@
-import { Globe, Mail, UserRound } from 'lucide-react';
+import { Check, Globe, Mail, Trash, UserRound } from 'lucide-react';
 import { mergeClassNames } from '../../../utils';
 import PopupModal from '../../../components/PopupModal';
+import { ReactElement, useState } from 'react';
 
 const GroupRightSide = () => {
   return (
@@ -67,7 +68,100 @@ const GroupRightSide = () => {
 };
 
 const Popup = () => {
-  return <div className="block-container flex-col size-full">sasas</div>;
+  const [selectedTab, setSelectedTab] = useState<number>(0);
+
+  const tabs: string[] = ['People', 'Requests'];
+  const tabNodes: ReactElement[] = [<ViewAllPeople />, <ViewRequests />];
+
+  return (
+    <div className="block-container flex-col size-full">
+      {/* Tab selection */}
+      <div className="flex">
+        {tabs.map((name, idx) => {
+          return (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedTab(idx);
+              }}
+              className={mergeClassNames(
+                'flex p-4 justify-center items-center w-full',
+                'hover:bg-secondary transition-colors rounded-tl-lg rounded-tr-lg border-border',
+                selectedTab == idx && 'border-b-2 border-solid',
+              )}
+              key={idx}
+            >
+              {name}
+            </button>
+          );
+        })}
+      </div>
+      {/* Content */}
+      {tabNodes[selectedTab]}
+    </div>
+  );
+};
+
+const ViewAllPeople = () => {
+  const data: string[] = ['as', 'asa', 'asasasasasa'];
+
+  console.log(data.length);
+
+  return (
+    <div className="flex flex-col gap-4 justify-start items-center size-full">
+      {data.length > 0 ? (
+        <>
+          {data.map((item, idx) => {
+            return (
+              <div key={idx} className="block-container w-full">
+                {item}
+              </div>
+            );
+          })}
+        </>
+      ) : (
+        <div className="flex justify-center items-center size-full">
+          No members here
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ViewRequests = () => {
+  const data: string[] = ['Guria', 'Menege', 'Kaguya'];
+
+  console.log(data.length);
+
+  return (
+    <div className="flex flex-col gap-4 justify-start items-center size-full">
+      {data.length > 0 ? (
+        <>
+          {data.map((item, idx) => {
+            return (
+              <div key={idx} className="block-container w-full items-center">
+                Request from @{item}
+                <div className="flex gap-2 h-full ml-auto">
+                  <button className="flex justify-center items-center gap-2 py-2 px-4 bg-success rounded-lg">
+                    <Check />
+                    Accept
+                  </button>
+                  <button className="flex justify-center items-center gap-2 py-2 px-4 bg-danger rounded-lg">
+                    <Trash />
+                    Deny
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </>
+      ) : (
+        <div className="flex justify-center items-center size-full">
+          No members here
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default GroupRightSide;
