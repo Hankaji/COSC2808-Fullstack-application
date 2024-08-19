@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const groupSchema = new mongoose.Schema(
 	{
-		group_id: { type: String, required: true },
+		_id: { type: String, unique: true, require: true },
 		name: { type: String, required: true },
 		description: { type: String, required: true },
 		visibility: { type: String, required: true, enum: ["Public", "Private"] },
@@ -11,7 +11,7 @@ const groupSchema = new mongoose.Schema(
 		members: [{ type: String }],
 		posts: [{ type: String }],
 	},
-	{ timestamps: true }
+	{ timestamps: true, _id: false },
 );
 
 export const Group = mongoose.model("Group", groupSchema);
