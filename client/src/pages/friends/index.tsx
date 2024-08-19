@@ -1,8 +1,8 @@
 import { FC } from 'react';
 import Layout from '../../components/Layout';
+import SearchAndAddFriend from '../../components/SearchAndAddFriend';
 import FriendList from './FriendList';
 import FriendRequestList from './FriendRequestList';
-import SearchAndAddFriend from './SearchAndAddFriend';
 
 const FriendsPage: FC = () => {
   return (

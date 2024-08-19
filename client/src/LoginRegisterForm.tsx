@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Input } from './components/Input';
+import { Input } from './components/ui/Input';
 
 enum formState {
   LOGIN,

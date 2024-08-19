@@ -19,9 +19,9 @@ import {
   DropDownItem,
   DropDownMenu,
   DropDownMenuContent,
-} from './DropDownMenu';
+} from './ui/DropDownMenu';
 
-interface Props extends HTMLAttributes<HTMLDivElement> { }
+interface Props extends HTMLAttributes<HTMLDivElement> {}
 
 const Post: FC<Props> = ({ className }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
@@ -272,8 +272,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-      fill: color,
-    } as CSSProperties)
+        fill: color,
+      } as CSSProperties)
     : {};
 
   return (
