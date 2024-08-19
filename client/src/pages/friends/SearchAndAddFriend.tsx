@@ -1,38 +1,38 @@
-import { Check, Plus, UserRoundCheck } from 'lucide-react';
-import { FC, useEffect, useRef, useState } from 'react';
-import SearchBar from '../../components/SearchBar';
-import { Account } from '../../types';
+import { Check, Plus, UserRoundCheck } from "lucide-react";
+import { FC, useEffect, useRef, useState } from "react";
+import SearchBar from "../../components/SearchBar";
+import { Account } from "../../types";
 
 const list: Account[] = [
   {
-    id: 'alice_on_chain',
-    name: 'Alice',
+    id: "alice_on_chain",
+    name: "Alice",
     imgUrl:
-      'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
+      "https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6",
   },
   {
-    id: 'its_bob',
-    name: 'Bob',
+    id: "its_bob",
+    name: "Bob",
     imgUrl:
-      'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
+      "https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6",
   },
   {
-    id: 'charliexcx',
-    name: 'Charlie',
+    id: "charliexcx",
+    name: "Charlie",
     imgUrl:
-      'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
+      "https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6",
   },
 ];
 
 const SearchAndAddFriend: FC = () => {
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState("");
   const [searchResults, setSearchResults] = useState<null | Account[]>(null);
 
   const searchDropdown = useRef<HTMLDivElement>(null);
 
   // Hide search results dropdown when clicked outside
   useEffect(() => {
-    document.addEventListener('mousedown', (e) => {
+    document.addEventListener("mousedown", (e) => {
       if (
         searchDropdown.current &&
         !searchDropdown.current.contains(e.target as Node)
@@ -55,10 +55,13 @@ const SearchAndAddFriend: FC = () => {
       {searchResults && (
         // TODO: add slide animation
         <div
-          className="z-10 space-y-4 bg-background absolute w-full -bottom-[372px] p-4 border-2 border-border rounded-xl"
+          className="shadow-md shadow-slate-700 z-10 space-y-4 bg-background absolute w-full -bottom-[378px] p-4 border-2 border-border rounded-xl"
           ref={searchDropdown}
         >
-          <p className="text-slate-300">Results for "{searchValue}"</p>
+          <p className="pb-2 border-b-2 border-border text-slate-300">
+            Results for "
+            <span className="text-white font-bold">{searchValue}</span>"
+          </p>
           <div className="space-y-4 h-[280px] overflow-y-auto pr-3">
             {searchResults.length > 0 ? (
               [...searchResults].map((acc) => (
@@ -84,7 +87,7 @@ export default SearchAndAddFriend;
 interface AccountSearchResultProps {
   data: Account;
   onAddFriend?: () => void;
-  status: 'friend' | 'requestSent' | 'none';
+  status: "friend" | "requestSent" | "none";
 }
 
 const AccountSearchResult: FC<AccountSearchResultProps> = ({
@@ -94,19 +97,19 @@ const AccountSearchResult: FC<AccountSearchResultProps> = ({
 }) => {
   const actionButton = (() => {
     switch (status) {
-      case 'friend':
+      case "friend":
         return (
           <button className="rounded-full p-1.5 bg-green-100">
             <UserRoundCheck size={12} className="stroke-green-900" />
           </button>
         );
-      case 'requestSent':
+      case "requestSent":
         return (
           <button className="rounded-full p-1.5 bg-gray-100">
             <Check size={12} className="stroke-gray-900" />
           </button>
         );
-      case 'none':
+      case "none":
         return (
           <button
             onClick={onAddFriend}
