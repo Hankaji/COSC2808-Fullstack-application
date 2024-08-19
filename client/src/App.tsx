@@ -3,11 +3,16 @@ import './App.css';
 import LoginRegisterForm from './LoginRegisterForm';
 import HomePage from './pages/home';
 import FriendsPage from './pages/friends';
+import NotificationsPage from './pages/notifications';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <HomePage />,
+  },
+  {
+    path: '/notifications',
+    element: <NotificationsPage />,
   },
   {
     path: '/login',
@@ -20,15 +25,6 @@ const router = createBrowserRouter([
   {
     path: '/friends',
     element: <FriendsPage />,
-  },
-  {
-    path: '/profile', // TODO: remove this page
-    children: [
-      {
-        // Show people profile through this link
-        path: '/profile/:userId',
-      },
-    ],
   },
   {
     path: '/group',
