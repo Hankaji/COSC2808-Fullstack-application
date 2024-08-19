@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
 	{
+		_id: { type: String, unique: true, require: true },
 		username: { type: String, required: true },
 		email: { type: String, required: true },
 		password: { type: String, required: true },
@@ -29,7 +30,7 @@ const userSchema = new mongoose.Schema(
 			},
 		],
 	},
-	{ timestamps: true },
+	{ timestamps: true, _id: false },
 );
 
 export const User = mongoose.model("User", userSchema);
