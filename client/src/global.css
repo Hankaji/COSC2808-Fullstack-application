@@ -57,6 +57,22 @@
   }
 }
 
+body,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+div,
+li,
+td,
+th {
+  @apply text-left;
+}
+
 html {
   scrollbar-face-color: #646464;
   scrollbar-base-color: #646464;
