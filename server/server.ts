@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 
 import userRouter from "./routes/userRoutes";
+import postRouter from "./routes/postRoutes";
 import { MongoClient, ServerApiVersion } from "mongodb";
 import connectDB from "./models/dbConnection";
 
@@ -13,6 +14,7 @@ const app = express();
 const port = 8080;
 
 app.use(bodyParser.json());
+app.use(express.json());
 app.use(cookieParser());
 app.use(
 	cors({
@@ -25,6 +27,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
 });
 
 app.use("/users", userRouter);
+app.use("/posts", postRouter);
 
 // MongoDB Connection
 // const uri = process.env.MONGO_URI || "";
