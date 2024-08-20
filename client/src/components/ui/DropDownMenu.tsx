@@ -9,8 +9,8 @@ import {
   useEffect,
   useState,
 } from 'react';
-import useDebounce from '../hooks/useDebounce';
-import { mergeClassNames } from '../utils';
+import useDebounce from '../../hooks/useDebounce';
+import { mergeClassNames } from '../../utils';
 
 interface MenuProps extends PropsWithChildren {
   triggerType?: 'click' | 'hover';

@@ -1,10 +1,9 @@
 import HomePanel from './HomePanel';
-import HomeRightSide from './HomeRightSide';
 import Layout from '../../components/Layout';
 
 const HomePage = () => {
   return (
-    <Layout stickyRightSideCmp={<HomeRightSide />}>
+    <Layout>
       <HomePanel />
     </Layout>
   );

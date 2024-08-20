@@ -6,7 +6,6 @@ import {
   Laugh,
   LucideIcon,
   MessageCircle,
-  Share2,
   SmilePlus,
   ThumbsUp,
 } from 'lucide-react';
@@ -21,7 +20,7 @@ import {
   DropDownItem,
   DropDownMenu,
   DropDownMenuContent,
-} from './DropDownMenu';
+} from './ui/DropDownMenu';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {}
 
@@ -144,10 +143,6 @@ const PostPopup = ({ closePopup }: { closePopup: any }) => {
         {/* Post actions */}
         <div className="flex gap-4">
           <Reactions />
-          {/* <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full"> */}
-          {/* <Heart className="" /> */}
-          {/* 1.3k */}
-          {/* </button> */}
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
             817
@@ -213,7 +208,7 @@ const Reactions = () => {
         <DropDownMenuContent layout="horizontal">
           <DropDownItem asChild>
             <ReactionButton
-              isSelected={reactedReaction == ReactionTypes.LIKE}
+              isSelected={reactedReaction === ReactionTypes.LIKE}
               onClick={() => {
                 changeReaction(ReactionTypes.LIKE);
               }}
@@ -224,7 +219,7 @@ const Reactions = () => {
           </DropDownItem>
           <DropDownItem asChild>
             <ReactionButton
-              isSelected={reactedReaction == ReactionTypes.LOVE}
+              isSelected={reactedReaction === ReactionTypes.LOVE}
               onClick={() => {
                 changeReaction(ReactionTypes.LOVE);
               }}
@@ -235,7 +230,7 @@ const Reactions = () => {
           </DropDownItem>
           <DropDownItem asChild>
             <ReactionButton
-              isSelected={reactedReaction == ReactionTypes.HAHA}
+              isSelected={reactedReaction === ReactionTypes.HAHA}
               onClick={() => {
                 changeReaction(ReactionTypes.HAHA);
               }}
@@ -246,7 +241,7 @@ const Reactions = () => {
           </DropDownItem>
           <DropDownItem asChild>
             <ReactionButton
-              isSelected={reactedReaction == ReactionTypes.ANGRY}
+              isSelected={reactedReaction === ReactionTypes.ANGRY}
               onClick={() => {
                 changeReaction(ReactionTypes.ANGRY);
               }}
