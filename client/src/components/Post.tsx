@@ -1,6 +1,7 @@
 import {
   Angry,
   Edit,
+  Ellipsis,
   Heart,
   Laugh,
   LucideIcon,
@@ -37,7 +38,7 @@ const Post: FC<Props> = ({ className }) => {
         className={`flex flex-col gap-4 w-full h-fit p-4 my-4 border-border border-solid border-2 rounded-lg bg-card hover:bg-secondary/25 hover:cursor-pointer ${className}`}
       >
         {/* Author */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           {/* TODO fix image */}
           <img
             className="rounded-full bg-gray-500 size-12"
@@ -54,7 +55,17 @@ const Post: FC<Props> = ({ className }) => {
             </p>
           </div>
           <div className="flex ml-auto">
-            <Edit className="text-primary" />
+            {/* <Edit className="text-primary" /> */}
+            <DropDownMenu
+              content={
+                <DropDownMenuContent className="-translate-x-1/2">
+                  <DropDownItem>Edit post</DropDownItem>
+                  <DropDownItem>History</DropDownItem>
+                </DropDownMenuContent>
+              }
+            >
+              <Ellipsis />
+            </DropDownMenu>
           </div>
         </div>
         {/* Content */}

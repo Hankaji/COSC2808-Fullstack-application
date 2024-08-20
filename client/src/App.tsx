@@ -4,6 +4,7 @@ import LoginRegisterForm from './LoginRegisterForm';
 import HomePage from './pages/home';
 import FriendsPage from './pages/friends';
 import NotificationsPage from './pages/notifications';
+import GroupPage from './pages/groups/group';
 
 const router = createBrowserRouter([
   {
@@ -30,7 +31,8 @@ const router = createBrowserRouter([
     path: '/group',
     children: [
       {
-        path: '/group/:groupId',
+        path: '/groups/:groupId',
+        element: <GroupPage />,
       },
     ],
   },

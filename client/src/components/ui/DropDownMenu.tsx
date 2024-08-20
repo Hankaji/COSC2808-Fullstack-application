@@ -1,11 +1,11 @@
 import {
   Children,
-  cloneElement,
   FC,
   HtmlHTMLAttributes,
+  MouseEvent,
+  MouseEventHandler,
   PropsWithChildren,
   ReactElement,
-  ReactNode,
   useEffect,
   useState,
 } from 'react';
@@ -13,16 +13,18 @@ import useDebounce from '../../hooks/useDebounce';
 import { mergeClassNames } from '../../utils';
 
 interface MenuProps extends PropsWithChildren {
-  triggerType: 'click' | 'hover';
+  triggerType?: 'click' | 'hover';
   asChild?: boolean;
   content: ReactElement;
+  className?: string;
 }
 
 const DropDownMenu: FC<MenuProps> = ({
   children,
-  triggerType,
+  triggerType = 'click',
   asChild = false,
   content,
+  className,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -50,16 +52,24 @@ const DropDownMenu: FC<MenuProps> = ({
   };
 
   return (
-    <div
-      onClick={handleClick}
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-      className={mergeClassNames(
-        'relative',
-        asChild ? '' : 'flex gap-2 hover:bg-secondary/50 rounded-lg p-2',
-      )}
-    >
-      {children}
+    <div className="relative">
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          handleClick();
+        }}
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+        className={mergeClassNames(
+          'relative',
+          asChild
+            ? ''
+            : 'flex justify-center items-center size-fit gap-2 hover:bg-secondary/50 rounded-lg p-2',
+          className,
+        )}
+      >
+        {children}
+      </div>
       {isOpen && content}
     </div>
   );
@@ -78,8 +88,8 @@ const DropDownMenuContent: FC<ContentProps> = ({
     <div
       {...props}
       className={mergeClassNames(
-        'flex gap-2 absolute top-[calc(100%+0.25rem)] left-0 mx-auto',
-        'bg-background p-2 border-border bodeer-solid border-2 rounded-lg',
+        'flex gap-2 absolute top-[calc(100%+0.25rem)] left-0',
+        'bg-background p-2 border-border border-solid border-2 rounded-lg w-fit',
         // 'invisible opacity-0 transition-opacity duration-300',
         layout == 'verticle' ? 'flex-col' : '',
         className,
@@ -98,7 +108,7 @@ const DropDownItem: FC<ItemProps> = ({ children, asChild }) => {
   return (
     <div
       className={mergeClassNames(
-        'rounded-lg',
+        'rounded-sm w-full text-nowrap',
         !asChild && 'p-2 hover:bg-secondary',
       )}
     >
