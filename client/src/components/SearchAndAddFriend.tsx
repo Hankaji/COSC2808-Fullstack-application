@@ -1,7 +1,7 @@
-import { Check, Plus, UserRoundCheck } from 'lucide-react';
 import { FC, useEffect, useRef, useState } from 'react';
-import SearchBar from '../../components/SearchBar';
-import { Account } from '../../types';
+import SearchBar from './ui/SearchBar';
+import { Account } from '../types';
+import AccInfoWithAction from './AccInfoWithAction';
 
 const list: Account[] = [
   {
@@ -55,18 +55,21 @@ const SearchAndAddFriend: FC = () => {
       {searchResults && (
         // TODO: add slide animation
         <div
-          className="z-10 space-y-4 bg-background absolute w-full -bottom-[372px] p-4 border-2 border-border rounded-xl"
+          className="shadow-md shadow-slate-700 z-10 space-y-4 bg-background absolute w-full -bottom-[378px] p-4 border-2 border-border rounded-xl"
           ref={searchDropdown}
         >
-          <p className="text-slate-300">Results for "{searchValue}"</p>
+          <p className="pb-2 border-b-2 border-border text-slate-300">
+            Results for "
+            <span className="text-white font-bold">{searchValue}</span>"
+          </p>
           <div className="space-y-4 h-[280px] overflow-y-auto pr-3">
             {searchResults.length > 0 ? (
               [...searchResults].map((acc) => (
-                <AccountSearchResult
+                <AccInfoWithAction
                   key={acc.id}
                   data={acc}
                   status="none"
-                  onAddFriend={() => {}}
+                  actionFn={() => {}}
                 />
               ))
             ) : (
@@ -80,58 +83,3 @@ const SearchAndAddFriend: FC = () => {
 };
 
 export default SearchAndAddFriend;
-
-interface AccountSearchResultProps {
-  data: Account;
-  onAddFriend?: () => void;
-  status: 'friend' | 'requestSent' | 'none';
-}
-
-const AccountSearchResult: FC<AccountSearchResultProps> = ({
-  data: { id, name, imgUrl },
-  onAddFriend,
-  status,
-}) => {
-  const actionButton = (() => {
-    switch (status) {
-      case 'friend':
-        return (
-          <button className="rounded-full p-1.5 bg-green-100">
-            <UserRoundCheck size={12} className="stroke-green-900" />
-          </button>
-        );
-      case 'requestSent':
-        return (
-          <button className="rounded-full p-1.5 bg-gray-100">
-            <Check size={12} className="stroke-gray-900" />
-          </button>
-        );
-      case 'none':
-        return (
-          <button
-            onClick={onAddFriend}
-            className="rounded-full p-1.5 bg-blue-100 hover:bg-blue-200"
-          >
-            <Plus size={12} className="stroke-blue-900" />
-          </button>
-        );
-    }
-  })();
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <img
-          src={imgUrl}
-          className="rounded-full bg-gray-500 size-12"
-          alt={name}
-        />
-        <div>
-          <p className="text-base">{name}</p>
-          <p className="text-sm text-gray-500">@{id}</p>
-        </div>
-      </div>
-      {actionButton}
-    </div>
-  );
-};

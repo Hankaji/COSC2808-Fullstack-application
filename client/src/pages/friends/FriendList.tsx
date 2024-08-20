@@ -44,7 +44,7 @@ const FriendList: FC = () => {
       </h2>
       <div className="space-y-6">
         {[...list, ...list, ...list, ...list, ...list].map((acc) => (
-          <FriendListItem data={acc} onRemove={() => {}} />
+          <FriendListItem key={acc.id} data={acc} onRemove={() => {}} />
         ))}
       </div>
     </div>

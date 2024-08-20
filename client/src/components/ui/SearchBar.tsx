@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react';
 import { FC } from 'react';
 import { Input } from './Input';
-import { mergeClassNames } from '../utils';
+import { mergeClassNames } from '../../utils';
 
 interface SearchBarProps {
   value: string;
