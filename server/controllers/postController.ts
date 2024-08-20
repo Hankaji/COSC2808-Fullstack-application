@@ -32,7 +32,7 @@ export const createPost = async (req: Request, res: Response) => {
 // delete a post by ID
 export const deletePost = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const postId  = req.params;
+        const { postId } = req.params;
         const deletedPost = await Post.findByIdAndDelete(postId);
 
         if (!deletedPost) {
