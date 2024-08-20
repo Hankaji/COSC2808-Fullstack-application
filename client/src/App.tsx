@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './App.css';
-import LoginRegisterForm from './LoginRegisterForm';
+import LoginRegisterForm from './pages/login_register';
 import HomePage from './pages/home';
 import FriendsPage from './pages/friends';
 import GroupPage from './pages/groups/group';
@@ -44,7 +44,7 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <div className="App text-foreground bg-background min-h-svh">
+    <div className="flex App text-foreground bg-background min-h-svh">
       <RouterProvider router={router} />
     </div>
   );
