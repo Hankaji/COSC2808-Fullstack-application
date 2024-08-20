@@ -1,3 +1,4 @@
+import { error } from 'console';
 import {
   ButtonHTMLAttributes,
   ChangeEvent,
@@ -27,49 +28,71 @@ interface loginProps {
 const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
   const [state, setState] = useState<formState>(initialState);
 
-  const [inputValues, setInputValues] = useState<Record<string, string>>({
-    username: '',
-    password: '',
-  });
-
   const [errors, setErrors] = useState<string[]>([]);
-
-  const inputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setInputValues({ ...inputValues, [e.target.name]: e.target.value });
-  };
 
   type formInputType = {
     id: number;
-    name: string;
-    type: HTMLInputTypeAttribute;
-    placeholder: string;
     label: string;
     renderCondition: formState[];
+    inputProps?: Omit<InputHTMLAttributes<HTMLInputElement>, 'className'>;
   };
 
   const formInputs: formInputType[] = [
     {
       id: 1,
-      name: 'username',
-      type: 'text',
-      placeholder: 'Username',
+      inputProps: {
+        name: 'username',
+        type: 'text',
+        placeholder: 'Username',
+        required: true,
+        pattern: '[A-Za-z0-9_]+',
+        title: 'Only letters, numbers, underscores, and hyphens are allowed.',
+      },
       label: 'Username',
       renderCondition: [formState.LOGIN, formState.SIGNUP],
     },
     {
       id: 2,
-      name: 'password',
-      type: 'password',
-      placeholder: 'Password',
+      inputProps: {
+        name: 'password',
+        type: 'password',
+        placeholder: 'Password',
+        required: true,
+      },
       label: 'Password',
       renderCondition: [formState.LOGIN, formState.SIGNUP],
     },
     {
       id: 3,
-      name: 'repassword',
-      type: 'password',
-      placeholder: 'Retype password',
+      inputProps: {
+        name: 'repassword',
+        type: 'password',
+        placeholder: 'Retype password',
+        required: true,
+      },
       label: 'Retype password',
+      renderCondition: [formState.SIGNUP],
+    },
+    {
+      id: 4,
+      inputProps: {
+        name: 'email',
+        type: 'email',
+        placeholder: 'email',
+        required: true,
+      },
+      label: 'email',
+      renderCondition: [formState.SIGNUP],
+    },
+    {
+      id: 5,
+      inputProps: {
+        name: 'profilePicture',
+        type: 'file',
+        placeholder: 'profilePicture',
+        accept: 'image/*',
+      },
+      label: 'Profile Picture',
       renderCondition: [formState.SIGNUP],
     },
   ];
@@ -90,14 +113,28 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
       case formState.SIGNUP: {
         if (!payload.username) errors.push('Username can not be empty');
         if (!payload.password) errors.push('Password can not be empty');
-        if (!payload.rePassword)
+        if (!payload.repassword)
           errors.push('Retype password can not be empty');
+        if (!payload.email) errors.push('Email can not be empty');
+
+        const username = payload.username as string;
+        if (username.length < 4 || username.length > 16)
+          errors.push(
+            'Username must contains at least 4 and maximum 16 characters',
+          );
+
+        const password = payload.password as string;
+        const repassword = payload.repassword as string;
+        if (password.localeCompare(repassword))
+          errors.push('Retyped password and password are not the same');
+        if (password.length < 8)
+          errors.push('Password must be at least 8 characters');
         break;
       }
     }
 
+    setErrors(errors);
     if (errors.length > 0) {
-      setErrors(errors);
       return false;
     } else {
       return true;
@@ -114,7 +151,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
   };
 
   return (
-    <section className="relative flex w-svw min-h-dvh items-center justify-center bg-background">
+    <section className="relative flex w-svw min-h-dvh items-center justify-center bg-background p-24">
       {/* Random blob */}
       <div className="fixed top-0 left-0 h-svh w-svw overflow-hidden">
         <div className="absolute top-[65%] left-[60%] -translate-x-1/2 -translate-y-1/2 size-[80vw] blur-3xl z-10 bg-primary opacity-5 rounded-full"></div>
@@ -144,12 +181,8 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               return (
                 <FormInput
                   key={input.id}
-                  name={input.name}
-                  type={input.type}
-                  onChange={inputChange}
-                  placeholder={input.placeholder}
-                  label={input.placeholder}
-                  value={inputValues[input.name]}
+                  label={input.label}
+                  {...input.inputProps}
                 />
               );
             })}
@@ -196,7 +229,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
             </p>
           )}
           <button type="submit" className="bg-primary py-4 px-20 rounded-full">
-            Sign in
+            {state == formState.LOGIN ? 'Sign in' : 'Sign up'}
           </button>
         </div>
       </form>
@@ -206,21 +239,11 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 
 interface FormInputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'className'> {
-  name: string;
-  type?: HTMLInputTypeAttribute;
-  placeholder?: string;
   label: string;
   className?: string;
 }
 
-const FormInput: FC<FormInputProps> = ({
-  name,
-  type,
-  placeholder,
-  label,
-  className,
-  ...inputProps
-}) => {
+const FormInput: FC<FormInputProps> = ({ label, className, ...inputProps }) => {
   return (
     <div
       className={mergeClassNames('flex flex-col gap-2 items-start', className)}
@@ -228,11 +251,8 @@ const FormInput: FC<FormInputProps> = ({
       <label htmlFor="email">{label}</label>
       <Input
         {...inputProps}
-        className="p-4 py-6 rounded-lg w-[25vw]"
-        type={type}
-        name={name}
-        id={name}
-        placeholder={placeholder}
+        className="p-4 py-6 rounded-lg min-w-[25vw]"
+        id={inputProps.name}
       />
     </div>
   );
