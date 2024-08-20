@@ -2,11 +2,16 @@ import type { Request, Response } from "express";
 import Group from "../models/group";
 
 // Get a group by name
-export const searchGroupByName = async (req: Request, res: Response) => {
+export const getGroups = async (req: Request, res: Response) => {
 	try {
 		const { name } = req.query;
-		const filter = name ? { name: new RegExp(name as string, "i") } : {};
-		const groups = await Group.find(filter).select("name description visibility groupImage members.length");
+		let groups;
+		if (name) {
+			const filter = name ? { name: new RegExp(name as string, "i") } : {};
+			groups = await Group.find(filter).select("name description visibility groupImage members");
+		} else {
+			groups = await Group.find();
+		}
 		res.status(200).json(groups);
 	} catch (error: any) {
 		res.status(500).json({ message: "Error fetching groups", error: error.message });
