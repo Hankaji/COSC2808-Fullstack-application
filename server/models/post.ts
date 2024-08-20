@@ -61,5 +61,8 @@ const postSchema = new mongoose.Schema(
 	{ timestamps: true },
 );
 
+// Create a text index on the content field
+postSchema.index({ content: "text" });
+
 export const Post = mongoose.model("Post", postSchema);
 export default Post;

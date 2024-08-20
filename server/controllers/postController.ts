@@ -6,7 +6,8 @@ import Group from '../models/group';
 // create a post
 export const createPost = async (req: Request, res: Response) => {
     try {
-        const { user_id, group_id, content, images, visibility, reactions, comments, editHistory } = req.body;
+        const { user_id, group_id, content, visibility, reactions, comments, editHistory } = req.body;
+        const images = req.files ? (req.files as Express.Multer.File[]).map(file => file.path) : [];
 
         const newPost = new Post({
             user_id,
@@ -70,7 +71,133 @@ export const getAllPosts = async (req: Request, res: Response) => {
     }
 };
 
-// update a post by ID
+// I do not know how to make filter for this so here goes nothing
+// get all posts related to a user
+// I need some user exist in the database to test this
+export const getPostsUser = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.id;
+        console.log(`Fetching posts for user ID: ${userId}`);
+
+        // Fetch the user by ID
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Retrieve the friend list of the user
+        const friends = user.friends;
+
+        // Retrieve the groups that contain the user ID
+        const groups = await Group.find({ members: userId });
+
+        // Fetch posts from friends
+        const friendPosts = await Post.find({ author: { $in: friends } });
+
+        // Fetch posts from groups
+        const groupPosts = await Post.find({ group: { $in: groups.map(group => group._id) } });
+
+        // Combine posts from friends and groups
+        const allPosts = [...friendPosts, ...groupPosts];
+
+        res.status(200).json(allPosts);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+// get all posts from the user
+export const getUserPosts = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.id;
+
+        // Fetch all posts authored by the logged-in user
+        const userPosts = await Post.find({ user_id: userId });
+
+        // Return the posts in the response
+        res.status(200).json(userPosts);
+    } catch (error) {
+        console.error(`Error fetching user posts: ${error}`);
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+// get all posts from the group
+export const getGroupPosts = async (req: Request, res: Response) => {
+    try {
+        const groupId = req.params.id;
+
+        // Fetch all posts associated with the specified group ID
+        const groupPosts = await Post.find({ group_id: groupId });
+
+        // Return the posts in the response
+        res.status(200).json(groupPosts);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+// Search posts by content similarity
+export const searchPost = async (req: Request, res: Response) => {
+    try {
+        const searchString = req.query.q as string;
+
+        if (!searchString) {
+            return res.status(200).json({ message: 'No data' });
+        }
+
+        // Perform a text search on the content field
+        const posts = await Post.find({ content: { $regex: searchString, $options: 'i' } });
+
+        // Return the matching posts in the response
+        res.status(200).json(posts);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+// Search posts for a user by content similarity
+// this one need the real data as well.
+export const searchPostForUser = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.id;
+        const searchString = req.query.q as string;
+
+        if (!searchString) {
+            return res.status(200).json({ message: 'No data' });
+        }
+
+        // Fetch the user by ID
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Retrieve the friend list of the user
+        const friends = user.friends;
+
+        // Retrieve the groups that contain the user ID
+        const groups = await Group.find({ members: userId });
+
+        // Fetch posts from friends
+        const friendPosts = await Post.find({ author: { $in: friends } });
+
+        // Fetch posts from groups
+        const groupPosts = await Post.find({ group: { $in: groups.map(group => group._id) } });
+
+        // Combine posts from friends and groups
+        const allPosts = [...friendPosts, ...groupPosts];
+
+        // Filter posts based on the search string
+        const filteredPosts = allPosts.filter(post => post.content.includes(searchString));
+
+        res.status(200).json(filteredPosts);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+// Update a post by ID
 export const updatePost = async (req: Request, res: Response) => {
     try {
         const postId = req.params.id;
@@ -93,8 +220,15 @@ export const updatePost = async (req: Request, res: Response) => {
 
         // Update the post with the new data
         post.content = updateData.content || post.content;
-        post.images = updateData.images || post.images;
         post.visibility = updateData.visibility || post.visibility;
+
+        // Handle uploaded images
+        if (Array.isArray(req.files) && req.files.length > 0) {
+            const uploadedImages = (req.files as Express.Multer.File[]).map(file => file.path);
+            post.images = uploadedImages;
+        } else {
+            post.images = updateData.images || post.images;
+        }
 
         // Save the updated post
         const updatedPost = await post.save();
@@ -104,7 +238,6 @@ export const updatePost = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Server error', error });
     }
 };
-
 
 // post reactions
 export const postReactions = async (req: Request, res: Response) => {
