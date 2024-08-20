@@ -74,6 +74,7 @@ export const getAllPosts = async (req: Request, res: Response) => {
 // I do not know how to make filter for this so here goes nothing
 // get all posts related to a user
 // I need some user exist in the database to test this
+
 export const getPostsUser = async (req: Request, res: Response) => {
     try {
         const userId = req.params.id;
@@ -92,13 +93,22 @@ export const getPostsUser = async (req: Request, res: Response) => {
         const groups = await Group.find({ members: userId });
 
         // Fetch posts from friends
-        const friendPosts = await Post.find({ author: { $in: friends } });
+        const friendPosts = await Post.find({ user_id: { $in: friends } });
 
         // Fetch posts from groups
-        const groupPosts = await Post.find({ group: { $in: groups.map(group => group._id) } });
+        const groupPosts = await Post.find({ group_id: { $in: groups.map(group => group._id) } });
 
-        // Combine posts from friends and groups
-        const allPosts = [...friendPosts, ...groupPosts];
+        // Fetch posts created by the user
+        const userPosts = await Post.find({ user_id: userId });
+
+        // Filter posts created by the user to only include those with group_id: ""
+        const filteredUserPosts = userPosts.filter(post => post.group_id === "");
+
+        // Filter posts created by the user's friends to only include those with group_id: ""
+        const filteredFriendPosts = friendPosts.filter(post => post.group_id === "");
+
+        // Combine posts from friends, groups, and the filtered user posts
+        const allPosts = [...filteredFriendPosts, ...groupPosts, ...filteredUserPosts];
 
         res.status(200).json(allPosts);
     } catch (error) {
@@ -113,6 +123,22 @@ export const getUserPosts = async (req: Request, res: Response) => {
 
         // Fetch all posts authored by the logged-in user
         const userPosts = await Post.find({ user_id: userId });
+
+        // Return the posts in the response
+        res.status(200).json(userPosts);
+    } catch (error) {
+        console.error(`Error fetching user posts: ${error}`);
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+// get all posts from the user that not in a group for the user's page
+export const getUserPostsNotInGroup = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.id;
+
+        // Fetch all posts authored by the logged-in user that are not in a group
+        const userPosts = await Post.find({ user_id: userId, group_id: "" });
 
         // Return the posts in the response
         res.status(200).json(userPosts);
@@ -180,13 +206,22 @@ export const searchPostForUser = async (req: Request, res: Response) => {
         const groups = await Group.find({ members: userId });
 
         // Fetch posts from friends
-        const friendPosts = await Post.find({ author: { $in: friends } });
+        const friendPosts = await Post.find({ user_id: { $in: friends } });
 
         // Fetch posts from groups
-        const groupPosts = await Post.find({ group: { $in: groups.map(group => group._id) } });
+        const groupPosts = await Post.find({ group_id: { $in: groups.map(group => group._id) } });
 
-        // Combine posts from friends and groups
-        const allPosts = [...friendPosts, ...groupPosts];
+        // Fetch posts created by the user
+        const userPosts = await Post.find({ user_id: userId });
+
+        // Filter posts created by the user to only include those with group_id: ""
+        const filteredUserPosts = userPosts.filter(post => post.group_id === "");
+
+        // Filter posts created by the user's friends to only include those with group_id: ""
+        const filteredFriendPosts = friendPosts.filter(post => post.group_id === "");
+
+        // Combine posts from friends, groups, and the filtered user posts
+        const allPosts = [...filteredFriendPosts, ...groupPosts, ...filteredUserPosts];
 
         // Filter posts based on the search string
         const filteredPosts = allPosts.filter(post => post.content.includes(searchString));
@@ -369,5 +404,45 @@ export const deletePostComment = async (req: Request, res: Response) => {
         res.status(200).json({ message: 'Comment deleted successfully', post });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+// post comment reactions
+export const postCommentReactions = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { postId, commentId } = req.params;
+        const { userId, reactionType } = req.body;
+
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+
+        const comment = post.comments.id(commentId);
+        if (!comment) {
+            return res.status(404).json({ message: "Comment not found" });
+        }
+
+        const existingReactionIndex = comment.reactions.findIndex(
+            (reaction) => reaction.author_id === userId
+        );
+
+        if (existingReactionIndex !== -1) {
+            if (comment.reactions[existingReactionIndex].type === reactionType) {
+                // Remove the reaction if the same user reacts with the same type
+                comment.reactions.splice(existingReactionIndex, 1);
+            } else {
+                // Update the reaction if the same user reacts with a different type
+                comment.reactions[existingReactionIndex].type = reactionType;
+            }
+        } else {
+            // Add the new reaction
+            comment.reactions.push({ author_id: userId, type: reactionType });
+        }
+
+        await post.save();
+        res.status(200).json({ message: "Reaction updated successfully", comment });
+    } catch (error) {
+        next(error);
     }
 };

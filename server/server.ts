@@ -31,6 +31,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
 
 app.use("/users", userRouter);
 app.use("/posts", postRouter);
+app.use("/groups", groupRouter);
 
 // MongoDB Connection
 // const uri = process.env.MONGO_URI || "";
