@@ -3,7 +3,7 @@ import { Globe, ChevronDown, Image } from 'lucide-react';
 const PostCreationPanel = () => {
   return (
     <div className="flex flex-col justify-start items-start border-border border-2 border-solid rounded-lg p-4 gap-4 w-full bg-card">
-      <div className="flex gap-4">
+      <div className="flex gap-4 w-full">
         {/* TODO fix image */}
         <img
           className="rounded-full bg-gray-500 size-16"
