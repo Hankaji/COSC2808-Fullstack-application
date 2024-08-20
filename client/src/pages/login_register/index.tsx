@@ -1,19 +1,5 @@
-import { error } from 'console';
-import {
-  ButtonHTMLAttributes,
-  ChangeEvent,
-  Dispatch,
-  FC,
-  FormEvent,
-  FormEventHandler,
-  HTMLInputTypeAttribute,
-  InputHTMLAttributes,
-  PropsWithChildren,
-  SetStateAction,
-  useRef,
-  useState,
-} from 'react';
-import { Input } from '../../components/Input';
+import { FC, FormEvent, InputHTMLAttributes, useRef, useState } from 'react';
+import { Input } from '../../components/ui/Input';
 import { mergeClassNames } from '../../utils';
 
 enum formState {
