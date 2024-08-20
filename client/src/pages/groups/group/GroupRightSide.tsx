@@ -1,7 +1,7 @@
 import { Check, Globe, Mail, Trash, UserRound } from 'lucide-react';
 import { mergeClassNames } from '../../../utils';
 import PopupModal from '../../../components/PopupModal';
-import { ReactElement, useState } from 'react';
+import { FC, ReactElement, useState } from 'react';
 
 const GroupRightSide = () => {
   return (
@@ -59,16 +59,22 @@ const GroupRightSide = () => {
             <UserRound size={24} /> People
           </button>
         </PopupModal>
-        <button className="flex gap-2 w-full items-center justify-center font-semibold rounded-lg bg-primary text-foreground py-2">
-          <Mail size={24} /> Requests
-        </button>
+        <PopupModal
+          heightPercent={0.8}
+          className="w-full"
+          modelRender={<Popup initialTab={1} />}
+        >
+          <button className="flex gap-2 w-full items-center justify-center font-semibold rounded-lg bg-primary text-foreground py-2">
+            <Mail size={24} /> Requests
+          </button>
+        </PopupModal>
       </div>
     </div>
   );
 };
 
-const Popup = () => {
-  const [selectedTab, setSelectedTab] = useState<number>(0);
+const Popup: FC<{ initialTab?: number }> = ({ initialTab = 0 }) => {
+  const [selectedTab, setSelectedTab] = useState<number>(initialTab);
 
   const tabs: string[] = ['People', 'Requests'];
   const tabNodes: ReactElement[] = [<ViewAllPeople />, <ViewRequests />];
