@@ -6,11 +6,12 @@ const groupSchema = new mongoose.Schema(
 		description: { type: String, required: true },
 		visibility: { type: String, required: true, enum: ["Public", "Private"] },
 		groupImage: { type: String },
+		coverImage: { type: String },
 		admins: [{ type: String }],
 		members: [{ type: String }],
 		posts: [{ type: String }],
 	},
-	{ timestamps: true },
+	{ timestamps: true }
 );
 
 export const Group = mongoose.model("Group", groupSchema);

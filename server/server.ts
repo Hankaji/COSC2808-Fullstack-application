@@ -5,9 +5,10 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-import userRouter from "./routes/userRoutes";
 import connectDB from "./models/dbConnection";
 import authRouter from "./routes/authRoutes";
+import userRouter from "./routes/userRoutes";
+import groupRouter from "./routes/groupRoutes";
 
 dotenv.config();
 const app = express();
@@ -39,6 +40,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
 
 app.use("/", authRouter);
 app.use("/users", userRouter);
+app.use("/groups", groupRouter);
 
 await connectDB();
 
