@@ -8,8 +8,7 @@ const groupSchema = new mongoose.Schema(
 		groupImage: { type: String },
 		coverImage: { type: String },
 		admins: [{ type: String }],
-		members: [{ type: String }],
-		posts: [{ type: String }],
+		members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	},
 	{ timestamps: true }
 );

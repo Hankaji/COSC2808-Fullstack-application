@@ -2,10 +2,15 @@ import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema(
 	{
-		user_id: { type: String, required: true },
-		group_id: { type: String },
+		user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+		group_id: { type: mongoose.Schema.Types.ObjectId, ref: "Group" },
 		content: { type: String, required: true },
-		images: [{ type: String }],
+		images: [
+			{
+				data: { type: Buffer, required: true },
+				contentType: { type: String, required: true },
+			},
+		],
 		visibility: {
 			type: String,
 			default: "Public",
@@ -13,7 +18,7 @@ const postSchema = new mongoose.Schema(
 		},
 		reactions: [
 			{
-				author_id: { type: String, required: true },
+				author_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 				type: {
 					type: String,
 					required: true,
@@ -23,11 +28,11 @@ const postSchema = new mongoose.Schema(
 		],
 		comments: [
 			{
-				author_id: { type: String, required: true },
+				author_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 				content: { type: String, required: true },
 				reactions: [
 					{
-						author_id: { type: String, required: true },
+						author_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 						type: {
 							type: String,
 							required: true,
@@ -58,7 +63,7 @@ const postSchema = new mongoose.Schema(
 			},
 		],
 	},
-	{ timestamps: true },
+	{ timestamps: true }
 );
 
 export const Post = mongoose.model("Post", postSchema);
