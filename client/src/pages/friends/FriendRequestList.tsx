@@ -29,7 +29,7 @@ const FriendRequestList: FC = () => {
       <h3 className="text-xl font-bold pb-3 border-b-2 border-border">
         Friend Requests
       </h3>
-      <div className="h-[400px] overflow-y-auto space-y-4 py-4 pr-2">
+      <div className="h-[300px] overflow-y-auto space-y-4 py-4 pr-2">
         {[...list].map((acc) => (
           <FriendRequestItem
             key={acc.id}

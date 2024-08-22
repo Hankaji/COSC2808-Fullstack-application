@@ -1,4 +1,4 @@
-import { Home, LogOut, LucideIcon, Users } from 'lucide-react';
+import { Bell, Home, LogOut, LucideIcon, User } from 'lucide-react';
 import { FC } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { mergeClassNames } from '../utils';
@@ -23,7 +23,12 @@ const internalLinkItems: SidebarInternalLinkItem[] = [
     path: '/',
   },
   {
-    Logo: Users,
+    Logo: Bell,
+    name: 'Notifications',
+    path: '/notifications',
+  },
+  {
+    Logo: User,
     name: 'Friends',
     path: '/friends',
   },
