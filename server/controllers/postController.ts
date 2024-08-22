@@ -465,7 +465,7 @@ export const getAllPostsFromUser = async (req: Request, res: Response) => {
 
         // Check if the current user is a friend of the target user
         const targetUser = await User.findById(targetUserId);
-        const isFriend = targetUser.friends.includes(currentUserId.toString());
+        const isFriend = targetUser?.friends?.includes(currentUserId.toString()) ?? false;
 
         if (isFriend) {
             // Return all posts with group_id blank with pagination and sorting
@@ -512,6 +512,9 @@ export const getAllPosts = async (req: Request, res: Response) => {
 
         // Get the current user's friends
         const currentUser = await User.findById(currentUserId);
+        if (!currentUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
         const friends = currentUser.friends;
 
         // Get the groups the current user is a member of
