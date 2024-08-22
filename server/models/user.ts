@@ -15,14 +15,7 @@ const userSchema = new mongoose.Schema(
 				type: {
 					type: String,
 					required: true,
-					enum: [
-						"Friend Request",
-						"Friend Request Accepted",
-						"Comment",
-						"Reaction",
-						"Group Member Request Approval",
-						"Group Creation Approval",
-					],
+					enum: ["User", "Group", "Post", "Comment", "Reaction"],
 				},
 				message: { type: String, required: true },
 				isRead: { type: Boolean, default: false },
@@ -30,7 +23,7 @@ const userSchema = new mongoose.Schema(
 			},
 		],
 	},
-	{ timestamps: true },
+	{ timestamps: true }
 );
 
 export const User = mongoose.model("User", userSchema);
