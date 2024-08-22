@@ -6,10 +6,12 @@ const userSchema = new mongoose.Schema(
 		displayName: { type: String, required: true },
 		email: { type: String, required: true },
 		password: { type: String, required: true },
-		profileImage: { type: String },
+		profileImage: {
+			data: { type: Buffer, required: true },
+			contentType: { type: String, required: true },
+		},
 		status: { type: String, default: "Active", enum: ["Active", "Suspended"] },
-		posts: [{ type: String }],
-		friends: [{ type: String }],
+		friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 		notifications: [
 			{
 				type: {
