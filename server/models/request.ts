@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const friendRequestSchema = new mongoose.Schema(
 	{
-		sender_id: { type: String, required: true },
-		receiver_id: { type: String, required: true },
+		sender_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+		receiver_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 		createdAt: { type: Date, default: Date.now },
 		status: { type: String, default: "Pending", enum: ["Pending", "Accepted", "Rejected"] },
 	},
@@ -12,8 +12,8 @@ const friendRequestSchema = new mongoose.Schema(
 
 const groupRequestSchema = new mongoose.Schema(
 	{
-		user_id: { type: String, required: true },
-		group_id: { type: String, required: true },
+		user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+		group_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 		createdAt: { type: Date, default: Date.now },
 		status: { type: String, default: "Pending", enum: ["Pending", "Accepted", "Rejected"] },
 	},
@@ -22,7 +22,7 @@ const groupRequestSchema = new mongoose.Schema(
 
 const groupCreationRequestSchema = new mongoose.Schema(
 	{
-		user_id: { type: String, required: true },
+		user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 		group: {
 			name: { type: String, required: true },
 			description: { type: String, required: true },

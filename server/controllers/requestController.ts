@@ -141,8 +141,8 @@ export const acceptFriendRequest = async (req: Request, res: Response) => {
 		await friendRequest.save();
 
 		// Add each user to the other's friends list
-		sender.friends.push(receiver._id.toString());
-		receiver.friends.push(sender._id.toString());
+		sender.friends.push(receiver._id);
+		receiver.friends.push(sender._id);
 
 		await sender.save();
 		await receiver.save();
@@ -326,7 +326,7 @@ export const acceptGroupRequest = async (req: Request, res: Response) => {
 		await groupRequest.save();
 
 		// Add the user to the group's members list
-		group.members.push(user._id.toString());
+		group.members.push(user._id);
 		await group.save();
 
 		// Update the user's notifications
