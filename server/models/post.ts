@@ -1,19 +1,19 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, SchemaType } from "mongoose";
 
 const postSchema = new mongoose.Schema(
 	{
-		user_id: { type: String, required: true },
+		user_id: { type: Schema.Types.ObjectId, required: true },
 		group_id: { type: String },
 		content: { type: String, required: true },
 		images: [{ type: String }],
 		visibility: {
 			type: String,
 			default: "Public",
-			enum: ["Public", "Private", "Friend"],
+			enum: ["Public", "Friend"],
 		},
 		reactions: [
 			{
-				author_id: { type: String, required: true },
+				author_id: { type: Schema.Types.ObjectId, required: true },
 				type: {
 					type: String,
 					required: true,
@@ -23,11 +23,11 @@ const postSchema = new mongoose.Schema(
 		],
 		comments: [
 			{
-				author_id: { type: String, required: true },
+				author_id: { type: Schema.Types.ObjectId, required: true },
 				content: { type: String, required: true },
 				reactions: [
 					{
-						author_id: { type: String, required: true },
+						author_id: { type: Schema.Types.ObjectId, required: true },
 						type: {
 							type: String,
 							required: true,
@@ -52,7 +52,7 @@ const postSchema = new mongoose.Schema(
 				visibility: {
 					type: String,
 					required: true,
-					enum: ["Public", "Private", "Friend"],
+					enum: ["Public", "Friend"],
 				},
 				createdAt: { type: Date, required: true },
 			},
