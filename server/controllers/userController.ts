@@ -39,7 +39,9 @@ export const getUserById = async (req: Request, res: Response) => {
 		res.status(500).json({ message: "Error fetching user", error: error.message });
 	}
 };
-
+// get a user by username
+export const getUserByUsername = (username: string) =>
+  User.findOne({ username });
 // Create a new user
 export const createUser = async (req: Request, res: Response) => {
 	try {
@@ -62,18 +64,18 @@ export const createUser = async (req: Request, res: Response) => {
 
 // Update a user by ID
 export const updateUser = async (req: Request, res: Response) => {
-	try {
-		const user = await User.findById(req.params.id);
-		if (user) {
-			user.username = req.body.username || user.username;
-			user.displayName = req.body.displayName || user.displayName;
-			user.email = req.body.email || user.email;
-			user.password = req.body.password || user.password;
-			user.profileImage = req.body.profileImage || user.profileImage;
-			user.status = req.body.status || user.status;
-			user.posts = req.body.posts || user.posts;
-			user.friends = req.body.friends || user.friends;
-			user.notifications = req.body.notifications || user.notifications;
+  try {
+    const user = await User.findById(req.params.id);
+    if (user) {
+      user.username = req.body.username || user.username;
+      user.displayName = req.body.displayName || user.displayName;
+      user.email = req.body.email || user.email;
+      user.password = req.body.password || user.password;
+      user.profileImage = req.body.profileImage || user.profileImage;
+      user.status = req.body.status || user.status;
+      user.posts = req.body.posts || user.posts;
+      user.friends = req.body.friends || user.friends;
+      user.notifications = req.body.notifications || user.notifications;
 
 			const updatedUser = await user.save();
 			res.status(200).json({ message: "User updated successfully", updatedUser });
