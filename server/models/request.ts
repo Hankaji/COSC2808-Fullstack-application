@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const FriendRequestSchema = new mongoose.Schema(
+const friendRequestSchema = new mongoose.Schema(
 	{
 		sender_id: { type: String, required: true },
 		receiver_id: { type: String, required: true },
@@ -10,7 +10,7 @@ const FriendRequestSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
-const GroupRequestSchema = new mongoose.Schema(
+const groupRequestSchema = new mongoose.Schema(
 	{
 		user_id: { type: String, required: true },
 		group_id: { type: String, required: true },
@@ -20,15 +20,15 @@ const GroupRequestSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
-const GroupCreationRequestSchema = new mongoose.Schema(
+const groupCreationRequestSchema = new mongoose.Schema(
 	{
 		user_id: { type: String, required: true },
 		group: {
-			group_id: { type: String, required: true },
 			name: { type: String, required: true },
 			description: { type: String, required: true },
 			visibility: { type: String, required: true, enum: ["Public", "Private"] },
 			groupImage: { type: String },
+			coverImage: { type: String },
 			admins: [{ type: String }],
 			members: [{ type: String }],
 			posts: [{ type: String }],
@@ -39,6 +39,6 @@ const GroupCreationRequestSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
-export const FriendRequest = mongoose.model("FriendRequest", FriendRequestSchema);
-export const GroupRequest = mongoose.model("GroupRequest", GroupRequestSchema);
-export const GroupCreationRequest = mongoose.model("GroupCreationRequest", GroupCreationRequestSchema);
+export const FriendRequest = mongoose.model("FriendRequest", friendRequestSchema);
+export const GroupRequest = mongoose.model("GroupRequest", groupRequestSchema);
+export const GroupCreationRequest = mongoose.model("GroupCreationRequest", groupCreationRequestSchema);
