@@ -5,6 +5,7 @@ import HomePage from './pages/home';
 import FriendsPage from './pages/friends';
 import NotificationsPage from './pages/notifications';
 import GroupPage from './pages/groups/group';
+import PostPage from './pages/posts/post';
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
   {
     path: '/register',
     // element: <LoginRegisterForm />,
+  },
+  {
+    path: '/posts/:postId',
+    element: <PostPage />,
   },
   {
     path: '/friends',

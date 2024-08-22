@@ -14,7 +14,7 @@ const GroupPanel = () => {
       {groupId}
       <GroupHeader />
       <PostCreationPanel />
-      <PostsView data={null} />
+      {/* <PostsView posts={null} /> */}
     </div>
   );
 };

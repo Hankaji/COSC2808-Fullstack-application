@@ -1,6 +1,26 @@
 import { FC, useCallback, useEffect, useState } from 'react';
+import Post from '../../components/Post';
 import PostCreationPanel from '../../components/PostCreationPanel';
 import PostsView from '../../components/PostsView';
+
+const mockData: Post[] = [
+  {
+    id: '1',
+    author: {
+      avatar:
+        'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
+      username: 'UngaBunga',
+      displayName: 'Anonymous',
+    },
+    content: 'Check out my new artwork',
+    images: [
+      'https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small',
+    ],
+    reactions: [],
+    comments: [],
+    editHistories: [],
+  },
+];
 
 const HomePanel: FC<{ className?: string }> = ({ className }) => {
   const endpoint = 'https://localhost:3000/posts'; // Placeholder, not real endpoint
@@ -36,7 +56,7 @@ const HomePanel: FC<{ className?: string }> = ({ className }) => {
     <div className={className}>
       {/* Post something */}
       <PostCreationPanel />
-      <PostsView data={null} />
+      <PostsView posts={mockData} />
     </div>
   );
 };
