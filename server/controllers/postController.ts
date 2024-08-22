@@ -398,25 +398,30 @@ export const getAllPostsFromGroup = async (req: Request, res: Response) => {
         const { groupId } = req.params;
         const { q, page = 1, limit = 10 } = req.query;
 
+        // Create a query object to filter posts by group_id and search term in content
         const query = {
             group_id: groupId,
-            content: { $regex: q || '', $options: 'i' }
+            content: { $regex: q || '', $options: 'i' } // Search for posts containing the search term in content
         };
         
+        // Pagination and sorting options
         const options = {
             skip: (parseInt(page as string, 10) - 1) * parseInt(limit as string, 10),
             limit: parseInt(limit as string, 10),
             sort: { createdAt: -1 } as { createdAt: SortOrder } // Sort by createdAt in descending order
         };
         
+        // Fetch posts based on the query and options
         const posts = await Post.find(query)
             .skip(options.skip)
             .limit(options.limit)
             .sort(options.sort)
             .exec();
 
+        // Count total number of posts matching the query
         const total = await Post.countDocuments(query);
 
+        // Return the posts along with pagination information
         return res.status(200).json({
             docs: posts,
             totalDocs: total,
@@ -436,17 +441,21 @@ export const getAllPostsFromUser = async (req: Request, res: Response) => {
         console.log('Current User ID:', currentUserId);
         const targetUserId = req.params.userId;
 
-        // Extract page and limit from query parameters
+        // Extract page, limit, and search term from query parameters
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
+        const searchTerm = req.query.q as string || '';
         const skip = (page - 1) * limit;
 
         // Check if the current user is an admin
         const isAdmin = await Admin.exists({ _id: currentUserId });
 
+        // Create a search filter for the content
+        const contentFilter = searchTerm ? { content: { $regex: searchTerm, $options: 'i' } } : {};
+
         if (isAdmin) {
-            // If the current user is an admin, return all posts from the target user with pagination and sorting
-            const posts = await Post.find({ user_id: targetUserId })
+            // If the current user is an admin, return all posts from the target user with pagination, sorting, and content search
+            const posts = await Post.find({ user_id: targetUserId, ...contentFilter })
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
@@ -455,8 +464,8 @@ export const getAllPostsFromUser = async (req: Request, res: Response) => {
 
         // Check if the current user is the same as the target user
         if (currentUserId.toString() === targetUserId) {
-            // Return all posts with group_id blank with pagination and sorting
-            const posts = await Post.find({ user_id: targetUserId, group_id: "" })
+            // Return all posts with group_id blank with pagination, sorting, and content search
+            const posts = await Post.find({ user_id: targetUserId, group_id: "", ...contentFilter })
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
@@ -468,16 +477,16 @@ export const getAllPostsFromUser = async (req: Request, res: Response) => {
         const isFriend = targetUser?.friends?.includes(currentUserId.toString()) ?? false;
 
         if (isFriend) {
-            // Return all posts with group_id blank with pagination and sorting
-            const posts = await Post.find({ user_id: targetUserId, group_id: "" })
+            // Return all posts with group_id blank with pagination, sorting, and content search
+            const posts = await Post.find({ user_id: targetUserId, group_id: "", ...contentFilter })
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
             return res.json(posts);
         }
 
-        // If the current user is not a friend, return all posts with group_id blank and visibility set to Public with pagination and sorting
-        const posts = await Post.find({ user_id: targetUserId, group_id: "", visibility: 'Public' })
+        // If the current user is not a friend, return all posts with group_id blank and visibility set to Public with pagination, sorting, and content search
+        const posts = await Post.find({ user_id: targetUserId, group_id: "", visibility: 'Public', ...contentFilter })
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
@@ -493,17 +502,21 @@ export const getAllPosts = async (req: Request, res: Response) => {
     try {
         const currentUserId = req.session.userId;
 
-        // Extract page and limit from query parameters
+        // Extract page, limit, and search term from query parameters
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
+        const searchTerm = req.query.q as string || '';
         const skip = (page - 1) * limit;
 
         // Check if the current user is an admin
         const isAdmin = await Admin.exists({ _id: currentUserId });
 
+        // Create a search filter for the content
+        const contentFilter = searchTerm ? { content: { $regex: searchTerm, $options: 'i' } } : {};
+
         if (isAdmin) {
             // If the current user is an admin, return all posts sorted by createdAt in descending order
-            const posts = await Post.find({})
+            const posts = await Post.find({ ...contentFilter })
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
@@ -526,7 +539,8 @@ export const getAllPosts = async (req: Request, res: Response) => {
             $or: [
                 { user_id: { $in: friends } },
                 { group_id: { $in: groupIds } }
-            ]
+            ],
+            ...contentFilter
         })
             .sort({ createdAt: -1 })
             .skip(skip)
