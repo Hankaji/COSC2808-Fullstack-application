@@ -9,6 +9,7 @@ import connectDB from "./models/dbConnection";
 import authRouter from "./routes/authRoutes";
 import userRouter from "./routes/userRoutes";
 import groupRouter from "./routes/groupRoutes";
+import requestRouter from "./routes/requestRoutes";
 import postRouter from "./routes/postRoutes";
 
 dotenv.config();
@@ -42,6 +43,7 @@ app.get("/", (req: express.Request, res: express.Response) => {
 app.use("/", authRouter);
 app.use("/users", userRouter);
 app.use("/groups", groupRouter);
+app.use("/requests", requestRouter);
 app.use("/posts", postRouter);
 
 await connectDB();
