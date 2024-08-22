@@ -26,5 +26,12 @@ groupSchema.virtual("groupImage").get(function () {
 	return undefined;
 });
 
+groupSchema.virtual("coverImage").get(function () {
+	if (this.coverImage != null) {
+		return `data:${this.coverImage.contentType};base64,${this.coverImage.data.toString("base64")}`;
+	}
+	return undefined;
+});
+
 export const Group = mongoose.model("Group", groupSchema);
 export default Group;
