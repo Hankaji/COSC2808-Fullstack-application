@@ -66,5 +66,14 @@ const postSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
+postSchema.virtual("images").get(function () {
+	if (this.images != null) {
+		return this.images.map((image) => {
+			return `data:${image.contentType};base64,${image.data.toString("base64")}`;
+		});
+	}
+	return undefined;
+});
+
 export const Post = mongoose.model("Post", postSchema);
 export default Post;
