@@ -356,5 +356,6 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   );
 };
 
-export { Post };
+export { CommentSection, PostImages, AuthorPfp };
+export type { Post, Author, Reaction, Comment };
 export default Post;

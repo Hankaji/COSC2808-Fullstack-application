@@ -1,11 +1,12 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter, json } from 'react-router-dom';
 import './App.css';
-import LoginRegisterForm from './pages/login_register';
-import HomePage from './pages/home';
 import FriendsPage from './pages/friends';
-import NotificationsPage from './pages/notifications';
 import GroupPage from './pages/groups/group';
+import HomePage from './pages/home';
+import LoginRegisterForm from './pages/login_register';
+import NotificationsPage from './pages/notifications';
 import PostPage from './pages/posts/post';
+import UserPage from './pages/users/user';
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,19 @@ const router = createBrowserRouter([
   {
     path: '/friends',
     element: <FriendsPage />,
+  },
+  {
+    path: '/users/:userId',
+    element: <UserPage />,
+    loader: async ({ params }) => {
+      return json(
+        {
+          id: params.userId,
+          a: 'test',
+        },
+        { status: 200 },
+      );
+    },
   },
   {
     path: '/group',
