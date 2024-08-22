@@ -2,18 +2,27 @@ import bcrypt from "bcrypt";
 import { User } from "../models/user";
 import { getUserById, getUserByUsername } from "./userController";
 import { json, type Request, type Response } from "express";
+import multer from "multer";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 export const register = async (req: Request, res: Response) => {
   const SALT_ROUNDS = 10;
-  const hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS);
+  const hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS); // Check if the file (image) was uploaded
+  let profileImage = undefined;
+  if (req.file) {
+    profileImage = {
+      data: req.file.buffer,
+      contentType: req.file.mimetype,
+    };
+  }
   const user = new User({
     username: req.body.username,
     displayName: req.body.displayName,
     email: req.body.email,
     password: hashedPassword,
+    profileImage: profileImage,
   });
 
   try {
@@ -30,7 +39,6 @@ export const login = async (req: Request, res: Response) => {
     if (!username || !password) {
       return res.status(400).json({ error: "Missing required fields" });
     }
-    // const user = await getUserById(username).select("+password");
     const user = await getUserByUsername(username);
 
     if (!user) {
