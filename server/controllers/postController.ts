@@ -1,5 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import Post from "../models/post";
+import Admin from "../models/admin";
+import User from "../models/user";
+import Group from "../models/group";
 import type { SortOrder } from "mongoose";
 
 // create a post
@@ -424,5 +427,111 @@ export const getAllPostsFromGroup = async (req: Request, res: Response) => {
         });
     } catch (error) {
         return res.status(500).json({ message: "Server error", error });
+    }
+};
+
+// get all posts from a user
+export const getAllPostsFromUser = async (req: Request, res: Response) => {
+    try {
+        const currentUserId = req.session.userId;
+        const targetUserId = req.params.userId;
+
+        // Extract page and limit from query parameters
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
+
+        // Check if the current user is an admin
+        const isAdmin = await Admin.exists({ _id: currentUserId });
+
+        if (isAdmin) {
+            // If the current user is an admin, return all posts from the target user with pagination and sorting
+            const posts = await Post.find({ user_id: targetUserId })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+            return res.json(posts);
+        }
+
+        // Check if the current user is the same as the target user
+        if (currentUserId.toString() === targetUserId) {
+            // Return all posts with group_id blank with pagination and sorting
+            const posts = await Post.find({ user_id: targetUserId, group_id: { $exists: false } })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+            return res.json(posts);
+        }
+
+        // Check if the current user is a friend of the target user
+        const targetUser = await User.findById(targetUserId);
+        const isFriend = targetUser.friends.includes(currentUserId.toString());
+
+        if (isFriend) {
+            // Return all posts with group_id blank with pagination and sorting
+            const posts = await Post.find({ user_id: targetUserId, group_id: { $exists: false } })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+            return res.json(posts);
+        }
+
+        // If the current user is not a friend, return all posts with group_id blank and visibility set to Public with pagination and sorting
+        const posts = await Post.find({ user_id: targetUserId, group_id: { $exists: false }, visibility: 'Public' })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+        return res.json(posts);
+
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+// get all posts
+export const getAllPosts = async (req: Request, res: Response) => {
+    try {
+        const currentUserId = req.session.userId;
+
+        // Extract page and limit from query parameters
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
+
+        // Check if the current user is an admin
+        const isAdmin = await Admin.exists({ _id: currentUserId });
+
+        if (isAdmin) {
+            // If the current user is an admin, return all posts sorted by createdAt in descending order
+            const posts = await Post.find({})
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+            return res.json(posts);
+        }
+
+        // Get the current user's friends
+        const currentUser = await User.findById(currentUserId);
+        const friends = currentUser.friends;
+
+        // Get the groups the current user is a member of
+        const groups = await Group.find({ members: currentUserId });
+        const groupIds = groups.map(group => group._id);
+
+        // Find posts from friends and groups the user is a member of and sorted by createdAt in descending order
+        const posts = await Post.find({
+            $or: [
+                { user_id: { $in: friends } },
+                { group_id: { $in: groupIds } }
+            ]
+        })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        return res.json(posts);
+
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };
