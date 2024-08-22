@@ -22,9 +22,53 @@ import {
   DropDownMenuContent,
 } from './ui/DropDownMenu';
 
-interface Props extends HTMLAttributes<HTMLDivElement> {}
+type Post = {
+  id: string;
+  author: {
+    avatar: string;
+    username: string;
+    displayName: string;
+  };
+  content: string;
+  images?: string[];
+  currentReaction?: Reaction;
+  reactions: Reaction[];
+  comments: Comment[];
+  editHistories: string[];
+};
 
-const Post: FC<Props> = ({ className }) => {
+type Comment = {
+  id: string;
+  author: Author;
+  content: string;
+  currentReaction: Reaction;
+  reactions: Reaction[];
+};
+
+type Author = {
+  avatar: string;
+  username: string;
+  displayName: string;
+};
+
+type Reaction = {
+  author: Author;
+  type: ReactionTypes;
+};
+
+const enum ReactionTypes {
+  NULL,
+  LIKE,
+  LOVE,
+  HAHA,
+  ANGRY,
+}
+
+interface Props extends HTMLAttributes<HTMLDivElement> {
+  data: Post;
+}
+
+const Post: FC<Props> = ({ className, data }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
 
   const handlePostClick = () => {
@@ -39,21 +83,7 @@ const Post: FC<Props> = ({ className }) => {
       >
         {/* Author */}
         <div className="flex gap-2 items-center">
-          {/* TODO fix image */}
-          <img
-            className="rounded-full bg-gray-500 size-12"
-            src="https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6"
-            alt="User avatar"
-          />
-          <div className="flex flex-col justify-center items-start">
-            <h1 className="text-xl font-semibold">
-              Anonymous
-              <span className="text-muted-foreground"> • 1h</span>
-            </h1>
-            <p className="text-sm text-muted-foreground font-semibold">
-              @UngaBunga
-            </p>
-          </div>
+          <AuthorPfp data={data.author} />
           <div className="flex ml-auto">
             {/* <Edit className="text-primary" /> */}
             <DropDownMenu
@@ -71,33 +101,37 @@ const Post: FC<Props> = ({ className }) => {
         {/* Content */}
         {/* TODO: Change placeholder */}
         <div className="flex flex-col justify-start items-start gap-2">
-          <p>New artwork</p>
-          <div className="overflow-hidden aspect-auto rounded-lg">
-            <img
-              className="object-cover"
-              src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
-            />
-          </div>
+          <p>{data.content}</p>
+          {data.images && <PostImages imgData={data.images} />}
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
-          <Reactions />
-          {/* <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full"> */}
-          {/* 	<Heart className="" /> */}
-          {/* 	1.3k */}
-          {/* </button> */}
+          <Reactions reactions={data.reactions} />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
-            817
+            {data.comments.length}
           </button>
         </div>
       </div>
-      {isPopup && <PostPopup closePopup={setIsPopup} />}
+      {isPopup && <PostPopup closePopup={setIsPopup} data={data} />}
     </>
   );
 };
 
-const PostPopup = ({ closePopup }: { closePopup: any }) => {
+const PostImages: FC<{ imgData: string[] }> = ({ imgData }) => {
+  return (
+    <div className="overflow-hidden aspect-auto rounded-lg">
+      {imgData.map((img) => (
+        <img className="size-full object-cover" src={img} />
+      ))}
+    </div>
+  );
+};
+
+const PostPopup: FC<{ closePopup: any; data: Post }> = ({
+  closePopup,
+  data,
+}) => {
   return (
     <div
       onClick={() => {
@@ -105,7 +139,7 @@ const PostPopup = ({ closePopup }: { closePopup: any }) => {
       }}
       className="fixed top-0 left-0 w-svw h-svh backdrop-blur-[2px] flex justify-center items-center px-[15%]"
     >
-      <div className="overflow-hidden h-[80%] w-[60%] aspect-auto rounded-lg rounded-tr-none rounded-br-none">
+      <div className="overflow-hidden z-[100] h-[80%] w-[60%] aspect-auto rounded-lg rounded-tr-none rounded-br-none">
         <img
           className="object-cover w-full h-full"
           src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
@@ -116,21 +150,7 @@ const PostPopup = ({ closePopup }: { closePopup: any }) => {
       >
         {/* Author */}
         <div className="flex gap-2">
-          {/* TODO fix image */}
-          <img
-            className="rounded-full bg-gray-500 size-12"
-            src="https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6"
-            alt="User avatar"
-          />
-          <div className="flex flex-col justify-center items-start">
-            <h1 className="text-xl font-semibold">
-              Anonymous
-              <span className="text-muted-foreground"> • 1h</span>
-            </h1>
-            <p className="text-sm text-muted-foreground font-semibold">
-              @UngaBunga
-            </p>
-          </div>
+          <AuthorPfp data={data.author} />
           <div className="flex ml-auto">
             <Edit className="text-primary" />
           </div>
@@ -142,7 +162,7 @@ const PostPopup = ({ closePopup }: { closePopup: any }) => {
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
-          <Reactions />
+          <Reactions reactions={data.reactions} />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
             817
@@ -150,48 +170,76 @@ const PostPopup = ({ closePopup }: { closePopup: any }) => {
         </div>
         <div className="border-border border-solid border-2"></div>
         {/* Comments */}
-        <div className="overflow-y-scroll h-full w-full">
-          <div className="flex flex-col justify-start items-start gap-2">
-            <div className="flex gap-2">
-              {/* TODO fix image */}
-              <img
-                className="rounded-full bg-gray-500 size-12"
-                src="https://pbs.twimg.com/profile_images/1581014308397502464/NPogKMyk_400x400.jpg"
-                alt="User avatar"
-              />
-              <div className="flex flex-col justify-center items-start">
-                <h1 className="text-xl font-semibold">
-                  Greg
-                  <span className="text-muted-foreground"> • 23m</span>
-                </h1>
-                <p className="text-sm text-muted-foreground font-semibold">
-                  @TheRealGreg
-                </p>
-              </div>
-            </div>
-            <p>Love the art, such a masterpiece!</p>
-            {/* Comment actions */}
-            <div className="flex gap-4">
-              <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
-                <Heart className="" />
-                87
-              </button>
-            </div>
-          </div>
-        </div>
+        <CommentSection data={data.comments} />
       </div>
     </div>
   );
 };
 
-const Reactions = () => {
-  const enum ReactionTypes {
-    NULL,
-    LIKE,
-    LOVE,
-    HAHA,
-    ANGRY,
-  }
+const AuthorPfp: FC<{ data: Author }> = ({ data }) => {
+  return (
+    <div className="flex gap-2">
+      <img
+        className="rounded-full bg-gray-500 size-12"
+        src={data.avatar}
+        alt="User avatar"
+      />
+      <div className="flex flex-col justify-center items-start">
+        <h1 className="text-xl font-semibold">
+          {data.displayName}
+          <span className="text-muted-foreground"> • 1h</span>
+        </h1>
+        <p className="text-sm text-muted-foreground font-semibold">
+          @{data.username}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const CommentSection: FC<{ data: Comment[] }> = ({ data }) => {
+  return (
+    <div className="overflow-y-scroll h-full w-full">
+      {data.map((cmt) => {
+        return <Comment key={cmt.id} data={cmt} />;
+      })}
+    </div>
+  );
+};
+
+const Comment: FC<{ data: Comment }> = ({ data }) => {
+  return (
+    <div className="flex flex-col justify-start items-start gap-2">
+      <div className="flex gap-2">
+        {/* TODO fix image */}
+        <img
+          className="rounded-full bg-gray-500 size-12"
+          src="https://pbs.twimg.com/profile_images/1581014308397502464/NPogKMyk_400x400.jpg"
+          alt="User avatar"
+        />
+        <div className="flex flex-col justify-center items-start">
+          <h1 className="text-xl font-semibold">
+            Greg
+            <span className="text-muted-foreground"> • 23m</span>
+          </h1>
+          <p className="text-sm text-muted-foreground font-semibold">
+            @TheRealGreg
+          </p>
+        </div>
+      </div>
+      <p>Love the art, such a masterpiece!</p>
+      {/* Comment actions */}
+      <div className="flex gap-4">
+        <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
+          <Heart className="" />
+          87
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const Reactions: FC<{ reactions: Reaction[] }> = ({ reactions }) => {
   const [reactedReaction, setReactedReaction] = useState<ReactionTypes>(
     ReactionTypes.NULL,
   );
@@ -255,7 +303,7 @@ const Reactions = () => {
     >
       {/* <ReactionButton color="#7aa2f7" amount={27} Icon={ThumbsUp} /> */}
       <SmilePlus />
-      7.8k
+      {reactions.length}
     </DropDownMenu>
   );
 };
@@ -283,8 +331,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-        fill: color,
-      } as CSSProperties)
+      fill: color,
+    } as CSSProperties)
     : {};
 
   return (
@@ -308,4 +356,5 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   );
 };
 
+export { Post };
 export default Post;
