@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const postSchema = new mongoose.Schema(
     {
-        user_id: { type: Schema.Types.ObjectId, required: true },
+        user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
         group_id: { type: String },
         content: { type: String, required: true },
         images: [{ type: String }],
@@ -13,7 +13,7 @@ const postSchema = new mongoose.Schema(
         },
         reactions: [
             {
-                author_id: { type: Schema.Types.ObjectId, required: true },
+                author_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
                 type: {
                     type: String,
                     required: true,
@@ -23,11 +23,11 @@ const postSchema = new mongoose.Schema(
         ],
         comments: [
             {
-                author_id: { type: Schema.Types.ObjectId, required: true },
+                author_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
                 content: { type: String, required: true },
                 reactions: [
                     {
-                        author_id: { type: Schema.Types.ObjectId, required: true },
+                        author_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
                         type: {
                             type: String,
                             required: true,

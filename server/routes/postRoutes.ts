@@ -1,6 +1,6 @@
 import express from "express";
 import { createPost, deletePost, updatePost, getAPost, createReactPost, updatePostReaction, deletePostReaction, createPostComment, updatePostComment, deletePostComment, createReactionToPostComment, updateReactionToPostComment, deleteReactionFromPostComment, getAllPostsFromGroup, getAllPostsFromUser, getAllPosts } from "../controllers/postController";
-import { uploadMultipleImages } from '../middleware/postMiddleware';
+import { uploadMultipleImages } from '../middleware/multerMiddleware';
 
 const postRouter = express.Router();
 

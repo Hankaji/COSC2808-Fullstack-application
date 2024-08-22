@@ -46,7 +46,6 @@ export const deletePost = async (req: Request, res: Response, next: NextFunction
         next(error);
     }
 };
-
 // get a post by ID
 export const getAPost = async (req: Request, res: Response) => {
     try {
@@ -54,7 +53,7 @@ export const getAPost = async (req: Request, res: Response) => {
 
         // Find the post by ID and populate user_id and author_id fields
         const post = await Post.findById(postId)
-            .populate("user_id", "username displayName profileImage") // Adjust the fields as necessary
+            .populate("user_id", "username displayName profileImage") 
             .populate("comments.author_id", "username displayName profileImage")
             .populate("reactions.author_id", "username displayName profileImage")
             .populate("comments.reactions.author_id", "username displayName profileImage");
@@ -434,6 +433,7 @@ export const getAllPostsFromGroup = async (req: Request, res: Response) => {
 export const getAllPostsFromUser = async (req: Request, res: Response) => {
     try {
         const currentUserId = req.session.userId;
+        console.log('Current User ID:', currentUserId);
         const targetUserId = req.params.userId;
 
         // Extract page and limit from query parameters
@@ -456,7 +456,7 @@ export const getAllPostsFromUser = async (req: Request, res: Response) => {
         // Check if the current user is the same as the target user
         if (currentUserId.toString() === targetUserId) {
             // Return all posts with group_id blank with pagination and sorting
-            const posts = await Post.find({ user_id: targetUserId, group_id: { $exists: false } })
+            const posts = await Post.find({ user_id: targetUserId, group_id: "" })
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
@@ -469,7 +469,7 @@ export const getAllPostsFromUser = async (req: Request, res: Response) => {
 
         if (isFriend) {
             // Return all posts with group_id blank with pagination and sorting
-            const posts = await Post.find({ user_id: targetUserId, group_id: { $exists: false } })
+            const posts = await Post.find({ user_id: targetUserId, group_id: "" })
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
@@ -477,7 +477,7 @@ export const getAllPostsFromUser = async (req: Request, res: Response) => {
         }
 
         // If the current user is not a friend, return all posts with group_id blank and visibility set to Public with pagination and sorting
-        const posts = await Post.find({ user_id: targetUserId, group_id: { $exists: false }, visibility: 'Public' })
+        const posts = await Post.find({ user_id: targetUserId, group_id: "", visibility: 'Public' })
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
