@@ -39,9 +39,11 @@ export const getUserById = async (req: Request, res: Response) => {
 		res.status(500).json({ message: "Error fetching user", error: error.message });
 	}
 };
-// get a user by username
+
+// Get a user by username
 export const getUserByUsername = (username: string) =>
   User.findOne({ username });
+
 // Create a new user
 export const createUser = async (req: Request, res: Response) => {
 	try {
