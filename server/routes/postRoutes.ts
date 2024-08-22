@@ -1,5 +1,5 @@
 import express from "express";
-import { createPost, deletePost, updatePost, getAPost, createReactPost, updatePostReaction, deletePostReaction, createPostComment, updatePostComment, deletePostComment, createReactionToPostComment, updateReactionToPostComment, deleteReactionFromPostComment } from "../controllers/postController";
+import { createPost, deletePost, updatePost, getAPost, createReactPost, updatePostReaction, deletePostReaction, createPostComment, updatePostComment, deletePostComment, createReactionToPostComment, updateReactionToPostComment, deleteReactionFromPostComment, getAllPostsFromGroup } from "../controllers/postController";
 
 const postRouter = express.Router();
 
@@ -23,3 +23,4 @@ postRouter.patch("/:postId/comments/:commentId/reactions/:reactionId", updateRea
 
 // Get routes
 postRouter.get("/:postId", getAPost);
+postRouter.get('/groups/:groupId/posts', getAllPostsFromGroup);

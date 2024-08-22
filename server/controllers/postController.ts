@@ -1,5 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import Post from "../models/post";
+import type { SortOrder } from "mongoose";
+
 // create a post
 export const createPost = async (req: Request, res: Response) => {
     try {
@@ -398,11 +400,11 @@ export const getAllPostsFromGroup = async (req: Request, res: Response) => {
             group_id: groupId,
             content: { $regex: q || '', $options: 'i' }
         };
-
+        
         const options = {
             skip: (parseInt(page as string, 10) - 1) * parseInt(limit as string, 10),
             limit: parseInt(limit as string, 10),
-            sort: { createdAt: -1 }
+            sort: { createdAt: -1 } as { createdAt: SortOrder } // Sort by createdAt in descending order
         };
         
         const posts = await Post.find(query)
