@@ -395,8 +395,21 @@ export const deleteReactionFromPostComment = async (req: Request, res: Response)
 // get all posts from a group
 export const getAllPostsFromGroup = async (req: Request, res: Response) => {
     try {
+        const currentUserId = req.session.userId;
         const { groupId } = req.params;
         const { q, page = 1, limit = 10 } = req.query;
+
+        // Check if the current user is an admin
+        const isAdmin = await Admin.exists({ _id: currentUserId });
+
+        // Check if the current user is a member of the group
+        const group = await Group.findById(groupId);
+        const isMember = group?.members?.includes(currentUserId.toString()) ?? false;
+
+        // If the user is not an admin and not a member of the group, return "The Group is private"
+        if (!isAdmin && !isMember) {
+            return res.status(403).json({ message: "The Group is private" });
+        }
 
         // Create a query object to filter posts by group_id and search term in content
         const query = {
@@ -438,7 +451,6 @@ export const getAllPostsFromGroup = async (req: Request, res: Response) => {
 export const getAllPostsFromUser = async (req: Request, res: Response) => {
     try {
         const currentUserId = req.session.userId;
-        console.log('Current User ID:', currentUserId);
         const targetUserId = req.params.userId;
 
         // Extract page, limit, and search term from query parameters
