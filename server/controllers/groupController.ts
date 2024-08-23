@@ -73,7 +73,6 @@ export const updateGroup = async (req: Request, res: Response) => {
 			group.coverImage = req.body.coverImage || group.coverImage;
 			group.admins = req.body.admins || group.admins;
 			group.members = req.body.members || group.members;
-			group.posts = req.body.posts || group.posts;
 
 			const updatedGroup = await group.save();
 			res.status(200).json(updatedGroup);
