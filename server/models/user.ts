@@ -6,10 +6,12 @@ const userSchema = new mongoose.Schema(
 		displayName: { type: String, required: true },
 		email: { type: String, required: true },
 		password: { type: String, required: true },
-		profileImage: { type: String },
+		profileImage: {
+			data: { type: Buffer, required: true },
+			contentType: { type: String, required: true },
+		},
 		status: { type: String, default: "Active", enum: ["Active", "Suspended"] },
-		posts: [{ type: String }],
-		friends: [{ type: String }],
+		friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 		notifications: [
 			{
 				type: {
@@ -25,6 +27,13 @@ const userSchema = new mongoose.Schema(
 	},
 	{ timestamps: true }
 );
+
+userSchema.virtual("virtualProfileImage").get(function () {
+	if (this.profileImage != null) {
+		return `data:${this.profileImage.contentType};base64,${this.profileImage.data.toString("base64")}`;
+	}
+	return undefined;
+});
 
 export const User = mongoose.model("User", userSchema);
 export default User;

@@ -1,18 +1,16 @@
 import { FC, HTMLAttributes } from 'react';
-import Post from './Post';
+import Post, { Post as PostType } from './Post';
 import { mergeClassNames } from '../utils';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
-  data: any; // TODO: add real type
+  posts: PostType[];
 }
 
-const PostsView: FC<Props> = ({ ...props }) => {
-  const posts = [1, 2, 3, 4, 5, 6];
-
+const PostsView: FC<Props> = ({ posts, ...props }) => {
   return (
     <div {...props} className={mergeClassNames('w-full', props.className)}>
-      {posts.map((v) => {
-        return <Post key={v} />;
+      {posts.map((post) => {
+        return <Post key={post.id} data={post} />;
       })}
     </div>
   );

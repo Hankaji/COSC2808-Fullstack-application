@@ -1,10 +1,11 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './App.css';
-import LoginRegisterForm from './LoginRegisterForm';
+import LoginRegisterForm from './pages/login_register';
 import HomePage from './pages/home';
 import FriendsPage from './pages/friends';
 import NotificationsPage from './pages/notifications';
 import GroupPage from './pages/groups/group';
+import PostPage from './pages/posts/post';
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
     // element: <LoginRegisterForm />,
   },
   {
+    path: '/posts/:postId',
+    element: <PostPage />,
+  },
+  {
     path: '/friends',
     element: <FriendsPage />,
   },
@@ -40,7 +45,7 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <div className="App text-foreground bg-background min-h-svh">
+    <div className="flex App text-foreground bg-background min-h-svh">
       <RouterProvider router={router} />
     </div>
   );
