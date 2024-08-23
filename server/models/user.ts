@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
-userSchema.virtual("profileImage").get(function () {
+userSchema.virtual("virtualProfileImage").get(function () {
 	if (this.profileImage != null) {
 		return `data:${this.profileImage.contentType};base64,${this.profileImage.data.toString("base64")}`;
 	}
