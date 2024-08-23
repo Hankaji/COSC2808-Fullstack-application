@@ -39,10 +39,7 @@ export const createGroup = async (req: Request, res: Response) => {
 	try {
 		const { name, description, visibility, groupImage, coverImage } = req.body;
 
-		// const admin = req.user._id;
-
-		// For testing purposes, we will use a hardcoded admin ID
-		const admin = "66c36b92488bc3d7cbd08b6c";
+		const admin = req.session.userId;
 
 		const group = new Group({
 			name,
