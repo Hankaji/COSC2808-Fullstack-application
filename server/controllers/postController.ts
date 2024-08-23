@@ -49,6 +49,7 @@ export const deletePost = async (req: Request, res: Response, next: NextFunction
 // get a post by ID
 export const getAPost = async (req: Request, res: Response) => {
     try {
+        const currentUserId = req.session.userId;
         const { postId } = req.params;
 
         // Find the post by ID and populate user_id and author_id fields
@@ -56,10 +57,39 @@ export const getAPost = async (req: Request, res: Response) => {
             .populate("user_id", "username displayName profileImage") 
             .populate("comments.author_id", "username displayName profileImage")
             .populate("reactions.author_id", "username displayName profileImage")
-            .populate("comments.reactions.author_id", "username displayName profileImage");
+            .populate("comments.reactions.author_id", "username displayName profileImage")
+            .populate("group_id", "name");
 
         if (!post) {
             return res.status(404).json({ message: "Post not found" });
+        }
+
+        // Fetch the user who created the post
+        const user = await User.findById(post.user_id).select("friends");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check if the post visibility is "Friend" and if the current user is not in the friends list
+        // Allow the post author to view their own post
+        if (post.visibility === "Friend" && post.group_id === null && post.user_id._id.toString() !== currentUserId && !user.friends.includes(currentUserId.toString())) {
+            return res.status(403).json({ message: "This post can only be seen by user's friends" });
+        }
+
+        // Check if the post is in a group
+        if (post.group_id && post.group_id !== null) {
+            // Fetch the group details
+            const group = await Group.findById(post.group_id._id).select("visibility members");
+
+            if (!group) {
+                return res.status(404).json({ message: "Group not found" });
+            }
+
+            // Check if the group is private and the current user is not a member of the group
+            if (group.visibility === "Private" && !group.members.includes(currentUserId.toString())) {
+                return res.status(403).json({ message: "This post is in a private group" });
+            }
         }
 
         return res.status(200).json(post);
@@ -407,7 +437,7 @@ export const getAllPostsFromGroup = async (req: Request, res: Response) => {
         const isMember = group?.members?.includes(currentUserId.toString()) ?? false;
 
         // If the user is not an admin and not a member of the group, return "The Group is private"
-        if (!isAdmin && !isMember) {
+        if (!isAdmin && !isMember && group?.visibility === 'Private') {
             return res.status(403).json({ message: "The Group is private" });
         }
 
@@ -429,6 +459,11 @@ export const getAllPostsFromGroup = async (req: Request, res: Response) => {
             .skip(options.skip)
             .limit(options.limit)
             .sort(options.sort)
+            .populate("user_id", "username displayName profileImage")
+            .populate("comments.author_id", "username displayName profileImage")
+            .populate("reactions.author_id", "username displayName profileImage")
+            .populate("comments.reactions.author_id", "username displayName profileImage")
+            .populate("group_id", "name")
             .exec();
 
         // Count total number of posts matching the query
@@ -470,17 +505,27 @@ export const getAllPostsFromUser = async (req: Request, res: Response) => {
             const posts = await Post.find({ user_id: targetUserId, ...contentFilter })
                 .sort({ createdAt: -1 })
                 .skip(skip)
-                .limit(limit);
+                .limit(limit)
+                .populate("user_id", "username displayName profileImage")
+                .populate("comments.author_id", "username displayName profileImage")
+                .populate("reactions.author_id", "username displayName profileImage")
+                .populate("comments.reactions.author_id", "username displayName profileImage")
+                .populate("group_id", "name");
             return res.json(posts);
         }
 
         // Check if the current user is the same as the target user
         if (currentUserId.toString() === targetUserId) {
-            // Return all posts with group_id blank with pagination, sorting, and content search
-            const posts = await Post.find({ user_id: targetUserId, group_id: "", ...contentFilter })
+            // Return all posts with group_id null with pagination, sorting, and content search
+            const posts = await Post.find({ user_id: targetUserId, group_id: null, ...contentFilter })
                 .sort({ createdAt: -1 })
                 .skip(skip)
-                .limit(limit);
+                .limit(limit)
+                .populate("user_id", "username displayName profileImage")
+                .populate("comments.author_id", "username displayName profileImage")
+                .populate("reactions.author_id", "username displayName profileImage")
+                .populate("comments.reactions.author_id", "username displayName profileImage")
+                .populate("group_id", "name");
             return res.json(posts);
         }
 
@@ -489,19 +534,29 @@ export const getAllPostsFromUser = async (req: Request, res: Response) => {
         const isFriend = targetUser?.friends?.includes(currentUserId.toString()) ?? false;
 
         if (isFriend) {
-            // Return all posts with group_id blank with pagination, sorting, and content search
-            const posts = await Post.find({ user_id: targetUserId, group_id: "", ...contentFilter })
+            // Return all posts with group_id null with pagination, sorting, and content search
+            const posts = await Post.find({ user_id: targetUserId, group_id: null, ...contentFilter })
                 .sort({ createdAt: -1 })
                 .skip(skip)
-                .limit(limit);
+                .limit(limit)
+                .populate("user_id", "username displayName profileImage")
+                .populate("comments.author_id", "username displayName profileImage")
+                .populate("reactions.author_id", "username displayName profileImage")
+                .populate("comments.reactions.author_id", "username displayName profileImage")
+                .populate("group_id", "name");
             return res.json(posts);
         }
 
-        // If the current user is not a friend, return all posts with group_id blank and visibility set to Public with pagination, sorting, and content search
-        const posts = await Post.find({ user_id: targetUserId, group_id: "", visibility: 'Public', ...contentFilter })
+        // If the current user is not a friend, return all posts with group_id null and visibility set to Public with pagination, sorting, and content search
+        const posts = await Post.find({ user_id: targetUserId, group_id: null, visibility: 'Public', ...contentFilter })
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .populate("user_id", "username displayName profileImage")
+            .populate("comments.author_id", "username displayName profileImage")
+            .populate("reactions.author_id", "username displayName profileImage")
+            .populate("comments.reactions.author_id", "username displayName profileImage")
+            .populate("group_id", "name");
         return res.json(posts);
 
     } catch (error) {
@@ -531,7 +586,12 @@ export const getAllPosts = async (req: Request, res: Response) => {
             const posts = await Post.find({ ...contentFilter })
                 .sort({ createdAt: -1 })
                 .skip(skip)
-                .limit(limit);
+                .limit(limit)
+                .populate("user_id", "username displayName profileImage")
+                .populate("comments.author_id", "username displayName profileImage")
+                .populate("reactions.author_id", "username displayName profileImage")
+                .populate("comments.reactions.author_id", "username displayName profileImage")
+                .populate("group_id", "name");
             return res.json(posts);
         }
 
@@ -556,7 +616,12 @@ export const getAllPosts = async (req: Request, res: Response) => {
         })
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .populate("user_id", "username displayName profileImage")
+            .populate("comments.author_id", "username displayName profileImage")
+            .populate("reactions.author_id", "username displayName profileImage")
+            .populate("comments.reactions.author_id", "username displayName profileImage")
+            .populate("group_id", "name");
 
         return res.json(posts);
 

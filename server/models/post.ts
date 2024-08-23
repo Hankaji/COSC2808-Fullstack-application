@@ -3,7 +3,7 @@ import mongoose, { Schema } from "mongoose";
 const postSchema = new mongoose.Schema(
     {
         user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
-        group_id: { type: String },
+        group_id: { type: Schema.Types.ObjectId, ref: "Group" },
         content: { type: String, required: true },
         images: [{ type: String }],
         visibility: {
