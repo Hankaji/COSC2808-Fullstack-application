@@ -48,6 +48,7 @@ export const getFriendRequests = async (req: Request, res: Response) => {
 		// Find all friend requests where the user is either the sender or receiver
 		const friendRequests = await FriendRequest.find({
 			$or: [{ sender_id: userId }, { receiver_id: userId }],
+			status: "Pending",
 		});
 
 		res.status(200).json(friendRequests);
@@ -141,8 +142,8 @@ export const acceptFriendRequest = async (req: Request, res: Response) => {
 		await friendRequest.save();
 
 		// Add each user to the other's friends list
-		sender.friends.push(receiver._id.toString());
-		receiver.friends.push(sender._id.toString());
+		sender.friends.push(receiver._id);
+		receiver.friends.push(sender._id);
 
 		await sender.save();
 		await receiver.save();
@@ -220,7 +221,7 @@ export const getGroupRequests = async (req: Request, res: Response) => {
 		}
 
 		// Find all member requests for the specified group
-		const memberRequests = await GroupRequest.find({ group_id: groupId });
+		const memberRequests = await GroupRequest.find({ group_id: groupId, status: "Pending" });
 
 		if (memberRequests.length === 0) {
 			return res.status(404).json({ message: "No member requests found for this group" });
@@ -326,7 +327,7 @@ export const acceptGroupRequest = async (req: Request, res: Response) => {
 		await groupRequest.save();
 
 		// Add the user to the group's members list
-		group.members.push(user._id.toString());
+		group.members.push(user._id);
 		await group.save();
 
 		// Update the user's notifications
@@ -419,7 +420,7 @@ export const rejectGroupRequest = async (req: Request, res: Response) => {
 export const getGroupCreationRequests = async (req: Request, res: Response) => {
 	try {
 		// Retrieve all group creation requests from the database
-		const groupCreationRequests = await GroupCreationRequest.find();
+		const groupCreationRequests = await GroupCreationRequest.find({ status: "Pending" });
 
 		if (groupCreationRequests.length === 0) {
 			return res.status(404).json({ message: "No group creation requests found" });
