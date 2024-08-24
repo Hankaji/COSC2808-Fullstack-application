@@ -8,6 +8,7 @@ import {
   MessageCircle,
   SmilePlus,
   ThumbsUp,
+  User,
 } from 'lucide-react';
 import {
   ButtonHTMLAttributes,
@@ -176,18 +177,31 @@ const PostPopup: FC<{ closePopup: any; data: Post }> = ({
   );
 };
 
-const AuthorPfp: FC<{ data: Author }> = ({ data }) => {
+interface AuthorPfpProps {
+  data: Author;
+  extraInfo?: string;
+}
+
+const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo }) => {
   return (
     <div className="flex gap-2">
-      <img
-        className="rounded-full bg-gray-500 size-12"
-        src={data.avatar}
-        alt="User avatar"
-      />
+      {data.avatar ? (
+        <img
+          className="rounded-full bg-gray-500 size-12"
+          src={data.avatar}
+          alt="User avatar"
+        />
+      ) : (
+        <div className="rounded-full bg-gray-500 min-size-12 flex justify-center items-center p-2">
+          <User />
+        </div>
+      )}
       <div className="flex flex-col justify-center items-start">
         <h1 className="text-xl font-semibold">
           {data.displayName}
-          <span className="text-muted-foreground"> • 1h</span>
+          {extraInfo && (
+            <span className="text-muted-foreground">extraInfo</span>
+          )}
         </h1>
         <p className="text-sm text-muted-foreground font-semibold">
           @{data.username}
@@ -331,8 +345,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-      fill: color,
-    } as CSSProperties)
+        fill: color,
+      } as CSSProperties)
     : {};
 
   return (

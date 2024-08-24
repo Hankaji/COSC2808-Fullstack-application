@@ -37,13 +37,11 @@ const router = createBrowserRouter([
     path: '/users/:userId',
     element: <UserPage />,
     loader: async ({ params }) => {
-      return json(
-        {
-          id: params.userId,
-          a: 'test',
-        },
-        { status: 200 },
-      );
+      const endpoint = `http://localhost:8080/users/${params.userId}`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+      });
+      return res.json();
     },
   },
   {

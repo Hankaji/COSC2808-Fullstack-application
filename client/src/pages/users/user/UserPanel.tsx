@@ -3,10 +3,10 @@ import { useLoaderData } from 'react-router';
 import Post, { Author, AuthorPfp } from '../../../components/Post';
 
 type User = {
-  id: string;
+  _id: string;
   username: string;
-  displayname: string;
-  profileImg: string;
+  displayName: string;
+  profileImage: string;
   status: 'Active' | 'Suspended';
   posts: Post[];
   friends: Author[];
@@ -16,18 +16,18 @@ const UserPanel = () => {
   const loaderData = useLoaderData() as User;
   const [userData, setUserData] = useState<User>(loaderData);
 
-  useEffect(() => { }, []);
+  useEffect(() => {}, []);
   console.log(loaderData);
 
   return (
-    <div>
-      {/* <AuthorPfp */}
-      {/*   data={{ */}
-      {/*     displayName: userData.displayname, */}
-      {/*     username: userData.username, */}
-      {/*     avatar: userData.profileImg, */}
-      {/*   }} */}
-      {/* /> */}
+    <div className="w-full">
+      <AuthorPfp
+        data={{
+          displayName: userData.displayName,
+          username: userData.username,
+          avatar: userData.profileImage,
+        }}
+      />
     </div>
   );
 };
