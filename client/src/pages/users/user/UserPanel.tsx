@@ -16,18 +16,19 @@ const UserPanel = () => {
   const loaderData = useLoaderData() as User;
   const [userData, setUserData] = useState<User>(loaderData);
 
-  useEffect(() => {}, []);
+  useEffect(() => { }, []);
   console.log(loaderData);
 
   return (
     <div className="w-full">
-      <AuthorPfp
-        data={{
-          displayName: userData.displayName,
-          username: userData.username,
-          avatar: userData.profileImage,
-        }}
-      />
+      {/* <AuthorPfp */}
+      {/*   data={{ */}
+      {/*     displayName: userData.displayName, */}
+      {/*     username: userData.username, */}
+      {/*     avatar: userData.profileImage, */}
+      {/*   }} */}
+      {/* /> */}
+      asasaasasasasasasaas
     </div>
   );
 };

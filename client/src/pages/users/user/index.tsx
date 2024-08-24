@@ -4,7 +4,8 @@ import UserPanel from './UserPanel';
 const UserPage = () => {
   return (
     <Layout stickyRightSideCmp={<></>}>
-      <UserPanel />
+      {/* <UserPanel /> */}
+      <div className="block-container"> asasasasasas </div>
     </Layout>
   );
 };
