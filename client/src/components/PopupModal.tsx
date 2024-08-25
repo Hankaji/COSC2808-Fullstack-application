@@ -37,7 +37,7 @@ const PopupModal: FC<PopupModalProps> = ({
             e.stopPropagation();
             setIsOpen(false);
           }}
-          className="fixed top-0 left-0 w-svw h-svh flex justify-center items-center"
+          className="fixed z-50 top-0 left-0 w-screen h-screen flex justify-center items-center"
         >
           <div
             style={{

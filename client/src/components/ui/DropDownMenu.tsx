@@ -13,7 +13,7 @@ import useDebounce from '../../hooks/useDebounce';
 import { mergeClassNames } from '../../utils';
 
 interface MenuProps extends PropsWithChildren {
-  triggerType?: 'click' | 'hover';
+  hoverable?: boolean;
   asChild?: boolean;
   content: ReactElement;
   className?: string;
@@ -21,7 +21,7 @@ interface MenuProps extends PropsWithChildren {
 
 const DropDownMenu: FC<MenuProps> = ({
   children,
-  triggerType = 'click',
+  hoverable = 'click',
   asChild = false,
   content,
   className,
@@ -32,13 +32,13 @@ const DropDownMenu: FC<MenuProps> = ({
   const debouncedMouseExit = useDebounce<boolean>(isMouseIn);
 
   const handleEnter = () => {
-    if (triggerType !== 'hover') return;
+    if (!hoverable) return;
     setIsMouseIn(true);
     setIsOpen(true);
   };
 
   const handleLeave = () => {
-    if (triggerType !== 'hover') return;
+    if (!hoverable) return;
     setIsMouseIn(false);
   };
 
@@ -47,7 +47,6 @@ const DropDownMenu: FC<MenuProps> = ({
   }, [debouncedMouseExit]);
 
   const handleClick = () => {
-    if (triggerType !== 'click') return;
     setIsOpen((prev) => !prev);
   };
 

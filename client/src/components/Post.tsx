@@ -1,5 +1,8 @@
 import {
   Angry,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsRight,
   Edit,
   Ellipsis,
   Heart,
@@ -17,6 +20,8 @@ import {
   HTMLAttributes,
   useState,
 } from 'react';
+import { mergeClassNames } from '../utils';
+import PopupModal from './PopupModal';
 import {
   DropDownItem,
   DropDownMenu,
@@ -103,7 +108,7 @@ const Post: FC<Props> = ({ className, data }) => {
         {/* TODO: Change placeholder */}
         <div className="flex flex-col justify-start items-start gap-2">
           <p>{data.content}</p>
-          {data.images && <PostImages imgData={data.images} />}
+          <PostImages imgData={data.images} />
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
@@ -119,12 +124,71 @@ const Post: FC<Props> = ({ className, data }) => {
   );
 };
 
-const PostImages: FC<{ imgData: string[] }> = ({ imgData }) => {
+const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
+  const [currentIdx, setCurrentIdx] = useState<number>(0);
+
+  if (imgData == undefined) {
+    return <></>;
+  }
+
+  const prev = () => {
+    setCurrentIdx((curr) => (curr == 0 ? imgData.length - 1 : curr - 1));
+  };
+
+  const next = () => {
+    setCurrentIdx((curr) => (curr == imgData.length - 1 ? 0 : curr + 1));
+  };
+
   return (
-    <div className="overflow-hidden aspect-auto rounded-lg">
-      {imgData.map((img) => (
-        <img className="size-full object-cover" src={img} />
-      ))}
+    <div className="relative overflow-hidden rounded-lg">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          prev();
+        }}
+        className="absolute top-1/2 z-10 -translate-y-1/2 left-2 p-1 rounded-full bg-secondary/50 hover:bg-secondary/75 transition-colors"
+      >
+        <ChevronLeft size={36} />
+      </button>
+      <div
+        style={{
+          transform: `translateX(-${currentIdx * 100}%)`,
+        }}
+        className="flex transition-transform ease-in-out"
+      >
+        {imgData.map((img) => (
+          <div className="min-w-full flex justify-center items-center aspect-auto object-cover bg-center rounded-lg">
+            <img
+              className="min-w-full aspect-auto object-cover bg-center rounded-lg"
+              src={img}
+            />
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          next();
+        }}
+        className="absolute top-1/2 z-10 -translate-y-1/2 right-2 p-1 rounded-full bg-secondary/50 hover:bg-secondary/75 transition-colors"
+      >
+        <ChevronRight size={36} />
+      </button>
+      {/* Navigation */}
+      <div className="absolute bottom-4 right-0 left-0">
+        <div className="flex justify-center items-center gap-2">
+          {imgData.map((_, idx) => {
+            return (
+              <div
+                className={mergeClassNames(
+                  'transition-all size-3 bg-white rounded-full',
+                  currentIdx == idx ? 'p-2' : 'bg-opacity-50',
+                )}
+              ></div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
@@ -185,17 +249,15 @@ interface AuthorPfpProps {
 const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo }) => {
   return (
     <div className="flex gap-2">
-      {data.avatar ? (
-        <img
-          className="rounded-full bg-gray-500 size-12"
-          src={data.avatar}
-          alt="User avatar"
-        />
-      ) : (
-        <div className="rounded-full bg-gray-500 min-size-12 flex justify-center items-center p-2">
-          <User />
-        </div>
-      )}
+      <img
+        className="rounded-full flex-[0_0_auto] aspect-square bg-gray-500 size-12"
+        src={
+          data.avatar
+            ? data.avatar
+            : 'https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2'
+        }
+        alt="User avatar"
+      />
       <div className="flex flex-col justify-center items-start">
         <h1 className="text-xl font-semibold">
           {data.displayName}
@@ -265,7 +327,7 @@ const Reactions: FC<{ reactions: Reaction[] }> = ({ reactions }) => {
 
   return (
     <DropDownMenu
-      triggerType="hover"
+      hoverable
       content={
         <DropDownMenuContent layout="horizontal">
           <DropDownItem asChild>
