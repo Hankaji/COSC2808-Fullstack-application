@@ -1,6 +1,8 @@
-import { FC, FormEvent, InputHTMLAttributes, useRef, useState } from 'react';
-import { Input } from '../../components/ui/Input';
-import { mergeClassNames } from '../../utils';
+import { FC, FormEvent, InputHTMLAttributes, useRef, useState } from "react";
+import { Input } from "../../components/ui/Input";
+import { mergeClassNames } from "../../utils";
+import { URL_BASE } from "../../config";
+import { redirect, useNavigate } from "react-router";
 
 enum formState {
   LOGIN,
@@ -15,70 +17,82 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
   const [state, setState] = useState<formState>(initialState);
 
   const [errors, setErrors] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   type formInputType = {
     id: number;
     label: string;
     renderCondition: formState[];
-    inputProps?: Omit<InputHTMLAttributes<HTMLInputElement>, 'className'>;
+    inputProps?: Omit<InputHTMLAttributes<HTMLInputElement>, "className">;
   };
 
   const formInputs: formInputType[] = [
     {
       id: 1,
       inputProps: {
-        name: 'username',
-        type: 'text',
-        placeholder: 'Username',
+        name: "username",
+        type: "text",
+        placeholder: "Username",
         required: true,
-        pattern: '[A-Za-z0-9_]+',
-        title: 'Only letters, numbers, underscores, and hyphens are allowed.',
+        pattern: "[A-Za-z0-9_]+",
+        title: "Only letters, numbers, underscores, and hyphens are allowed.",
       },
-      label: 'Username',
+      label: "Username",
       renderCondition: [formState.LOGIN, formState.SIGNUP],
     },
     {
       id: 2,
       inputProps: {
-        name: 'password',
-        type: 'password',
-        placeholder: 'Password',
+        name: "displayName",
+        type: "text",
+        placeholder: "Display Name",
         required: true,
       },
-      label: 'Password',
-      renderCondition: [formState.LOGIN, formState.SIGNUP],
+      label: "Display Name",
+      renderCondition: [formState.SIGNUP],
     },
     {
       id: 3,
       inputProps: {
-        name: 'repassword',
-        type: 'password',
-        placeholder: 'Retype password',
+        name: "password",
+        type: "password",
+        placeholder: "Password",
         required: true,
       },
-      label: 'Retype password',
-      renderCondition: [formState.SIGNUP],
+      label: "Password",
+      renderCondition: [formState.LOGIN, formState.SIGNUP],
     },
     {
       id: 4,
       inputProps: {
-        name: 'email',
-        type: 'email',
-        placeholder: 'email',
+        name: "repassword",
+        type: "password",
+        placeholder: "Retype password",
         required: true,
       },
-      label: 'email',
+      label: "Retype password",
       renderCondition: [formState.SIGNUP],
     },
     {
       id: 5,
       inputProps: {
-        name: 'profilePicture',
-        type: 'file',
-        placeholder: 'profilePicture',
-        accept: 'image/*',
+        name: "email",
+        type: "email",
+        placeholder: "email",
+        required: true,
       },
-      label: 'Profile Picture',
+      label: "email",
+      renderCondition: [formState.SIGNUP],
+    },
+    {
+      id: 6,
+      inputProps: {
+        name: "profileImage",
+        type: "file",
+        placeholder: "Profile Picture",
+        accept: "image/*",
+      },
+      label: "Profile Picture",
       renderCondition: [formState.SIGNUP],
     },
   ];
@@ -92,29 +106,29 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 
     switch (state) {
       case formState.LOGIN: {
-        if (!payload.username) errors.push('Username can not be empty');
-        if (!payload.password) errors.push('Password can not be empty');
+        if (!payload.username) errors.push("Username can not be empty");
+        if (!payload.password) errors.push("Password can not be empty");
         break;
       }
       case formState.SIGNUP: {
-        if (!payload.username) errors.push('Username can not be empty');
-        if (!payload.password) errors.push('Password can not be empty');
+        if (!payload.username) errors.push("Username can not be empty");
+        if (!payload.password) errors.push("Password can not be empty");
         if (!payload.repassword)
-          errors.push('Retype password can not be empty');
-        if (!payload.email) errors.push('Email can not be empty');
+          errors.push("Retype password can not be empty");
+        if (!payload.email) errors.push("Email can not be empty");
 
         const username = payload.username as string;
         if (username.length < 4 || username.length > 16)
           errors.push(
-            'Username must contains at least 4 and maximum 16 characters',
+            "Username must contains at least 4 and maximum 16 characters",
           );
 
         const password = payload.password as string;
         const repassword = payload.repassword as string;
         if (password.localeCompare(repassword))
-          errors.push('Retyped password and password are not the same');
+          errors.push("Retyped password and password are not the same");
         if (password.length < 8)
-          errors.push('Password must be at least 8 characters');
+          errors.push("Password must be at least 8 characters");
         break;
       }
     }
@@ -133,7 +147,58 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
     const formData = new FormData(e.currentTarget);
     const payload = Object.fromEntries(formData.entries());
 
-    validateForm(payload);
+    if (!validateForm(payload)) {
+      return;
+    }
+    if (state === formState.SIGNUP) {
+      const endpoint = `http://localhost:8080/register`;
+
+      // Append the profile picture file
+      const profilePictureFile = payload.profilePicture as File;
+      if (profilePictureFile) {
+        formData.append("profilePicture", profilePictureFile);
+      }
+
+      const register = async () => {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            body: formData,
+          });
+          console.log(res);
+        } catch (e) {
+          console.log(e);
+        }
+      };
+
+      register();
+    }
+    if (state === formState.LOGIN) {
+      const endpoint = `http://localhost:8080/login`;
+      const body = {
+        username: payload.username as string,
+        password: payload.password as string,
+      };
+      const login = async () => {
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            body: JSON.stringify(body),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          console.log(await res.json());
+          if (res.ok) {
+            return navigate("/");
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      };
+
+      login();
+    }
   };
 
   return (
@@ -143,12 +208,17 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
         <div className="absolute top-[65%] left-[60%] -translate-x-1/2 -translate-y-1/2 size-[80vw] blur-3xl z-10 bg-primary opacity-5 rounded-full"></div>
       </div>
       {/* Form */}
-      <form ref={formRef} onSubmit={handleSubmit} className="z-20">
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        encType="multipart/form-data"
+        className="z-20"
+      >
         <div className="p-12 border-solid rounded-lg shadow-lg shadow-card flex flex-col gap-16 bg-card">
           <div className="flex flex-col gap-2">
             <img
               className="size-12 object-cover mx-auto"
-              style={{ maskSize: 'cover', WebkitMaskSize: 'cover' }}
+              style={{ maskSize: "cover", WebkitMaskSize: "cover" }}
               src="/logo.svg"
               alt="SnapMate logo"
             />
@@ -157,7 +227,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
           <div className="flex flex-col gap-1">
             <p className="text-center">Welcome</p>
             <h1 className="text-5xl font-bold text-center">
-              {state == formState.LOGIN ? 'Sign in now' : 'Sign up now'}
+              {state == formState.LOGIN ? "Sign in now" : "Sign up now"}
             </h1>
           </div>
           {/* Input prompt */}
@@ -195,7 +265,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
                 }}
                 className="font-bold cursor-pointer"
               >
-                {' '}
+                {" "}
                 Register
               </a>
             </p>
@@ -209,13 +279,13 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
                 }}
                 className="font-bold cursor-pointer"
               >
-                {' '}
+                {" "}
                 Login
               </a>
             </p>
           )}
           <button type="submit" className="bg-primary py-4 px-20 rounded-full">
-            {state == formState.LOGIN ? 'Sign in' : 'Sign up'}
+            {state == formState.LOGIN ? "Sign in" : "Sign up"}
           </button>
         </div>
       </form>
@@ -224,7 +294,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 };
 
 interface FormInputProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'className'> {
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "className"> {
   label: string;
   className?: string;
 }
@@ -232,7 +302,7 @@ interface FormInputProps
 const FormInput: FC<FormInputProps> = ({ label, className, ...inputProps }) => {
   return (
     <div
-      className={mergeClassNames('flex flex-col gap-2 items-start', className)}
+      className={mergeClassNames("flex flex-col gap-2 items-start", className)}
     >
       <label htmlFor="email">{label}</label>
       <Input
