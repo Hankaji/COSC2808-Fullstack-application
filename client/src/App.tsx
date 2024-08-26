@@ -1,42 +1,59 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import "./App.css";
-import LoginRegisterForm from "./pages/login_register";
-import HomePage from "./pages/home";
-import FriendsPage from "./pages/friends";
-import NotificationsPage from "./pages/notifications";
-import GroupPage from "./pages/groups/group";
-import PostPage from "./pages/posts/post";
+import { RouterProvider, createBrowserRouter, json } from 'react-router-dom';
+import './App.css';
+import FriendsPage from './pages/friends';
+import CreateGroupForm from './pages/groups/create_group';
+import GroupPage from './pages/groups/group';
+import HomePage from './pages/home';
+import LoginRegisterForm from './pages/login_register';
+import NotificationsPage from './pages/notifications';
+import PostPage from './pages/posts/post';
+import UserPage from './pages/users/user';
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <HomePage />,
   },
   {
-    path: "/notifications",
+    path: '/notifications',
     element: <NotificationsPage />,
   },
   {
-    path: "/login",
+    path: '/login',
     element: <LoginRegisterForm />,
   },
   {
-    path: "/register",
+    path: '/register',
     // element: <LoginRegisterForm />,
   },
   {
-    path: "/posts/:postId",
+    path: '/posts/:postId',
     element: <PostPage />,
   },
   {
-    path: "/friends",
+    path: '/friends',
     element: <FriendsPage />,
   },
   {
-    path: "/group",
+    path: '/users/:userId',
+    element: <UserPage />,
+    loader: async ({ params }) => {
+      const endpoint = `http://localhost:8080/users/${params.userId}`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+      });
+      return res.json();
+    },
+  },
+  {
+    path: 'groups',
     children: [
       {
-        path: "/groups/:groupId",
+        path: 'create',
+        element: <CreateGroupForm />,
+      },
+      {
+        path: ':groupId',
         element: <GroupPage />,
       },
     ],
