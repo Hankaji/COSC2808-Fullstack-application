@@ -48,6 +48,7 @@ export const getFriendRequests = async (req: Request, res: Response) => {
 		// Find all friend requests where the user is either the sender or receiver
 		const friendRequests = await FriendRequest.find({
 			$or: [{ sender_id: userId }, { receiver_id: userId }],
+			status: "Pending",
 		});
 
 		res.status(200).json(friendRequests);
@@ -220,7 +221,7 @@ export const getGroupRequests = async (req: Request, res: Response) => {
 		}
 
 		// Find all member requests for the specified group
-		const memberRequests = await GroupRequest.find({ group_id: groupId });
+		const memberRequests = await GroupRequest.find({ group_id: groupId, status: "Pending" });
 
 		if (memberRequests.length === 0) {
 			return res.status(404).json({ message: "No member requests found for this group" });
@@ -419,7 +420,7 @@ export const rejectGroupRequest = async (req: Request, res: Response) => {
 export const getGroupCreationRequests = async (req: Request, res: Response) => {
 	try {
 		// Retrieve all group creation requests from the database
-		const groupCreationRequests = await GroupCreationRequest.find();
+		const groupCreationRequests = await GroupCreationRequest.find({ status: "Pending" });
 
 		if (groupCreationRequests.length === 0) {
 			return res.status(404).json({ message: "No group creation requests found" });

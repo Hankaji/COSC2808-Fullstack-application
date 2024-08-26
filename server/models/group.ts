@@ -19,19 +19,19 @@ const groupSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// groupSchema.virtual("groupImage").get(function () {
-// 	if (this.groupImage != null) {
-// 		return `data:${this.groupImage.contentType};base64,${this.groupImage.data.toString("base64")}`;
-// 	}
-// 	return undefined;
-// });
-//
-// groupSchema.virtual("coverImage").get(function () {
-// 	if (this.coverImage != null) {
-// 		return `data:${this.coverImage.contentType};base64,${this.coverImage.data.toString("base64")}`;
-// 	}
-// 	return undefined;
-// });
+groupSchema.virtual("virtualGroupImage").get(function () {
+	if (this.groupImage != null) {
+		return `data:${this.groupImage.contentType};base64,${this.groupImage.data.toString("base64")}`;
+	}
+	return undefined;
+});
+
+groupSchema.virtual("virtualCoverImage").get(function () {
+	if (this.coverImage != null) {
+		return `data:${this.coverImage.contentType};base64,${this.coverImage.data.toString("base64")}`;
+	}
+	return undefined;
+});
 
 export const Group = mongoose.model("Group", groupSchema);
 export default Group;
