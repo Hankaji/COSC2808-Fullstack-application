@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import Group from "../models/group";
+import { processImage } from "../utils/processImage";
 
 // Get a group by name
 export const getGroups = async (req: Request, res: Response) => {
@@ -43,14 +44,18 @@ export const getGroupById = async (req: Request, res: Response) => {
 // Create a new group
 export const createGroup = async (req: Request, res: Response) => {
   try {
-    const { name, description, visibility, groupImage, coverImage } = req.body;
-
-    // const admin = req.user._id;
+    const { name, description, visibility } = req.body;
 
     // For testing purposes, we will use a hardcoded admin ID
     const admin = "66c36b92488bc3d7cbd08b6c";
+    // Use the below in frontend
+    // upload.fields([
+    //   { name: "groupImage", maxCount: 1 },
+    //   { name: "coverImage", maxCount: 1 },
+    // ]);
 
-    const profileImage = processImage(req.file);
+    const groupImage = processImage(req.files?.groupImage?.[0]);
+    const coverImage = processImage(req.files?.coverImage?.[0]);
     const group = new Group({
       name,
       description,
