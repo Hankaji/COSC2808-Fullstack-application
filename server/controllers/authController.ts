@@ -8,8 +8,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const register = async (req: Request, res: Response) => {
+  console.log(req.file);
   const SALT_ROUNDS = 10;
-  const hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS); // Check if the file (image) was uploaded
+  const hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS);
+
   let profileImage = undefined;
   if (req.file) {
     profileImage = {
@@ -24,6 +26,7 @@ export const register = async (req: Request, res: Response) => {
     password: hashedPassword,
     profileImage: profileImage,
   });
+  console.log("asdfadf");
 
   try {
     const newUser = await user.save();

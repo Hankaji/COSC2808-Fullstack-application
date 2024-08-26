@@ -1,42 +1,42 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import './App.css';
-import LoginRegisterForm from './pages/login_register';
-import HomePage from './pages/home';
-import FriendsPage from './pages/friends';
-import NotificationsPage from './pages/notifications';
-import GroupPage from './pages/groups/group';
-import PostPage from './pages/posts/post';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import "./App.css";
+import LoginRegisterForm from "./pages/login_register";
+import HomePage from "./pages/home";
+import FriendsPage from "./pages/friends";
+import NotificationsPage from "./pages/notifications";
+import GroupPage from "./pages/groups/group";
+import PostPage from "./pages/posts/post";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <HomePage />,
   },
   {
-    path: '/notifications',
+    path: "/notifications",
     element: <NotificationsPage />,
   },
   {
-    path: '/login',
+    path: "/login",
     element: <LoginRegisterForm />,
   },
   {
-    path: '/register',
+    path: "/register",
     // element: <LoginRegisterForm />,
   },
   {
-    path: '/posts/:postId',
+    path: "/posts/:postId",
     element: <PostPage />,
   },
   {
-    path: '/friends',
+    path: "/friends",
     element: <FriendsPage />,
   },
   {
-    path: '/group',
+    path: "/group",
     children: [
       {
-        path: '/groups/:groupId',
+        path: "/groups/:groupId",
         element: <GroupPage />,
       },
     ],
