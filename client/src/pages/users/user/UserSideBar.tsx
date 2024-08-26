@@ -1,5 +1,7 @@
 import { UserRoundPlus } from 'lucide-react';
 import { FC } from 'react';
+import { useLoaderData, useParams } from 'react-router';
+import { URL_BASE } from '../../../config';
 import { User } from '../../../types/user';
 import { mergeClassNames } from '../../../utils';
 
@@ -15,6 +17,20 @@ const UserSideBar: FC<Props> = ({ userData }) => {
     month: 'short',
     year: 'numeric',
   }).format(joinedDate);
+
+  const endpoint = `${URL_BASE}/requests/friend_requests/`;
+  const body = {
+    receiver_id: useParams().userId,
+  };
+
+  const sendFierenRequest = async () => {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+    } catch (e) { }
+  };
 
   return (
     <div className="block-container flex-col overflow-hidden">

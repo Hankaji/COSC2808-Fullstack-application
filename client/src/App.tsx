@@ -1,6 +1,7 @@
 import { RouterProvider, createBrowserRouter, json } from 'react-router-dom';
 import './App.css';
 import FriendsPage from './pages/friends';
+import CreateGroupForm from './pages/groups/create_group';
 import GroupPage from './pages/groups/group';
 import HomePage from './pages/home';
 import LoginRegisterForm from './pages/login_register';
@@ -45,10 +46,14 @@ const router = createBrowserRouter([
     },
   },
   {
-    path: '/group',
+    path: 'groups',
     children: [
       {
-        path: '/groups/:groupId',
+        path: 'create',
+        element: <CreateGroupForm />,
+      },
+      {
+        path: ':groupId',
         element: <GroupPage />,
       },
     ],
