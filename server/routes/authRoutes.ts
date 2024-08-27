@@ -1,13 +1,13 @@
 import express from "express";
-import { register, login } from "../controllers/authController";
 import multer from "multer";
+import { register, login, logout } from "../controllers/authController";
+import fileUpload from "../middleware/fileUpload";
+
 const authRouter = express.Router();
-var storage = multer.memoryStorage();
+const upload = multer({ storage: multer.memoryStorage() });
 
-var upload = multer({ storage: storage });
-
-authRouter.post("/register", upload.single("profileImage"), register);
+authRouter.post("/register", fileUpload.single("profileImage"), register);
 authRouter.post("/login", login);
-// authRouter.get("/user/:username/profileImage", getProfilePic);
+authRouter.post("/logout", logout);
 
 export default authRouter;

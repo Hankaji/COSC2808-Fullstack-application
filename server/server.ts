@@ -20,7 +20,8 @@ const port = 8080;
 declare module "express-session" {
 	interface SessionData {
 		userId: mongoose.Types.ObjectId;
-		username: string;
+		username: String;
+		isAdmin: boolean;
 	}
 }
 
@@ -45,7 +46,7 @@ app.use(
 );
 
 app.get("/", (req: express.Request, res: express.Response) => {
-	res.send("Hello World!");
+	res.send("Server is running!");
 });
 
 app.use("/", authRouter);
