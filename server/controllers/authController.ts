@@ -69,6 +69,11 @@ export const login = async (req: Request, res: Response) => {
 			if (!user) {
 				return res.status(401).json({ message: "Invalid username" });
 			}
+
+			// Check if the user is suspended
+			if ((user as any).status === "Suspended") {
+				return res.status(403).json({ message: "Account is suspended. Please contact the Admin to get support." });
+			}
 		} else {
 			isAdmin = true;
 		}

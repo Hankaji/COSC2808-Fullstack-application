@@ -1,30 +1,25 @@
 import express from "express";
+import { isAuthenticated, isAdmin } from "../middleware/authentication";
 import {
 	getUsers,
-	getUserById,
 	getUserFriends,
-	getCurrentUserProfile,
-	getCurrentUserNotifications,
-	createUser,
-	updateUser,
+	getUserNotifications,
+	getUserById,
+	getUserFriendsById,
+	unfriendById,
 	suspendUser,
-	reactivateUser,
-	deleteUser,
-	unfriendUser,
+	resumeUser,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
 
-userRouter.get("/", getUsers);
-userRouter.get("/:id", getUserById);
-userRouter.get("/:id/friends", getUserFriends);
-userRouter.get("/current/profile", getCurrentUserProfile);
-userRouter.get("/current/notifications", getCurrentUserNotifications);
-userRouter.post("/", createUser);
-userRouter.put("/:id", updateUser);
-userRouter.put("/:id/suspend", suspendUser);
-userRouter.put("/:id/reactivate", reactivateUser);
-userRouter.delete("/:id", deleteUser);
-userRouter.put("/:userId/unfriend/:friendId", unfriendUser);
+userRouter.get("/", isAuthenticated, getUsers);
+userRouter.get("/friends", isAuthenticated, getUserFriends);
+userRouter.get("/notifications", isAuthenticated, getUserNotifications);
+userRouter.get("/:id", isAuthenticated, getUserById);
+userRouter.get("/:id/friends", isAuthenticated, getUserFriendsById);
+userRouter.delete("/unfriend/:id", isAuthenticated, unfriendById);
+userRouter.patch("/suspend/:id", isAuthenticated, isAdmin, suspendUser);
+userRouter.patch("/resume/:id", isAuthenticated, isAdmin, resumeUser);
 
 export default userRouter;
