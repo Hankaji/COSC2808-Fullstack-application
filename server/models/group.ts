@@ -16,7 +16,11 @@ const groupSchema = new mongoose.Schema(
 		admins: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 		members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	},
-	{ timestamps: true }
+	{
+		timestamps: true,
+		toJSON: { virtuals: true },
+		toObject: { virtuals: true },
+	}
 );
 
 groupSchema.virtual("virtualGroupImage").get(function () {
