@@ -13,7 +13,7 @@ const groupSchema = new mongoose.Schema(
 			data: { type: Buffer, required: true },
 			contentType: { type: String, required: true },
 		},
-		admins: [{ type: String }],
+		admins: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 		members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 	},
 	{ timestamps: true }
