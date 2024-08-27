@@ -31,29 +31,43 @@ const PostCreationPanel = () => {
   };
 
   const handlePost = async () => {
-    const userId = getCookie('user_id'); // Get userId from cookie
-    console.log(userId);
-    if (!userId) {
-      console.error('User ID is required');
-      return;
-    }
+    // const userId = getCookie('user_id'); // Get userId from cookie
+    // console.log(userId);
+    // if (!userId) {
+    //   console.error('User ID is required');
+    //   return;
+    // }
+
+    const userIdForTest = "66c6fb31343ef710e0cfa842";
 
     const postData = new FormData();
-    postData.append('user_id', userId); // Use userId from cookie
-    postData.append('group_id', groupId || 'null'); // Use groupId from params or null
+    // postData.append('user_id', userId); // Use userId from cookie
+    postData.append('user_id', userIdForTest); // Use userId for testing
+    postData.append('group_id', groupId || ''); // Use groupId from params or null
     postData.append('content', content);
     postData.append('visibility', visibility);
-    postData.append('reactions', JSON.stringify([]));
-    postData.append('comments', JSON.stringify([]));
-    postData.append('editHistory', JSON.stringify([]));
     images.forEach((image, index) => {
       postData.append(`images[${index}]`, image);
     });
 
+    // Convert FormData to JSON object
+    const postDataJson: any = {};
+    postData.forEach((value, key) => {
+      postDataJson[key] = value;
+    });
+
+    // Set group_id to null if it's an empty string
+    if (!groupId) {
+      postDataJson['group_id'] = null;
+    }
+
     try {
       const response = await fetch('http://localhost:8080/posts', {
         method: 'POST',
-        body: postData
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(postDataJson)
       });
 
       if (response.ok) {
