@@ -27,8 +27,14 @@ const groupCreationRequestSchema = new mongoose.Schema(
 			name: { type: String, required: true },
 			description: { type: String, required: true },
 			visibility: { type: String, required: true, enum: ["Public", "Private"] },
-			groupImage: { type: String },
-			coverImage: { type: String },
+			groupImage: {
+				data: { type: Buffer, required: true },
+				contentType: { type: String, required: true },
+			},
+			coverImage: {
+				data: { type: Buffer, required: true },
+				contentType: { type: String, required: true },
+			},
 			admins: [{ type: String }],
 			members: [{ type: String }],
 			posts: [{ type: String }],
@@ -38,6 +44,20 @@ const groupCreationRequestSchema = new mongoose.Schema(
 	},
 	{ timestamps: true }
 );
+
+groupCreationRequestSchema.virtual("virtualGroupImage").get(function () {
+	if (this.group && this.group.groupImage != null) {
+		return `data:${this.group.groupImage.contentType};base64,${this.group.groupImage.data.toString("base64")}`;
+	}
+	return undefined;
+});
+
+groupCreationRequestSchema.virtual("virtualCoverImage").get(function () {
+	if (this.group && this.group.coverImage != null) {
+		return `data:${this.group.coverImage.contentType};base64,${this.group.coverImage.data.toString("base64")}`;
+	}
+	return undefined;
+});
 
 export const FriendRequest = mongoose.model("FriendRequest", friendRequestSchema);
 export const GroupRequest = mongoose.model("GroupRequest", groupRequestSchema);
