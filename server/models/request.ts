@@ -28,12 +28,12 @@ const groupCreationRequestSchema = new mongoose.Schema(
 			description: { type: String, required: true },
 			visibility: { type: String, required: true, enum: ["Public", "Private"] },
 			groupImage: {
-				data: { type: Buffer, required: true },
-				contentType: { type: String, required: true },
+				data: { type: Buffer },
+				contentType: { type: String },
 			},
 			coverImage: {
-				data: { type: Buffer, required: true },
-				contentType: { type: String, required: true },
+				data: { type: Buffer },
+				contentType: { type: String },
 			},
 			admins: [{ type: String }],
 			members: [{ type: String }],
@@ -46,14 +46,14 @@ const groupCreationRequestSchema = new mongoose.Schema(
 );
 
 groupCreationRequestSchema.virtual("virtualGroupImage").get(function () {
-	if (this.group && this.group.groupImage != null) {
+	if (this.group && this.group.groupImage != null && this.group.groupImage.contentType != null && this.group.groupImage.data != null) {
 		return `data:${this.group.groupImage.contentType};base64,${this.group.groupImage.data.toString("base64")}`;
 	}
 	return undefined;
 });
 
 groupCreationRequestSchema.virtual("virtualCoverImage").get(function () {
-	if (this.group && this.group.coverImage != null) {
+	if (this.group && this.group.coverImage != null && this.group.coverImage.contentType != null && this.group.coverImage.data != null) {
 		return `data:${this.group.coverImage.contentType};base64,${this.group.coverImage.data.toString("base64")}`;
 	}
 	return undefined;

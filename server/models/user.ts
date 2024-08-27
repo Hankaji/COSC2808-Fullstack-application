@@ -33,10 +33,8 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.virtual("virtualProfileImage").get(function () {
-	if (this.profileImage != null) {
-		if (this.profileImage.contentType != null && this.profileImage.data != null) {
-			return `data:${this.profileImage.contentType};base64,${this.profileImage.data.toString("base64")}`;
-		}
+	if (this.profileImage != null && this.profileImage.contentType != null && this.profileImage.data != null) {
+		return `data:${this.profileImage.contentType};base64,${this.profileImage.data.toString("base64")}`;
 	}
 	return undefined;
 });

@@ -7,8 +7,8 @@ const postSchema = new mongoose.Schema(
 		content: { type: String, required: true },
 		images: [
 			{
-				data: { type: Buffer, required: true },
-				contentType: { type: String, required: true },
+				data: { type: Buffer },
+				contentType: { type: String },
 			},
 		],
 		visibility: {
@@ -67,9 +67,11 @@ const postSchema = new mongoose.Schema(
 );
 
 postSchema.virtual("virtualImages").get(function () {
-	if (this.images != null) {
+	if (this.images != null && this.images.length > 0) {
 		return this.images.map((image) => {
-			return `data:${image.contentType};base64,${image.data.toString("base64")}`;
+			if (image.contentType != null && image.data != null) {
+				return `data:${image.contentType};base64,${image.data.toString("base64")}`;
+			}
 		});
 	}
 	return undefined;

@@ -6,12 +6,12 @@ const groupSchema = new mongoose.Schema(
 		description: { type: String, required: true },
 		visibility: { type: String, required: true, enum: ["Public", "Private"] },
 		groupImage: {
-			data: { type: Buffer, required: true },
-			contentType: { type: String, required: true },
+			data: { type: Buffer },
+			contentType: { type: String },
 		},
 		coverImage: {
-			data: { type: Buffer, required: true },
-			contentType: { type: String, required: true },
+			data: { type: Buffer },
+			contentType: { type: String },
 		},
 		admins: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 		members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
@@ -20,14 +20,14 @@ const groupSchema = new mongoose.Schema(
 );
 
 groupSchema.virtual("virtualGroupImage").get(function () {
-	if (this.groupImage != null) {
+	if (this.groupImage != null && this.groupImage.contentType != null && this.groupImage.data != null) {
 		return `data:${this.groupImage.contentType};base64,${this.groupImage.data.toString("base64")}`;
 	}
 	return undefined;
 });
 
 groupSchema.virtual("virtualCoverImage").get(function () {
-	if (this.coverImage != null) {
+	if (this.coverImage != null && this.coverImage.contentType && this.coverImage.data) {
 		return `data:${this.coverImage.contentType};base64,${this.coverImage.data.toString("base64")}`;
 	}
 	return undefined;
