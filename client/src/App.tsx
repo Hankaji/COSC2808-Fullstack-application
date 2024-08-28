@@ -27,16 +27,18 @@ const router = createBrowserRouter([
     // element: <LoginRegisterForm />,
   },
   {
-    path: '/search',
-    element: <Search />,
-  },
-
-  {
     path: "/posts/:postId",
     element: <PostPage />,
+    loader: async ({ params }) => {
+      const endpoint = ${ URL_BASE }/posts/${ params.postId };
+      const res = await fetch(endpoint, {
+        method: 'GET',
+      });
+      return res.json();
+    },
   },
   {
-    path: '/friends',
+    path: "/friends",
     element: <FriendsPage />,
   },
   {
