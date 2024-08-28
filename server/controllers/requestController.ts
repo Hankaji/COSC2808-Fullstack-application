@@ -1,417 +1,421 @@
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import { FriendRequest, GroupRequest, GroupCreationRequest } from "../models/request";
-import Admin from "../models/admin";
 import { User } from "../models/user";
 import { Group } from "../models/group";
 
-// Get all requests
-export const getAllRequests = async (req: Request, res: Response) => {
-	try {
-		// Fetch all types of requests in parallel
-		const [friendRequests, groupRequests, groupCreationRequests] = await Promise.all([
-			FriendRequest.find(),
-			GroupRequest.find(),
-			GroupCreationRequest.find(),
-		]);
-
-		// Combine all requests into a single response object
-		const allRequests = {
-			friendRequests,
-			groupRequests,
-			groupCreationRequests,
-		};
-
-		res.status(200).json(allRequests);
-	} catch (error: any) {
-		res.status(500).json({ message: "Error fetching requests", error: error.message });
-	}
-};
-
 // ========== Friend Requests ==========
-// Get an user's friend requests
+// Get the current user's friend requests
 export const getFriendRequests = async (req: Request, res: Response) => {
 	try {
-		const { userId } = req.params;
+		// Get the current user's ID from the session
+		const userId = req.session.userId;
 
-		// Check if the userId is a valid MongoDB ObjectId
-		if (!mongoose.Types.ObjectId.isValid(userId)) {
+		// Validate the user ID format
+		if (userId && !mongoose.Types.ObjectId.isValid(userId)) {
 			return res.status(400).json({ message: "Invalid user ID" });
 		}
 
-		// Check if the user exists
-		const user = await User.findById(userId);
-		if (!user) {
-			return res.status(404).json({ message: "User not found" });
-		}
-
-		// Find all friend requests where the user is either the sender or receiver
-		const friendRequests = await FriendRequest.find({
-			$or: [{ sender_id: userId }, { receiver_id: userId }],
+		// Find all pending friend requests where the current user is the receiver
+		const pendingRequests = await FriendRequest.find({
+			receiver_id: userId,
 			status: "Pending",
-		});
+		}).lean();
 
-		res.status(200).json(friendRequests);
-	} catch (error: any) {
-		res.status(500).json({ message: "Error fetching friend requests", error: error.message });
+		// Return the list of pending friend requests
+		return res.status(200).json(pendingRequests);
+	} catch (error) {
+		console.error("Error retrieving pending friend requests:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
-// Send friend request
-export const sendFriendRequest = async (req: Request, res: Response) => {
+// Create friend request
+export const createFriendRequest = async (req: Request, res: Response) => {
 	try {
-		const { sender_id, receiver_id } = req.body;
+		// Get the current user's ID from the session
+		const senderId = req.session.userId;
 
-		// Check if the sender and receiver IDs are valid MongoDB ObjectIds
-		if (!mongoose.Types.ObjectId.isValid(sender_id) || !mongoose.Types.ObjectId.isValid(receiver_id)) {
+		// Extract the receiver_id from the request body
+		const { receiver_id } = req.body;
+
+		// Validate the user ID formats
+		if (
+			!senderId ||
+			!receiver_id ||
+			!mongoose.Types.ObjectId.isValid(senderId) ||
+			!mongoose.Types.ObjectId.isValid(receiver_id)
+		) {
 			return res.status(400).json({ message: "Invalid sender or receiver ID" });
 		}
 
-		// Check if the sender and receiver exist
-		const sender = await User.findById(sender_id);
-		const receiver = await User.findById(receiver_id);
-
-		if (!sender || !receiver) {
-			return res.status(404).json({ message: "Sender or receiver not found" });
+		// Check if the sender exists and get their displayName
+		const sender = await User.findById(senderId);
+		if (!sender) {
+			return res.status(404).json({ message: "Sender not found" });
 		}
 
-		// Check if a friend request already exists between these users
+		// Check if the receiver exists
+		const receiver = await User.findById(receiver_id);
+		if (!receiver) {
+			return res.status(404).json({ message: "Receiver not found" });
+		}
+
+		// Check if a friend request already exists between these two users
 		const existingRequest = await FriendRequest.findOne({
-			sender_id,
-			receiver_id,
+			sender_id: senderId,
+			receiver_id: receiver_id,
 			status: "Pending",
 		});
-
 		if (existingRequest) {
 			return res.status(400).json({ message: "Friend request already sent" });
 		}
 
 		// Create a new friend request
 		const friendRequest = new FriendRequest({
-			sender_id,
-			receiver_id,
+			sender_id: senderId,
+			receiver_id: receiver_id,
+			status: "Pending",
 		});
-
 		await friendRequest.save();
 
-		// Update the receiver's notifications
+		// Add a notification to the receiver's notifications array
+		const notificationMessage = `${sender.displayName} has sent you a friend request.`;
+
 		receiver.notifications.push({
 			type: "User",
-			message: `${sender.displayName} has sent you a friend request.`,
+			message: notificationMessage,
+			isRead: false,
+			createdAt: new Date(),
 		});
-
 		await receiver.save();
 
-		res.status(201).json({ message: "Friend request sent successfully", friendRequest });
-	} catch (error: any) {
-		res.status(500).json({ message: "Error creating friend request", error: error.message });
+		// Return success response
+		return res.status(201).json({ message: "Friend request sent successfully" });
+	} catch (error) {
+		console.error("Error creating friend request:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
 // Accept friend request
 export const acceptFriendRequest = async (req: Request, res: Response) => {
 	try {
-		const { requestId } = req.params;
+		// Get the request ID from the request parameters
+		const requestId = req.params.id;
 
-		// Check if the requestId is a valid MongoDB ObjectId
+		// Validate the request ID format
 		if (!mongoose.Types.ObjectId.isValid(requestId)) {
 			return res.status(400).json({ message: "Invalid request ID" });
 		}
 
-		// Find the friend request by ID and check if it's still pending
+		// Find the friend request by ID
 		const friendRequest = await FriendRequest.findById(requestId);
-
 		if (!friendRequest) {
 			return res.status(404).json({ message: "Friend request not found" });
 		}
 
-		if (friendRequest.status !== "Pending") {
-			return res.status(400).json({ message: "Friend request is not pending" });
+		// Check if the current user is the receiver of the friend request
+		if (friendRequest.receiver_id != req.session.userId) {
+			return res.status(403).json({ message: "You are not authorized to accept this friend request" });
 		}
 
-		// Find both users (sender and receiver)
-		const sender = await User.findById(friendRequest.sender_id);
-		const receiver = await User.findById(friendRequest.receiver_id);
-
-		if (!sender || !receiver) {
-			return res.status(404).json({ message: "Sender or receiver not found" });
-		}
-
-		// Update the friend request status to "Accepted"
+		// Update the status of the friend request to "Accepted"
 		friendRequest.status = "Accepted";
 		await friendRequest.save();
 
-		// Add each user to the other's friends list
-		sender.friends.push(receiver._id);
+		// Add the sender to the receiver's friends list
+		const receiver = await User.findById(friendRequest.receiver_id);
+		const sender = await User.findById(friendRequest.sender_id);
+
+		if (!receiver || !sender) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
 		receiver.friends.push(sender._id);
+		sender.friends.push(receiver._id);
 
-		await sender.save();
 		await receiver.save();
+		await sender.save();
 
-		// Update the sender's notifications
+		// Add a notification to the sender's notifications array
 		sender.notifications.push({
 			type: "User",
 			message: `${receiver.displayName} has accepted your friend request.`,
+			isRead: false,
+			createdAt: new Date(),
 		});
-
 		await sender.save();
 
-		res.status(200).json({ message: "Friend request accepted successfully", friendRequest });
-	} catch (error: any) {
-		res.status(500).json({ message: "Error accepting friend request", error: error.message });
+		// Return success response
+		return res.status(200).json({ message: "Friend request accepted successfully" });
+	} catch (error) {
+		console.error("Error accepting friend request:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
 // Reject friend request
 export const rejectFriendRequest = async (req: Request, res: Response) => {
 	try {
-		const { requestId } = req.params;
+		// Get the request ID from the request parameters
+		const requestId = req.params.id;
 
-		// Check if the requestId is a valid MongoDB ObjectId
+		// Validate the request ID format
 		if (!mongoose.Types.ObjectId.isValid(requestId)) {
 			return res.status(400).json({ message: "Invalid request ID" });
 		}
 
-		// Find the friend request by ID and check if it's still pending
+		// Find the friend request by ID
 		const friendRequest = await FriendRequest.findById(requestId);
-
 		if (!friendRequest) {
 			return res.status(404).json({ message: "Friend request not found" });
 		}
 
-		if (friendRequest.status !== "Pending") {
-			return res.status(400).json({ message: "Friend request is not pending" });
+		// Check if the current user is the receiver of the friend request
+		if (friendRequest.receiver_id != req.session.userId) {
+			return res.status(403).json({ message: "You are not authorized to reject this friend request" });
 		}
 
-		// Find the sender user
-		const sender = await User.findById(friendRequest.sender_id);
-		const receiver = await User.findById(friendRequest.receiver_id);
-
-		if (!sender || !receiver) {
-			return res.status(404).json({ message: "Sender or receiver not found" });
-		}
-
-		// Update the friend request status to "Rejected"
+		// Update the status of the friend request to "Rejected"
 		friendRequest.status = "Rejected";
 		await friendRequest.save();
 
-		// Update the sender's notifications
+		// Fetch the receiver's information
+		const receiver = await User.findById(req.session.userId);
+		if (!receiver) {
+			return res.status(404).json({ message: "Receiver not found" });
+		}
+
+		// Add a notification to the sender's notifications array
+		const sender = await User.findById(friendRequest.sender_id);
+		if (!sender) {
+			return res.status(404).json({ message: "Sender not found" });
+		}
+
 		sender.notifications.push({
 			type: "User",
 			message: `${receiver.displayName} has rejected your friend request.`,
+			isRead: false,
+			createdAt: new Date(),
 		});
-
 		await sender.save();
 
-		res.status(200).json({ message: "Friend request rejected successfully", friendRequest });
-	} catch (error: any) {
-		res.status(500).json({ message: "Error rejecting friend request", error: error.message });
+		// Return success response
+		return res.status(200).json({ message: "Friend request rejected successfully" });
+	} catch (error) {
+		console.error("Error rejecting friend request:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
 // ========== Group Requests ==========
-// Get a group's member requests
+// Get a group's member requests where the current user is an admin
 export const getGroupRequests = async (req: Request, res: Response) => {
 	try {
-		const { groupId } = req.params;
+		// Get the current user's ID from the session
+		const userId = req.session.userId;
 
-		// Check if the groupId is a valid MongoDB ObjectId
-		if (!mongoose.Types.ObjectId.isValid(groupId)) {
-			return res.status(400).json({ message: "Invalid group ID" });
+		// Validate the user ID format
+		if (userId && !mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
 		}
 
-		// Find all member requests for the specified group
-		const memberRequests = await GroupRequest.find({ group_id: groupId, status: "Pending" });
+		// Find all groups where the current user is an admin
+		const groups = await Group.find({ admins: userId }).select("_id").lean();
+		const groupIds = groups.map((group) => group._id);
 
-		if (memberRequests.length === 0) {
-			return res.status(404).json({ message: "No member requests found for this group" });
-		}
+		// Find all pending group requests for these groups
+		const pendingRequests = await GroupRequest.find({
+			group_id: { $in: groupIds },
+			status: "Pending",
+		}).lean();
 
-		res.status(200).json(memberRequests);
-	} catch (error: any) {
-		res.status(500).json({ message: "Error fetching member requests", error: error.message });
+		// Return the list of pending group requests
+		return res.status(200).json(pendingRequests);
+	} catch (error) {
+		console.error("Error retrieving pending group requests:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
-// Send group member request
-export const sendGroupRequest = async (req: Request, res: Response) => {
+// Create group member request
+export const createGroupRequest = async (req: Request, res: Response) => {
 	try {
-		const { user_id, group_id } = req.body;
+		// Get the current user's ID from the session
+		const senderId = req.session.userId;
+		const { group_id } = req.body;
 
-		// Check if the groupId and user_id are valid MongoDB ObjectIds
-		if (!mongoose.Types.ObjectId.isValid(group_id) || !mongoose.Types.ObjectId.isValid(user_id)) {
-			return res.status(400).json({ message: "Invalid group or user ID" });
+		// Validate the user ID and group ID formats
+		if (
+			!senderId ||
+			!group_id ||
+			!mongoose.Types.ObjectId.isValid(senderId) ||
+			!mongoose.Types.ObjectId.isValid(group_id)
+		) {
+			return res.status(400).json({ message: "Invalid sender or group ID" });
 		}
 
-		// Find the group by ID
+		// Check if the group exists
 		const group = await Group.findById(group_id);
 		if (!group) {
 			return res.status(404).json({ message: "Group not found" });
 		}
 
-		// Find the user by ID
-		const user = await User.findById(user_id);
-		if (!user) {
-			return res.status(404).json({ message: "User not found" });
-		}
-
-		// Check if a group member request already exists for this user and group
+		// Check if a group request already exists for this user and group
 		const existingRequest = await GroupRequest.findOne({
-			user_id,
+			user_id: senderId,
 			group_id: group_id,
 			status: "Pending",
 		});
-
 		if (existingRequest) {
-			return res.status(400).json({ message: "Group member request already sent" });
+			return res.status(400).json({ message: "Group request already sent" });
 		}
 
-		// Create a new group member request
+		// Create a new group request
 		const groupRequest = new GroupRequest({
-			user_id,
+			user_id: senderId,
 			group_id: group_id,
+			status: "Pending",
 		});
-
 		await groupRequest.save();
 
-		// Update all of the group's admins with a notification
-		const adminIds = group.admins;
-		for (let adminId of adminIds) {
+		// Send notifications to all group admins
+		const sender = await User.findById(senderId).select("displayName");
+
+		for (const adminId of group.admins) {
 			const admin = await User.findById(adminId);
+
 			if (admin) {
 				admin.notifications.push({
 					type: "Group",
-					message: `${user.displayName} has requested to join the group "${group.name}".`,
+					message: `${sender!.displayName} has requested to join the group "${group.name}".`,
+					isRead: false,
+					createdAt: new Date(),
 				});
 				await admin.save();
 			}
 		}
 
-		res.status(201).json({ message: "Group member request sent successfully", groupRequest });
-	} catch (error: any) {
-		res.status(500).json({ message: "Error sending group member request", error: error.message });
+		// Return success response
+		return res.status(201).json({ message: "Group request sent successfully" });
+	} catch (error) {
+		console.error("Error creating group request:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
 // Accept a group member request
 export const acceptGroupRequest = async (req: Request, res: Response) => {
 	try {
-		const { requestId } = req.params;
+		// Get the request ID from the request parameters
+		const requestId = req.params.id;
+		const currentUserId = req.session.userId;
 
-		// Check if the requestId is a valid MongoDB ObjectId
+		// Validate the request ID format
 		if (!mongoose.Types.ObjectId.isValid(requestId)) {
 			return res.status(400).json({ message: "Invalid request ID" });
 		}
 
-		// Find the group member request by ID
+		// Find the group request by ID
 		const groupRequest = await GroupRequest.findById(requestId);
-
 		if (!groupRequest) {
-			return res.status(404).json({ message: "Group member request not found" });
+			return res.status(404).json({ message: "Group request not found" });
 		}
 
-		if (groupRequest.status !== "Pending") {
-			return res.status(400).json({ message: "Group member request is not pending" });
-		}
-
-		// Find the group and user involved in the request
+		// Find the group associated with the request
 		const group = await Group.findById(groupRequest.group_id);
-		const user = await User.findById(groupRequest.user_id);
-
-		if (!group || !user) {
-			return res.status(404).json({ message: "Group or user not found" });
+		if (!group) {
+			return res.status(404).json({ message: "Group not found" });
 		}
 
-		// Update the group member request status to "Accepted"
+		// Check if the current user is an admin of the group
+		if (!group.admins.includes(currentUserId!)) {
+			return res.status(403).json({ message: "You are not authorized to accept this group request" });
+		}
+
+		// Update the status of the group request to "Accepted"
 		groupRequest.status = "Accepted";
 		await groupRequest.save();
 
-		// Add the user to the group's members list
-		group.members.push(user._id);
+		// Add the requester to the group's members list
+		group.members.push(groupRequest.user_id);
 		await group.save();
 
-		// Update the user's notifications
-		user.notifications.push({
-			type: "Group",
-			message: `Your request to join the group "${group.name}" has been approved.`,
-		});
-		await user.save();
-
-		// Notify all group admins
-		const adminIds = group.admins;
-		for (let adminId of adminIds) {
-			const admin = await User.findById(adminId);
-			if (admin) {
-				admin.notifications.push({
-					type: "Group",
-					message: `${user.displayName} has been accepted to join the group "${group.name}".`,
-				});
-				await admin.save();
-			}
+		// Add a notification to the requester's notifications array
+		const requester = await User.findById(groupRequest.user_id);
+		if (!requester) {
+			return res.status(404).json({ message: "Requester not found" });
 		}
 
-		res.status(200).json({ message: "Group member request accepted successfully", groupRequest });
-	} catch (error: any) {
-		res.status(500).json({ message: "Error accepting group member request", error: error.message });
+		requester.notifications.push({
+			type: "Group",
+			message: `Your request to join the group "${group.name}" has been accepted.`,
+			isRead: false,
+			createdAt: new Date(),
+		});
+		await requester.save();
+
+		// Return success response
+		return res.status(200).json({ message: "Group request accepted successfully" });
+	} catch (error) {
+		console.error("Error accepting group request:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
 // Reject a group member request
 export const rejectGroupRequest = async (req: Request, res: Response) => {
 	try {
-		const { requestId } = req.params;
+		// Get the request ID from the request parameters
+		const requestId = req.params.id;
+		const currentUserId = req.session.userId;
 
-		// Check if the requestId is a valid MongoDB ObjectId
+		// Validate the request ID format
 		if (!mongoose.Types.ObjectId.isValid(requestId)) {
 			return res.status(400).json({ message: "Invalid request ID" });
 		}
 
-		// Find the group member request by ID
+		// Find the group request by ID
 		const groupRequest = await GroupRequest.findById(requestId);
-
 		if (!groupRequest) {
-			return res.status(404).json({ message: "Group member request not found" });
+			return res.status(404).json({ message: "Group request not found" });
 		}
 
-		if (groupRequest.status !== "Pending") {
-			return res.status(400).json({ message: "Group member request is not pending" });
-		}
-
-		// Find the group and user involved in the request
+		// Find the group associated with the request
 		const group = await Group.findById(groupRequest.group_id);
-		const user = await User.findById(groupRequest.user_id);
-
-		if (!group || !user) {
-			return res.status(404).json({ message: "Group or user not found" });
+		if (!group) {
+			return res.status(404).json({ message: "Group not found" });
 		}
 
-		// Update the group member request status to "Rejected"
+		// Check if the current user is an admin of the group
+		if (!group.admins.includes(currentUserId!)) {
+			return res.status(403).json({ message: "You are not authorized to reject this group request" });
+		}
+
+		// Update the status of the group request to "Rejected"
 		groupRequest.status = "Rejected";
 		await groupRequest.save();
 
-		// Update the user's notifications
-		user.notifications.push({
-			type: "Group",
-			message: `Your request to join the group "${group.name}" has been rejected.`,
-		});
-		await user.save();
-
-		// Notify all group admins
-		const adminIds = group.admins;
-		for (let adminId of adminIds) {
-			const admin = await User.findById(adminId);
-			if (admin) {
-				admin.notifications.push({
-					type: "Group",
-					message: `${user.displayName}'s request to join the group "${group.name}" has been rejected.`,
-				});
-				await admin.save();
-			}
+		// Add a notification to the requester's notifications array
+		const requester = await User.findById(groupRequest.user_id);
+		if (!requester) {
+			return res.status(404).json({ message: "Requester not found" });
 		}
 
-		res.status(200).json({ message: "Group member request rejected successfully", groupRequest });
-	} catch (error: any) {
-		res.status(500).json({ message: "Error rejecting group member request", error: error.message });
+		requester.notifications.push({
+			type: "Group",
+			message: `Your request to join the group "${group.name}" has been rejected.`,
+			isRead: false,
+			createdAt: new Date(),
+		});
+		await requester.save();
+
+		// Return success response
+		return res.status(200).json({ message: "Group request rejected successfully" });
+	} catch (error) {
+		console.error("Error rejecting group request:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
@@ -419,162 +423,194 @@ export const rejectGroupRequest = async (req: Request, res: Response) => {
 // Get all group creation requests
 export const getGroupCreationRequests = async (req: Request, res: Response) => {
 	try {
-		// Retrieve all group creation requests from the database
-		const groupCreationRequests = await GroupCreationRequest.find({ status: "Pending" });
+		// Find all pending group creation requests
+		const pendingRequests = await GroupCreationRequest.find({
+			status: "Pending",
+		})
+			.select("_id user_id createdAt status group")
+			.exec();
 
-		if (groupCreationRequests.length === 0) {
-			return res.status(404).json({ message: "No group creation requests found" });
-		}
+		// Format the response to include virtual fields
+		const formattedRequests = pendingRequests.map((request) => ({
+			_id: request._id,
+			user_id: request.user_id, // This will include populated user details if populated
+			createdAt: request.createdAt,
+			status: request.status,
+			group: {
+				name: request.group!.name,
+				description: request.group!.description,
+				visibility: request.group!.visibility,
+				// @ts-ignore
+				virtualGroupImage: request.virtualGroupImage,
+				// @ts-ignore
+				virtualCoverImage: request.virtualCoverImage,
+			},
+		}));
 
-		res.status(200).json(groupCreationRequests);
-	} catch (error: any) {
-		res.status(500).json({ message: "Error fetching group creation requests", error: error.message });
+		// Return the list of pending group creation requests
+		return res.status(200).json(formattedRequests);
+	} catch (error) {
+		console.error("Error retrieving group creation requests:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
-// Send group creation request
-export const sendGroupCreationRequest = async (req: Request, res: Response) => {
+// Create group creation request
+export const createGroupCreationRequest = async (req: Request, res: Response) => {
 	try {
-		const { senderId, group } = req.body;
+		// Get the current user's ID from the session
+		const userId = req.session.userId;
 
-		// Check if the senderId is a valid MongoDB ObjectId
-		if (!mongoose.Types.ObjectId.isValid(senderId)) {
-			return res.status(400).json({ message: "Invalid sender ID" });
+		// Validate the user ID format
+		if (userId && !mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
 		}
 
-		// Check if the user exists
-		const user = await User.findById(senderId);
-		if (!user) {
-			return res.status(404).json({ message: "User not found" });
-		}
-
-		// Validate the group data
-		const { name, description, visibility, groupImage, coverImage } = group;
-
+		// Validate the input fields
+		const { name, description, visibility } = req.body;
 		if (!name || !description || !visibility) {
 			return res.status(400).json({ message: "Name, description, and visibility are required" });
 		}
 
+		// Check visibility enum
+		if (!["Public", "Private"].includes(visibility)) {
+			return res.status(400).json({ message: "Visibility must be either 'Public' or 'Private'" });
+		}
+
+		// Handle file uploads safely
+		const groupImage =
+			req.files && "groupImage" in req.files ? (req.files["groupImage"] as Express.Multer.File[])[0] : null;
+		const coverImage =
+			req.files && "coverImage" in req.files ? (req.files["coverImage"] as Express.Multer.File[])[0] : null;
+
 		// Create a new group creation request
 		const groupCreationRequest = new GroupCreationRequest({
-			user_id: senderId,
+			user_id: userId,
 			group: {
 				name,
 				description,
 				visibility,
-				groupImage,
-				coverImage,
-				admins: [senderId], // Automatically set the sender as the admin
-				members: [senderId], // Automatically add the sender as the first member
+				groupImage: groupImage
+					? {
+							data: groupImage.buffer,
+							contentType: groupImage.mimetype,
+					  }
+					: undefined,
+				coverImage: coverImage
+					? {
+							data: coverImage.buffer,
+							contentType: coverImage.mimetype,
+					  }
+					: undefined,
+				admins: [userId],
+				members: [userId],
 				posts: [],
 			},
 			status: "Pending",
 		});
 
+		// Save the group creation request to the database
 		await groupCreationRequest.save();
 
-		res.status(201).json({ message: "Group creation request sent successfully", groupCreationRequest });
-	} catch (error: any) {
-		res.status(500).json({ message: "Error sending group creation request", error: error.message });
+		// Return success response
+		return res.status(201).json({ message: "Group creation request submitted successfully" });
+	} catch (error) {
+		console.error("Error creating group creation request:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
 // Accept group creation request
 export const acceptGroupCreationRequest = async (req: Request, res: Response) => {
 	try {
-		const { requestId } = req.params;
+		// Get the request ID from the request parameters
+		const requestId = req.params.id;
 
-		// Check if the requestId is a valid MongoDB ObjectId
+		// Validate the request ID format
 		if (!mongoose.Types.ObjectId.isValid(requestId)) {
 			return res.status(400).json({ message: "Invalid request ID" });
 		}
 
 		// Find the group creation request by ID
 		const groupCreationRequest = await GroupCreationRequest.findById(requestId);
-
 		if (!groupCreationRequest) {
 			return res.status(404).json({ message: "Group creation request not found" });
 		}
 
-		if (groupCreationRequest.status !== "Pending") {
-			return res.status(400).json({ message: "Group creation request is not pending" });
-		}
+		// Update the status of the group creation request to "Accepted"
+		groupCreationRequest.status = "Accepted";
+		await groupCreationRequest.save();
 
-		// Create the new group based on the request details
+		// Create the group using the data from the group creation request
 		const newGroup = new Group({
-			name: groupCreationRequest.group?.name,
-			description: groupCreationRequest.group?.description,
-			visibility: groupCreationRequest.group?.visibility,
-			groupImage: groupCreationRequest.group?.groupImage,
-			coverImage: groupCreationRequest.group?.coverImage,
-			admins: groupCreationRequest.group?.admins,
-			members: groupCreationRequest.group?.members,
-			posts: groupCreationRequest.group?.posts,
+			name: groupCreationRequest.group!.name,
+			description: groupCreationRequest.group!.description,
+			visibility: groupCreationRequest.group!.visibility,
+			groupImage: groupCreationRequest.group!.groupImage,
+			coverImage: groupCreationRequest.group!.coverImage,
+			admins: groupCreationRequest.group!.admins,
+			members: groupCreationRequest.group!.members,
 		});
 
 		await newGroup.save();
 
-		// Update the group creation request status to "Accepted"
-		groupCreationRequest.status = "Accepted";
-		await groupCreationRequest.save();
-
-		// Notify the user who made the request
+		// Send a notification to the user who sent the request
 		const user = await User.findById(groupCreationRequest.user_id);
 		if (user) {
 			user.notifications.push({
 				type: "Group",
-				message: `Your request to create the group "${newGroup.name}" has been accepted.`,
+				message: `Your group creation request for "${newGroup.name}" has been accepted.`,
+				isRead: false,
+				createdAt: new Date(),
 			});
 			await user.save();
 		}
 
-		res.status(200).json({
-			message: "Group creation request accepted successfully",
-			newGroup,
-			groupCreationRequest,
-		});
-	} catch (error: any) {
-		res.status(500).json({ message: "Error accepting group creation request", error: error.message });
+		// Return success response
+		return res.status(200).json({ message: "Group creation request accepted successfully", groupId: newGroup._id });
+	} catch (error) {
+		console.error("Error accepting group creation request:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
 // Reject group creation request
 export const rejectGroupCreationRequest = async (req: Request, res: Response) => {
 	try {
-		const { requestId } = req.params;
+		// Get the request ID from the request parameters
+		const requestId = req.params.id;
 
-		// Check if the requestId is a valid MongoDB ObjectId
+		// Validate the request ID format
 		if (!mongoose.Types.ObjectId.isValid(requestId)) {
 			return res.status(400).json({ message: "Invalid request ID" });
 		}
 
 		// Find the group creation request by ID
 		const groupCreationRequest = await GroupCreationRequest.findById(requestId);
-
 		if (!groupCreationRequest) {
 			return res.status(404).json({ message: "Group creation request not found" });
 		}
 
-		if (groupCreationRequest.status !== "Pending") {
-			return res.status(400).json({ message: "Group creation request is not pending" });
-		}
-
-		// Update the group creation request status to "Rejected"
+		// Update the status of the group creation request to "Rejected"
 		groupCreationRequest.status = "Rejected";
 		await groupCreationRequest.save();
 
-		// Notify the user who made the request
+		// Send a notification to the user who sent the request
 		const user = await User.findById(groupCreationRequest.user_id);
 		if (user) {
 			user.notifications.push({
 				type: "Group",
-				message: `Your request to create the group "${groupCreationRequest.group?.name}" has been rejected.`,
+				message: `Your group creation request for "${groupCreationRequest.group!.name}" has been rejected.`,
+				isRead: false,
+				createdAt: new Date(),
 			});
 			await user.save();
 		}
 
-		res.status(200).json({ message: "Group creation request rejected successfully", groupCreationRequest });
-	} catch (error: any) {
-		res.status(500).json({ message: "Error rejecting group creation request", error: error.message });
+		// Return success response
+		return res.status(200).json({ message: "Group creation request rejected successfully" });
+	} catch (error) {
+		console.error("Error rejecting group creation request:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };

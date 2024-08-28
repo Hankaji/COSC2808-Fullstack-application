@@ -3,7 +3,6 @@ export interface User {
   displayName: string;
   email: string;
   status: string;
-  posts: any[];
   createdAt: Date;
   updatedAt: Date;
   __v: number;

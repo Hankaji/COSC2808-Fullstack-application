@@ -10,7 +10,7 @@ import {
   MessageCircle,
   SmilePlus,
   ThumbsUp,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   ButtonHTMLAttributes,
   CSSProperties,

@@ -1,30 +1,29 @@
 import express from "express";
+import { isAuthenticated, isAdmin } from "../middleware/authentication";
 import {
 	getUsers,
 	getUserById,
-	getUserFriends,
-	getCurrentUserProfile,
-	getCurrentUserNotifications,
-	createUser,
-	updateUser,
+	getUserFriendsById,
+	getFriendRecommendationsById,
+	getUserGroupsById,
+	getUserNotificationsById,
+	readNotification,
+	unfriendById,
 	suspendUser,
-	reactivateUser,
-	deleteUser,
-	unfriendUser,
+	resumeUser,
 } from "../controllers/userController";
 
 const userRouter = express.Router();
 
-userRouter.get("/", getUsers);
-userRouter.get("/:id", getUserById);
-userRouter.get("/:id/friends", getUserFriends);
-userRouter.get("/current/profile", getCurrentUserProfile);
-userRouter.get("/current/notifications", getCurrentUserNotifications);
-userRouter.post("/", createUser);
-userRouter.put("/:id", updateUser);
-userRouter.put("/:id/suspend", suspendUser);
-userRouter.put("/:id/reactivate", reactivateUser);
-userRouter.delete("/:id", deleteUser);
-userRouter.put("/:userId/unfriend/:friendId", unfriendUser);
+userRouter.get("/", isAuthenticated, getUsers);
+userRouter.patch("/notifications/:notification_index", isAuthenticated, readNotification);
+userRouter.delete("/unfriend/:id", isAuthenticated, unfriendById);
+userRouter.patch("/suspend/:id", isAuthenticated, isAdmin, suspendUser);
+userRouter.patch("/resume/:id", isAuthenticated, isAdmin, resumeUser);
+userRouter.get("/:id", isAuthenticated, getUserById);
+userRouter.get("/:id/friends", isAuthenticated, getUserFriendsById);
+userRouter.get("/:id/friends/recommend", isAuthenticated, getFriendRecommendationsById);
+userRouter.get("/:id/groups", isAuthenticated, getUserGroupsById);
+userRouter.get("/:id/notifications", isAuthenticated, getUserNotificationsById);
 
 export default userRouter;
