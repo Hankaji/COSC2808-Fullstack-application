@@ -1,149 +1,60 @@
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
-import { User } from "../models/user";
+import User from "../models/user";
+import Group from "../models/group";
 
-// Get all users / Get current user
+// Get users
 export const getUsers = async (req: Request, res: Response) => {
 	try {
-		const { name, status, page = 1, limit = 10 } = req.query;
+		// Get the current user's ID and admin status from the session
+		const currentUserId = req.session.userId;
 		const isAdmin = req.session.isAdmin;
-		const userId = req.session.userId;
 
-		if (isAdmin) {
-			// Admin: Get all users with optional search and pagination
-			let query: any = {};
+		// Extract search params from the query
+		const { name, status, page = 1, limit = 10 } = req.query;
 
-			if (name) {
-				query.$or = [
-					{ username: new RegExp(name as string, "i") },
-					{ displayName: new RegExp(name as string, "i") },
-				];
-			}
+		// Base query
+		let query: any = {};
 
-			if (status) {
-				query.status = status;
-			}
-
-			const pageNumber = parseInt(page as string) || 1;
-			const limitNumber = parseInt(limit as string) || 10;
-			const skip = (pageNumber - 1) * limitNumber;
-
-			const users = await User.find(query)
-				.select("_id username displayName email profileImage")
-				.skip(skip)
-				.limit(limitNumber)
-				.lean();
-
-			return res.status(200).json({
-				page: pageNumber,
-				limit: limitNumber,
-				totalUsers: users.length,
-				users: users.map((user) => ({
-					_id: user._id,
-					username: user.username,
-					displayName: user.displayName,
-					email: user.email,
-					virtualProfileImage:
-						user.profileImage && user.profileImage.contentType && user.profileImage.data
-							? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString(
-									"base64"
-							  )}`
-							: undefined,
-				})),
-			});
-		} else {
-			// User: Get only their own data
-			if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-				return res.status(400).json({ message: "Invalid user ID" });
-			}
-
-			const user = await User.findById(userId).select("_id username displayName email profileImage").lean();
-
-			if (!user) {
-				return res.status(404).json({ message: "User not found" });
-			}
-
-			return res.status(200).json({
-				_id: user._id,
-				username: user.username,
-				displayName: user.displayName,
-				email: user.email,
-				virtualProfileImage:
-					user.profileImage && user.profileImage.contentType && user.profileImage.data
-						? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
-						: undefined,
-			});
-		}
-	} catch (error) {
-		console.error("Error retrieving users:", error);
-		return res.status(500).json({ message: "Internal server error" });
-	}
-};
-
-// Get the current user's friends
-export const getUserFriends = async (req: Request, res: Response) => {
-	try {
-		// Get the current user's ID from the session
-		const userId = req.session.userId;
-
-		// Validate the user ID format
-		if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-			return res.status(400).json({ message: "Invalid user ID" });
+		if (!isAdmin) {
+			// For regular users, exclude the current user and only include active users
+			query = {
+				_id: { $ne: currentUserId },
+				status: "Active",
+			};
 		}
 
-		// Find the user by ID and populate the friends array
-		const user = await User.findById(userId)
-			.populate("friends", "_id username displayName email profileImage")
-			.lean();
-
-		// Check if the user exists
-		if (!user) {
-			return res.status(404).json({ message: "User not found" });
+		// Apply additional filters
+		if (name) {
+			query.username = { $regex: name, $options: "i" }; // Case-insensitive search
 		}
 
-		// Extract the friends list and add virtualProfileImage to each friend
-		const friends = user.friends.map((friend: any) => ({
-			_id: friend._id,
-			username: friend.username,
-			displayName: friend.displayName,
-			email: friend.email,
-			virtualProfileImage:
-				friend.profileImage && friend.profileImage.contentType && friend.profileImage.data
-					? `data:${friend.profileImage.contentType};base64,${friend.profileImage.data.toString("base64")}`
-					: undefined,
+		if (status && isAdmin) {
+			query.status = status; // Admins can filter by status
+		}
+
+		// Pagination
+		const pageNumber = parseInt(page as string);
+		const pageSize = parseInt(limit as string);
+		const skip = (pageNumber - 1) * pageSize;
+
+		// Execute the query
+		const users = await User.find(query).skip(skip).limit(pageSize).exec();
+
+		// Format the response
+		const formattedUsers = users.map((user) => ({
+			_id: user._id,
+			username: user.username,
+			displayName: user.displayName,
+			email: user.email,
+			// @ts-ignore
+			virtualProfileImage: user.virtualProfileImage,
 		}));
 
-		// Return the friends list
-		return res.status(200).json(friends);
+		// Return the users
+		return res.status(200).json(formattedUsers);
 	} catch (error) {
-		console.error("Error retrieving user's friends:", error);
-		return res.status(500).json({ message: "Internal server error" });
-	}
-};
-
-// Get the current user's notifications
-export const getUserNotifications = async (req: Request, res: Response) => {
-	try {
-		// Get the current user's ID from the session
-		const userId = req.session.userId;
-
-		// Validate the user ID format
-		if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-			return res.status(400).json({ message: "Invalid user ID" });
-		}
-
-		// Find the user by ID and select only the notifications array
-		const user = await User.findById(userId).select("notifications").lean();
-
-		// Check if the user exists
-		if (!user) {
-			return res.status(404).json({ message: "User not found" });
-		}
-
-		// Return the user's notifications
-		return res.status(200).json(user.notifications);
-	} catch (error) {
-		console.error("Error retrieving user's notifications:", error);
+		console.error("Error retrieving users:", error);
 		return res.status(500).json({ message: "Internal server error" });
 	}
 };
@@ -173,10 +84,8 @@ export const getUserById = async (req: Request, res: Response) => {
 			username: user.username,
 			displayName: user.displayName,
 			email: user.email,
-			virtualProfileImage:
-				user.profileImage && user.profileImage.contentType && user.profileImage.data
-					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
-					: undefined,
+			// @ts-ignore
+			virtualProfileImage: user.virtualProfileImage,
 		};
 
 		// Return the user
@@ -212,16 +121,120 @@ export const getUserFriendsById = async (req: Request, res: Response) => {
 			username: friend.username,
 			displayName: friend.displayName,
 			email: friend.email,
-			virtualProfileImage:
-				friend.profileImage && friend.profileImage.contentType && friend.profileImage.data
-					? `data:${friend.profileImage.contentType};base64,${friend.profileImage.data.toString("base64")}`
-					: undefined,
+			virtualProfileImage: friend.virtualProfileImage,
 		}));
 
 		// Return the friends list
 		return res.status(200).json(friends);
 	} catch (error) {
 		console.error("Error retrieving user's friends:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get a user's friends recommendations by ID
+export const getFriendRecommendations = async (req: Request, res: Response) => {
+	try {
+		const userId = req.params.id;
+
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+
+		// Find the user by ID and get their current friends
+		const user = await User.findById(userId).select("friends").exec();
+
+		// If the user is not found, return a 404 error
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// Find users who are not friends with the current user
+		let recommendations = await User.find({
+			_id: { $ne: userId, $nin: user.friends }, // Exclude current user and their friends
+		})
+			.select("_id username displayName email profileImage contentType") // Select necessary fields
+			.exec();
+
+		// Shuffle the array and select 10 random users
+		recommendations = recommendations.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+		// Return the list of recommended friends, including virtualProfileImage
+		return res.status(200).json(
+			recommendations.map((user) => ({
+				_id: user._id,
+				username: user.username,
+				displayName: user.displayName,
+				email: user.email,
+				// @ts-ignore
+				virtualProfileImage: user.virtualProfileImage,
+			}))
+		);
+	} catch (error) {
+		console.error("Error retrieving friend recommendations:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get a user's groups by ID
+export const getUserGroupsById = async (req: Request, res: Response) => {
+	try {
+		const userId = req.params.id;
+
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+
+		// Find all groups where the user is a member or an admin
+		const groups = await Group.find({
+			$or: [{ members: userId }, { admins: userId }],
+		})
+			.select("name description visibility")
+			.exec();
+
+		// Format the response to include virtual fields
+		const formattedGroups = groups.map((group) => ({
+			name: group.name,
+			description: group.description,
+			visibility: group.visibility,
+			// @ts-ignore
+			virtualGroupImage: group.virtualGroupImage,
+			// @ts-ignore
+			virtualCoverImage: group.virtualCoverImage,
+		}));
+
+		// Return the list of groups
+		return res.status(200).json(formattedGroups);
+	} catch (error) {
+		console.error("Error retrieving groups for user:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get a user's notifications by ID
+export const getUserNotificationsById = async (req: Request, res: Response) => {
+	try {
+		const userId = req.params.id;
+
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+
+		// Find the user by ID and get the notifications
+		const user = await User.findById(userId).select("notifications").exec();
+
+		// If the user is not found, return a 404 error
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// Return the user's notifications
+		return res.status(200).json(user.notifications);
+	} catch (error) {
+		console.error("Error retrieving user notifications:", error);
 		return res.status(500).json({ message: "Internal server error" });
 	}
 };

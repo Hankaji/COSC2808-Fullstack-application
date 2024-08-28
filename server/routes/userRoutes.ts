@@ -2,10 +2,11 @@ import express from "express";
 import { isAuthenticated, isAdmin } from "../middleware/authentication";
 import {
 	getUsers,
-	getUserFriends,
-	getUserNotifications,
 	getUserById,
 	getUserFriendsById,
+	getFriendRecommendations,
+	getUserGroupsById,
+	getUserNotificationsById,
 	unfriendById,
 	suspendUser,
 	resumeUser,
@@ -14,12 +15,13 @@ import {
 const userRouter = express.Router();
 
 userRouter.get("/", isAuthenticated, getUsers);
-userRouter.get("/friends", isAuthenticated, getUserFriends);
-userRouter.get("/notifications", isAuthenticated, getUserNotifications);
 userRouter.delete("/unfriend/:id", isAuthenticated, unfriendById);
 userRouter.patch("/suspend/:id", isAuthenticated, isAdmin, suspendUser);
 userRouter.patch("/resume/:id", isAuthenticated, isAdmin, resumeUser);
 userRouter.get("/:id", isAuthenticated, getUserById);
 userRouter.get("/:id/friends", isAuthenticated, getUserFriendsById);
+userRouter.get("/:id/friends/recommend", isAuthenticated, getFriendRecommendations);
+userRouter.get("/:id/groups", isAuthenticated, getUserGroupsById);
+userRouter.get("/:id/notifications", isAuthenticated, getUserNotificationsById);
 
 export default userRouter;

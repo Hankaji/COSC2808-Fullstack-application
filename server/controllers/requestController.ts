@@ -420,10 +420,30 @@ export const getGroupCreationRequests = async (req: Request, res: Response) => {
 		// Find all pending group creation requests
 		const pendingRequests = await GroupCreationRequest.find({
 			status: "Pending",
-		}).lean();
+		})
+			.select("_id user_id createdAt status group")
+			.populate("user_id", "username email displayName") // Optionally populate user details
+			.exec();
 
-		// Return the list of pending group creation requests, including virtual fields
-		return res.status(200).json(pendingRequests);
+		// Format the response to include virtual fields
+		const formattedRequests = pendingRequests.map((request) => ({
+			_id: request._id,
+			user_id: request.user_id, // This will include populated user details if populated
+			createdAt: request.createdAt,
+			status: request.status,
+			group: {
+				name: request.group!.name,
+				description: request.group!.description,
+				visibility: request.group!.visibility,
+				// @ts-ignore
+				virtualGroupImage: request.virtualGroupImage,
+				// @ts-ignore
+				virtualCoverImage: request.virtualCoverImage,
+			},
+		}));
+
+		// Return the list of pending group creation requests
+		return res.status(200).json(formattedRequests);
 	} catch (error) {
 		console.error("Error retrieving group creation requests:", error);
 		return res.status(500).json({ message: "Internal server error" });
