@@ -1,273 +1,390 @@
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
-import { User } from "../models/user";
+import User from "../models/user";
+import Group from "../models/group";
 
-// Search for users
+// Get users
 export const getUsers = async (req: Request, res: Response) => {
-  try {
-    const { name } = req.query;
-    let users;
-    let filter = {};
+	try {
+		// Get the current user's ID and admin status from the session
+		const currentUserId = req.session.userId;
+		const isAdmin = req.session.isAdmin;
 
-		const nameRegex = new RegExp(name as string, "i");
-		filter = {
-			$or: [{ username: nameRegex }, { displayName: nameRegex }],
-		};
-		users = await User.find(filter).select("-password -notifications -friends");
-		res.status(200).json(users);
-	} catch (error: any) {
-		res.status(500).json({ message: "Error fetching users", error: error.message });
+		// Extract search params from the query
+		const { name, status, page = 1, limit = 10 } = req.query;
+
+		// Base query
+		let query: any = {};
+
+		if (!isAdmin) {
+			// For regular users, exclude the current user and only include active users
+			query = {
+				_id: { $ne: currentUserId },
+				status: "Active",
+			};
+		}
+
+		// Apply additional filters
+		if (name) {
+			query.username = { $regex: name, $options: "i" }; // Case-insensitive search
+		}
+
+		if (status && isAdmin) {
+			query.status = status; // Admins can filter by status
+		}
+
+		// Pagination
+		const pageNumber = parseInt(page as string);
+		const pageSize = parseInt(limit as string);
+		const skip = (pageNumber - 1) * pageSize;
+
+		// Execute the query
+		const users = await User.find(query).skip(skip).limit(pageSize).exec();
+
+		// Format the response
+		const formattedUsers = users.map((user) => ({
+			_id: user._id,
+			username: user.username,
+			displayName: user.displayName,
+			email: user.email,
+			// @ts-ignore
+			virtualProfileImage: user.virtualProfileImage,
+		}));
+
+		// Return the users
+		return res.status(200).json(formattedUsers);
+	} catch (error) {
+		console.error("Error retrieving users:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
 // Get a user by ID
 export const getUserById = async (req: Request, res: Response) => {
 	try {
+		// Extract user ID from the request parameters
 		const { id } = req.params;
-		const user = await User.findById(id).select("-password -notifications -friends");
 
+		// Validate the ID format
+		if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+
+		// Find the user by ID
+		const user = await User.findById(id).select("_id username displayName email profileImage").lean();
+
+		// Check if the user exists
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		res.status(200).json(user);
-	} catch (error: any) {
-		res.status(500).json({ message: "Error fetching user", error: error.message });
+		// Add virtualProfileImage to the user
+		const userWithProfileImage = {
+			_id: user._id,
+			username: user.username,
+			displayName: user.displayName,
+			email: user.email,
+			virtualProfileImage:
+				user.profileImage && user.profileImage.contentType && user.profileImage.data
+					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+					: undefined,
+		};
+
+		// Return the user
+		return res.status(200).json(userWithProfileImage);
+	} catch (error) {
+		console.error("Error retrieving user:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
 // Get a user's friends by ID
-export const getUserFriends = async (req: Request, res: Response) => {
+export const getUserFriendsById = async (req: Request, res: Response) => {
 	try {
+		// Extract user ID from the request parameters
 		const { id } = req.params;
 
-		// Check if the userId is a valid MongoDB ObjectId
+		// Validate the ID format
 		if (!mongoose.Types.ObjectId.isValid(id)) {
 			return res.status(400).json({ message: "Invalid user ID" });
 		}
 
-		// Find the user by ID and select only the friends field
-		const user = await User.findById(id).select("friends");
+		// Find the user by ID and populate the friends array
+		const user = await User.findById(id).populate("friends", "_id username displayName email profileImage").lean();
 
+		// Check if the user exists
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		res.status(200).json(user.friends);
-	} catch (error: any) {
-		res.status(500).json({ message: "Error fetching user friends", error: error.message });
+		// Extract the friends list and add virtualProfileImage to each friend
+		const friends = user.friends.map((friend: any) => ({
+			_id: friend._id,
+			username: friend.username,
+			displayName: friend.displayName,
+			email: friend.email,
+			virtualProfileImage:
+				friend.profileImage && friend.profileImage.contentType && friend.profileImage.data
+					? `data:${friend.profileImage.contentType};base64,${friend.profileImage.data.toString("base64")}`
+					: undefined,
+		}));
+
+		// Return the friends list
+		return res.status(200).json(friends);
+	} catch (error) {
+		console.error("Error retrieving user's friends:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
-// Get current user's profile
-export const getCurrentUserProfile = async (req: Request, res: Response) => {
+// Get a user's friends recommendations by ID
+export const getFriendRecommendationsById = async (req: Request, res: Response) => {
 	try {
-		// Check if the session contains a userId
-		if (!req.session.userId) {
-			return res.status(401).json({ message: "Not authenticated" });
+		const userId = req.params.id;
+
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
 		}
 
-		// Find the user by the userId stored in the session and exclude the password and notifications fields
-		const user = await User.findById(req.session.userId).select("-password -notifications");
+		// Find the user by ID and get their current friends
+		const user = await User.findById(userId).select("friends").exec();
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+		// If the user is not found, return a 404 error
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
 
-		res.status(200).json(user);
-	} catch (error: any) {
-		res.status(500).json({ message: "Error fetching user", error: error.message });
+		// Find users who are not friends with the current user
+		let recommendations = await User.find({
+			_id: { $ne: userId, $nin: user.friends }, // Exclude current user and their friends
+		})
+			.select("_id username displayName email profileImage contentType") // Select necessary fields
+			.exec();
+
+		// Shuffle the array and select 10 random users
+		recommendations = recommendations.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+		// Return the list of recommended friends, including virtualProfileImage
+		return res.status(200).json(
+			recommendations.map((user) => ({
+				_id: user._id,
+				username: user.username,
+				displayName: user.displayName,
+				email: user.email,
+				// @ts-ignore
+				virtualProfileImage: user.virtualProfileImage,
+			}))
+		);
+	} catch (error) {
+		console.error("Error retrieving friend recommendations:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
-// Get current user's notifications
-export const getCurrentUserNotifications = async (req: Request, res: Response) => {
+// Get a user's groups by ID
+export const getUserGroupsById = async (req: Request, res: Response) => {
 	try {
-		// Check if the session contains a userId
-		if (!req.session.userId) {
-			return res.status(401).json({ message: "Not authenticated" });
+		const userId = req.params.id;
+
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
 		}
 
-		// Find the user by the userId stored in the session and select only the notifications field
-		const user = await User.findById(req.session.userId).select("notifications");
+		// Find all groups where the user is a member or an admin
+		const groups = await Group.find({
+			$or: [{ members: userId }, { admins: userId }],
+		})
+			.select("name description visibility")
+			.exec();
 
+		// Format the response to include virtual fields
+		const formattedGroups = groups.map((group) => ({
+			name: group.name,
+			description: group.description,
+			visibility: group.visibility,
+			// @ts-ignore
+			virtualGroupImage: group.virtualGroupImage,
+			// @ts-ignore
+			virtualCoverImage: group.virtualCoverImage,
+		}));
+
+		// Return the list of groups
+		return res.status(200).json(formattedGroups);
+	} catch (error) {
+		console.error("Error retrieving groups for user:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get a user's notifications by ID
+export const getUserNotificationsById = async (req: Request, res: Response) => {
+	try {
+		const userId = req.params.id;
+
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+
+		// Find the user by ID and get the notifications
+		const user = await User.findById(userId).select("notifications").exec();
+
+		// If the user is not found, return a 404 error
 		if (!user) {
 			return res.status(404).json({ message: "User not found" });
 		}
 
 		// Return the user's notifications
-		res.status(200).json(user.notifications);
-	} catch (error: any) {
-		res.status(500).json({ message: "Error fetching notifications", error: error.message });
+		return res.status(200).json(user.notifications);
+	} catch (error) {
+		console.error("Error retrieving user notifications:", error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };
 
-// Get a user by username
-export const getUserByUsername = (username: string) => User.findOne({ username });
+// Read a notification by notification index
+export const readNotification = async (req: Request, res: Response) => {
+	try {
+		const userId = req.session.userId;
+		const notificationIndex = parseInt(req.params.notification_index);
 
-// Create a new user
-export const createUser = async (req: Request, res: Response) => {
-  try {
-    const { username, displayName, email, password, profileImage } = req.body;
+		// Validate the user ID format
+		if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
 
-    const user = new User({
-      username,
-      displayName,
-      email,
-      password,
-      profileImage,
-    });
+		// Find the user by ID
+		const user = await User.findById(userId);
 
-    await user.save();
-    res.status(201).json(user);
-  } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error creating user", error: error.message });
-  }
+		// If the user is not found, return a 404 error
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// Check if the notification index is valid
+		if (notificationIndex < 0 || notificationIndex >= user.notifications.length) {
+			return res.status(400).json({ message: "Invalid notification index" });
+		}
+
+		// Mark the notification as read
+		user.notifications[notificationIndex].isRead = true;
+		await user.save();
+
+		// Return success response
+		return res.status(200).json({ message: "Notification marked as read successfully" });
+	} catch (error) {
+		console.error("Error marking notification as read:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// Update a user by ID
-export const updateUser = async (req: Request, res: Response) => {
+// Unfriend a user by ID
+export const unfriendById = async (req: Request, res: Response) => {
 	try {
-		const user = await User.findById(req.params.id);
-		if (user) {
-			user.username = req.body.username || user.username;
-			user.displayName = req.body.displayName || user.displayName;
-			user.email = req.body.email || user.email;
-			user.password = req.body.password || user.password;
-			user.profileImage = req.body.profileImage || user.profileImage;
-			user.status = req.body.status || user.status;
-			user.friends = req.body.friends || user.friends;
-			user.notifications = req.body.notifications || user.notifications;
+		// Get the current user's ID from the session and the friend's ID from the request parameters
+		const userId = req.session.userId;
+		const friendId = req.params.id;
 
-      const updatedUser = await user.save();
-      res
-        .status(200)
-        .json({ message: "User updated successfully", updatedUser });
-    } else {
-      res.status(404).json({ message: "User not found" });
-    }
-  } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error updating user", error: error.message });
-  }
+		// Validate both user IDs
+		if (!mongoose.Types.ObjectId.isValid(userId!) || !mongoose.Types.ObjectId.isValid(friendId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+
+		// Find the current user
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ message: "Current user not found" });
+		}
+
+		// Check if the friend is in the current user's friend list
+		const friendIndex = user.friends.indexOf(new mongoose.Types.ObjectId(friendId));
+		if (friendIndex === -1) {
+			return res.status(404).json({ message: "Friend not found in your friend list" });
+		}
+
+		// Remove the friend from the current user's friend list
+		user.friends.splice(friendIndex, 1);
+		await user.save();
+
+		// Remove the current user from the friend's friend list
+		const friend = await User.findById(friendId);
+		if (friend) {
+			const userIndex = friend.friends.indexOf(userId!);
+			if (userIndex !== -1) {
+				friend.friends.splice(userIndex, 1);
+				await friend.save();
+			}
+		}
+
+		// Return success response
+		return res.status(200).json({ message: "User unfriended successfully" });
+	} catch (error) {
+		console.error("Error unfriending user:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
 // Suspend a user by ID
 export const suspendUser = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+	try {
+		// Get the user's ID from the request parameters
+		const userId = req.params.id;
 
-    // Check if the provided ID is a valid MongoDB ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
 
-    // Find the user by ID
-    const user = await User.findById(id);
+		// Find the user by ID
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+		// Suspend the user account
+		user.status = "Suspended";
+		await user.save();
 
-    // Update the user's status to "Suspended"
-    user.status = "Suspended";
-    await user.save();
-
-    res.status(200).json({ message: "User suspended successfully", user });
-  } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error suspending user", error: error.message });
-  }
+		// Return success response
+		return res.status(200).json({ message: "User account suspended successfully" });
+	} catch (error) {
+		console.error("Error suspending user account:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// Reactivate a suspended user by ID
-export const reactivateUser = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+// Resume a suspended user by ID
+export const resumeUser = async (req: Request, res: Response) => {
+	try {
+		// Get the user's ID from the request parameters
+		const userId = req.params.id;
 
-    // Check if the provided ID is a valid MongoDB ObjectId
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
 
-    // Find the user by ID
-    const user = await User.findById(id);
+		// Find the user by ID
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+		// Check if the user is already active
+		if (user.status === "Active") {
+			return res.status(400).json({ message: "User account is already active" });
+		}
 
-    // Update the user's status to "Active"
-    user.status = "Active";
-    await user.save();
+		// Reactivate the user account
+		user.status = "Active";
+		await user.save();
 
-    res.status(200).json({ message: "User reactivated successfully", user });
-  } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error reactivating user", error: error.message });
-  }
-};
-
-// Delete a user by ID
-export const deleteUser = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const user = await User.findByIdAndDelete(id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json({ message: "User deleted successfully", id });
-  } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error deleting user", error: error.message });
-  }
-};
-
-// Unfriend another user
-export const unfriendUser = async (req: Request, res: Response) => {
-  try {
-    const { userId, friendId } = req.params;
-
-    // Check if both userId and friendId are valid MongoDB ObjectIds
-    if (
-      !mongoose.Types.ObjectId.isValid(userId) ||
-      !mongoose.Types.ObjectId.isValid(friendId)
-    ) {
-      return res.status(400).json({ message: "Invalid user or friend ID" });
-    }
-
-    // Find the user who is making the unfriend request
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Find the friend user who is being unfriended
-    const friend = await User.findById(friendId);
-    if (!friend) {
-      return res.status(404).json({ message: "Friend not found" });
-    }
-
-    // Remove the friendId from the user's friends list
-    user.friends = user.friends.filter((id) => id.toString() !== friendId);
-    await user.save();
-
-    // Remove the userId from the friend's friends list
-    friend.friends = friend.friends.filter((id) => id.toString() !== userId);
-    await friend.save();
-
-    res.status(200).json({ message: "Successfully unfriended", user, friend });
-  } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error unfriending user", error: error.message });
-  }
+		// Return success response
+		return res.status(200).json({ message: "User account reactivated successfully" });
+	} catch (error) {
+		console.error("Error reactivating user account:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };

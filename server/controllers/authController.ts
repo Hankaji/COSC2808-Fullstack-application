@@ -1,65 +1,124 @@
+import type { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import { User } from "../models/user";
-import { getUserById, getUserByUsername } from "./userController";
-import { json, type Request, type Response } from "express";
-import multer from "multer";
-import dotenv from "dotenv";
-
-dotenv.config();
+import Admin from "../models/admin";
+import User from "../models/user";
 
 export const register = async (req: Request, res: Response) => {
-  console.log(req.file);
-  const SALT_ROUNDS = 10;
-  const hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS);
+	try {
+		const { username, displayName, email, password } = req.body;
+		const profileImageFile = req.file;
 
-  let profileImage = undefined;
-  if (req.file) {
-    profileImage = {
-      data: req.file.buffer,
-      contentType: req.file.mimetype,
-    };
-  }
-  const user = new User({
-    username: req.body.username,
-    displayName: req.body.displayName,
-    email: req.body.email,
-    password: hashedPassword,
-    profileImage: profileImage,
-  });
-  console.log("asdfadf");
+		// Validate input
+		if (!username || !displayName || !email || !password) {
+			return res.status(400).json({ message: "All fields are required!" });
+		}
 
-  try {
-    const newUser = await user.save();
-    res.status(201).json(newUser);
-  } catch (error: any) {
-    res.status(400).json({ message: error.message });
-  }
+		// Check if username or email already exists
+		const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+		if (existingUser) {
+			return res.status(400).json({ message: "Username or email already exists" });
+		}
+
+		// Hash the password
+		const SALT_ROUNDS = 10;
+		const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+		// Handle profile image if provided
+		let profileImage = undefined;
+		if (profileImageFile) {
+			profileImage = {
+				data: profileImageFile.buffer,
+				contentType: profileImageFile.mimetype,
+			};
+		}
+
+		// Create and save the new user
+		const newUser = new User({
+			username,
+			displayName,
+			email,
+			password: hashedPassword,
+			profileImage,
+		});
+		await newUser.save();
+
+		// Return the new user data
+		res.status(201).json({ message: "User registered successfully", user: newUser });
+	} catch (error: any) {
+		console.error("Error registering user:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
+
 export const login = async (req: Request, res: Response) => {
-  try {
-    const { username, password } = req.body;
+	try {
+		const { username, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-    const user = await getUserByUsername(username);
+		// Validate input
+		if (!username || !password) {
+			return res.status(400).json({ message: "All fields are required!" });
+		}
 
-    if (!user) {
-      return res.status(400).json({ error: "No user found" });
-    }
+		// Check if the user is an admin
+		let user = await Admin.findOne({ username });
+		let isAdmin = false;
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res.status(400).json({ error: "Wrong password" });
-    }
+		if (!user) {
+			// If not an admin, check if they are a regular user
+			user = await User.findOne({ username });
+			if (!user) {
+				return res.status(401).json({ message: "Invalid username" });
+			}
 
-    req.session.userId = user._id;
-    req.session.username = user.username;
+			// Check if the user is suspended
+			if ((user as any).status === "Suspended") {
+				return res.status(403).json({ message: "Account is suspended. Please contact the Admin to get support." });
+			}
+		} else {
+			isAdmin = true;
+		}
 
-    const { password: _, ...userData } = user.toObject();
-    return res.status(200).json(userData);
-  } catch (error) {
-    console.error("Error in register:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
+		// Compare the provided password with the stored hashed password
+		const isMatch = await bcrypt.compare(password, user.password);
+		if (!isMatch) {
+			return res.status(401).json({ message: "Invalid password" });
+		}
+
+		// Set session data
+		req.session.userId = user._id;
+		req.session.username = user.username as String;
+		req.session.isAdmin = isAdmin;
+
+		// Return success response
+		return res.status(200).json({
+			message: "User logged in successfully",
+			userId: req.session.userId,
+			username: req.session.username,
+			isAdmin: req.session.isAdmin,
+		});
+	} catch (error: any) {
+		console.error("Error logging in user:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+export const logout = (req: Request, res: Response) => {
+	try {
+		// Destroy the session
+		req.session.destroy((err) => {
+			if (err) {
+				console.error("Error during logout:", err);
+				return res.status(500).json({ message: "Internal server error" });
+			}
+
+			// Clear the cookie
+			res.clearCookie("connect.sid"); // Assuming you're using the default session cookie name
+
+			// Return success response
+			return res.status(200).json({ message: "Logout successful" });
+		});
+	} catch (error: any) {
+		console.error("Error logging out user:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };

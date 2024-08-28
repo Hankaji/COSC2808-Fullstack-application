@@ -1,40 +1,47 @@
 import express from "express";
+import { isAuthenticated, isAdmin } from "../middleware/authentication";
+import fileUpload from "../middleware/fileUpload";
 import {
-	getAllRequests,
 	getFriendRequests,
-	sendFriendRequest,
+	createFriendRequest,
 	acceptFriendRequest,
 	rejectFriendRequest,
 	getGroupRequests,
-	sendGroupRequest,
+	createGroupRequest,
 	acceptGroupRequest,
 	rejectGroupRequest,
 	getGroupCreationRequests,
-	sendGroupCreationRequest,
+	createGroupCreationRequest,
 	acceptGroupCreationRequest,
 	rejectGroupCreationRequest,
 } from "../controllers/requestController";
 
 const requestRouter = express.Router();
 
-requestRouter.get("/", getAllRequests);
-
 // Friend requests
-requestRouter.get("/friend_requests/:userId", getFriendRequests);
-requestRouter.post("/friend_requests", sendFriendRequest);
-requestRouter.put("/friend_requests/accept/:requestId", acceptFriendRequest);
-requestRouter.put("/friend_requests/reject/:requestId", rejectFriendRequest);
+requestRouter.get("/friend_requests", isAuthenticated, getFriendRequests);
+requestRouter.post("/friend_requests", isAuthenticated, createFriendRequest);
+requestRouter.patch("/friend_requests/accept/:id", isAuthenticated, acceptFriendRequest);
+requestRouter.patch("/friend_requests/reject/:id", isAuthenticated, rejectFriendRequest);
 
 // Group requests
-requestRouter.get("/group_requests/:groupId", getGroupRequests);
-requestRouter.post("/group_requests", sendGroupRequest);
-requestRouter.put("/group_requests/accept/:requestId", acceptGroupRequest);
-requestRouter.put("/group_requests/reject/:requestId", rejectGroupRequest);
+requestRouter.get("/group_requests", getGroupRequests);
+requestRouter.post("/group_requests", createGroupRequest);
+requestRouter.patch("/group_requests/accept/:id", acceptGroupRequest);
+requestRouter.patch("/group_requests/reject/:id", rejectGroupRequest);
 
 // Group creation requests
-requestRouter.get("/group_creation_requests", getGroupCreationRequests);
-requestRouter.post("/group_creation_requests", sendGroupCreationRequest);
-requestRouter.put("/group_creation_requests/accept/:requestId", acceptGroupCreationRequest);
-requestRouter.put("/group_creation_requests/reject/:requestId", rejectGroupCreationRequest);
+requestRouter.get("/group_creation_requests", isAuthenticated, isAdmin, getGroupCreationRequests);
+requestRouter.post(
+	"/group_creation_requests",
+	isAuthenticated,
+	fileUpload.fields([
+		{ name: "groupImage", maxCount: 1 },
+		{ name: "coverImage", maxCount: 1 },
+	]),
+	createGroupCreationRequest
+);
+requestRouter.patch("/group_creation_requests/accept/:id", isAuthenticated, isAdmin, acceptGroupCreationRequest);
+requestRouter.patch("/group_creation_requests/reject/:id", isAuthenticated, isAdmin, rejectGroupCreationRequest);
 
 export default requestRouter;
