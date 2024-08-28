@@ -58,11 +58,11 @@ const NotificationList: FC = () => {
   );
 
   return (
-    <div className="">
+    <div className="flex flex-col h-[calc(100vh-100px)]">
       <h2 className="font-bold text-3xl pb-3 border-b-2 border-border">
         Notifications
       </h2>
-      <div className="">
+      <div className="flex-grow overflow-y-auto mt-4 pr-3">
         {sortedList.map((item) => (
           <NotificationItem
             key={item.id}
