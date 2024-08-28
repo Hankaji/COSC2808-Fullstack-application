@@ -4,9 +4,10 @@ import {
 	getUsers,
 	getUserById,
 	getUserFriendsById,
-	getFriendRecommendations,
+	getFriendRecommendationsById,
 	getUserGroupsById,
 	getUserNotificationsById,
+	readNotification,
 	unfriendById,
 	suspendUser,
 	resumeUser,
@@ -15,12 +16,13 @@ import {
 const userRouter = express.Router();
 
 userRouter.get("/", isAuthenticated, getUsers);
+userRouter.patch("/notifications/:notification_index", isAuthenticated, readNotification);
 userRouter.delete("/unfriend/:id", isAuthenticated, unfriendById);
 userRouter.patch("/suspend/:id", isAuthenticated, isAdmin, suspendUser);
 userRouter.patch("/resume/:id", isAuthenticated, isAdmin, resumeUser);
 userRouter.get("/:id", isAuthenticated, getUserById);
 userRouter.get("/:id/friends", isAuthenticated, getUserFriendsById);
-userRouter.get("/:id/friends/recommend", isAuthenticated, getFriendRecommendations);
+userRouter.get("/:id/friends/recommend", isAuthenticated, getFriendRecommendationsById);
 userRouter.get("/:id/groups", isAuthenticated, getUserGroupsById);
 userRouter.get("/:id/notifications", isAuthenticated, getUserNotificationsById);
 

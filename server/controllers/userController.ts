@@ -66,12 +66,12 @@ export const getUserById = async (req: Request, res: Response) => {
 		const { id } = req.params;
 
 		// Validate the ID format
-		if (!mongoose.Types.ObjectId.isValid(id)) {
+		if (!id || !mongoose.Types.ObjectId.isValid(id)) {
 			return res.status(400).json({ message: "Invalid user ID" });
 		}
 
 		// Find the user by ID
-		const user = await User.findById(id).select("_id username displayName email profileImage").lean(); // Using lean() for faster read-only queries
+		const user = await User.findById(id).select("_id username displayName email profileImage").lean();
 
 		// Check if the user exists
 		if (!user) {
@@ -84,8 +84,10 @@ export const getUserById = async (req: Request, res: Response) => {
 			username: user.username,
 			displayName: user.displayName,
 			email: user.email,
-			// @ts-ignore
-			virtualProfileImage: user.virtualProfileImage,
+			virtualProfileImage:
+				user.profileImage && user.profileImage.contentType && user.profileImage.data
+					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+					: undefined,
 		};
 
 		// Return the user
@@ -121,7 +123,10 @@ export const getUserFriendsById = async (req: Request, res: Response) => {
 			username: friend.username,
 			displayName: friend.displayName,
 			email: friend.email,
-			virtualProfileImage: friend.virtualProfileImage,
+			virtualProfileImage:
+				friend.profileImage && friend.profileImage.contentType && friend.profileImage.data
+					? `data:${friend.profileImage.contentType};base64,${friend.profileImage.data.toString("base64")}`
+					: undefined,
 		}));
 
 		// Return the friends list
@@ -133,7 +138,7 @@ export const getUserFriendsById = async (req: Request, res: Response) => {
 };
 
 // Get a user's friends recommendations by ID
-export const getFriendRecommendations = async (req: Request, res: Response) => {
+export const getFriendRecommendationsById = async (req: Request, res: Response) => {
 	try {
 		const userId = req.params.id;
 
@@ -235,6 +240,42 @@ export const getUserNotificationsById = async (req: Request, res: Response) => {
 		return res.status(200).json(user.notifications);
 	} catch (error) {
 		console.error("Error retrieving user notifications:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Read a notification by notification index
+export const readNotification = async (req: Request, res: Response) => {
+	try {
+		const userId = req.session.userId;
+		const notificationIndex = parseInt(req.params.notification_index);
+
+		// Validate the user ID format
+		if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+
+		// Find the user by ID
+		const user = await User.findById(userId);
+
+		// If the user is not found, return a 404 error
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// Check if the notification index is valid
+		if (notificationIndex < 0 || notificationIndex >= user.notifications.length) {
+			return res.status(400).json({ message: "Invalid notification index" });
+		}
+
+		// Mark the notification as read
+		user.notifications[notificationIndex].isRead = true;
+		await user.save();
+
+		// Return success response
+		return res.status(200).json({ message: "Notification marked as read successfully" });
+	} catch (error) {
+		console.error("Error marking notification as read:", error);
 		return res.status(500).json({ message: "Internal server error" });
 	}
 };

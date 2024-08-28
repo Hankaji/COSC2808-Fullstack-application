@@ -116,7 +116,7 @@ export const acceptFriendRequest = async (req: Request, res: Response) => {
 		}
 
 		// Check if the current user is the receiver of the friend request
-		if (friendRequest.receiver_id !== req.session.userId) {
+		if (friendRequest.receiver_id != req.session.userId) {
 			return res.status(403).json({ message: "You are not authorized to accept this friend request" });
 		}
 
@@ -173,13 +173,19 @@ export const rejectFriendRequest = async (req: Request, res: Response) => {
 		}
 
 		// Check if the current user is the receiver of the friend request
-		if (friendRequest.receiver_id !== req.session.userId) {
+		if (friendRequest.receiver_id != req.session.userId) {
 			return res.status(403).json({ message: "You are not authorized to reject this friend request" });
 		}
 
 		// Update the status of the friend request to "Rejected"
 		friendRequest.status = "Rejected";
 		await friendRequest.save();
+
+		// Fetch the receiver's information
+		const receiver = await User.findById(req.session.userId);
+		if (!receiver) {
+			return res.status(404).json({ message: "Receiver not found" });
+		}
 
 		// Add a notification to the sender's notifications array
 		const sender = await User.findById(friendRequest.sender_id);
@@ -189,7 +195,7 @@ export const rejectFriendRequest = async (req: Request, res: Response) => {
 
 		sender.notifications.push({
 			type: "User",
-			message: `${req.session.username} has rejected your friend request.`,
+			message: `${receiver.displayName} has rejected your friend request.`,
 			isRead: false,
 			createdAt: new Date(),
 		});
@@ -282,7 +288,7 @@ export const createGroupRequest = async (req: Request, res: Response) => {
 
 			if (admin) {
 				admin.notifications.push({
-					type: "GroupRequest",
+					type: "Group",
 					message: `${sender!.displayName} has requested to join the group "${group.name}".`,
 					isRead: false,
 					createdAt: new Date(),
@@ -343,7 +349,7 @@ export const acceptGroupRequest = async (req: Request, res: Response) => {
 		}
 
 		requester.notifications.push({
-			type: "GroupRequest",
+			type: "Group",
 			message: `Your request to join the group "${group.name}" has been accepted.`,
 			isRead: false,
 			createdAt: new Date(),
@@ -398,7 +404,7 @@ export const rejectGroupRequest = async (req: Request, res: Response) => {
 		}
 
 		requester.notifications.push({
-			type: "GroupRequest",
+			type: "Group",
 			message: `Your request to join the group "${group.name}" has been rejected.`,
 			isRead: false,
 			createdAt: new Date(),
@@ -422,7 +428,6 @@ export const getGroupCreationRequests = async (req: Request, res: Response) => {
 			status: "Pending",
 		})
 			.select("_id user_id createdAt status group")
-			.populate("user_id", "username email displayName") // Optionally populate user details
 			.exec();
 
 		// Format the response to include virtual fields
@@ -553,7 +558,7 @@ export const acceptGroupCreationRequest = async (req: Request, res: Response) =>
 		const user = await User.findById(groupCreationRequest.user_id);
 		if (user) {
 			user.notifications.push({
-				type: "GroupCreationRequest",
+				type: "Group",
 				message: `Your group creation request for "${newGroup.name}" has been accepted.`,
 				isRead: false,
 				createdAt: new Date(),
@@ -594,7 +599,7 @@ export const rejectGroupCreationRequest = async (req: Request, res: Response) =>
 		const user = await User.findById(groupCreationRequest.user_id);
 		if (user) {
 			user.notifications.push({
-				type: "GroupCreationRequest",
+				type: "Group",
 				message: `Your group creation request for "${groupCreationRequest.group!.name}" has been rejected.`,
 				isRead: false,
 				createdAt: new Date(),

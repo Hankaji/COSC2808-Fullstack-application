@@ -14,6 +14,6 @@ groupRouter.get("/", isAuthenticated, getGroups);
 groupRouter.get("/:id", isAuthenticated, getGroupById);
 groupRouter.get("/:id/admins", isAuthenticated, getGroupAdmins);
 groupRouter.get("/:id/members", isAuthenticated, getGroupMembers);
-groupRouter.delete("/:id/members/:userId", isAuthenticated, removeGroupMember);
+groupRouter.delete("/:groupId/members/:userId", isAuthenticated, removeGroupMember);
 
 export default groupRouter;

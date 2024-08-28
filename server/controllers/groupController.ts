@@ -36,21 +36,20 @@ export const getGroups = async (req: Request, res: Response) => {
 			name: group.name,
 			description: group.description,
 			visibility: group.visibility,
-			// @ts-ignore
-			virtualGroupImage: group.virtualGroupImage,
-			// @ts-ignore
-			virtualCoverImage: group.virtualCoverImage,
+			virtualGroupImage:
+				group.groupImage && group.groupImage.contentType && group.groupImage.data
+					? `data:${group.groupImage.contentType};base64,${group.groupImage.data.toString("base64")}`
+					: undefined,
+			virtualCoverImage:
+				group.coverImage && group.coverImage.contentType && group.coverImage.data
+					? `data:${group.coverImage.contentType};base64,${group.coverImage.data.toString("base64")}`
+					: undefined,
 			admins: group.admins,
 			members: group.members,
 		}));
 
 		// Return the groups
-		return res.status(200).json({
-			page: pageNumber,
-			limit: limitNumber,
-			totalGroups: groupsWithImages.length,
-			groups: groupsWithImages,
-		});
+		return res.status(200).json(groupsWithImages);
 	} catch (error) {
 		console.error("Error retrieving groups:", error);
 		return res.status(500).json({ message: "Internal server error" });
@@ -86,10 +85,14 @@ export const getGroupById = async (req: Request, res: Response) => {
 			name: group.name,
 			description: group.description,
 			visibility: group.visibility,
-			// @ts-ignore
-			virtualGroupImage: group.virtualGroupImage,
-			// @ts-ignore
-			virtualCoverImage: group.virtualCoverImage,
+			virtualGroupImage:
+				group.groupImage && group.groupImage.contentType && group.groupImage.data
+					? `data:${group.groupImage.contentType};base64,${group.groupImage.data.toString("base64")}`
+					: undefined,
+			virtualCoverImage:
+				group.coverImage && group.coverImage.contentType && group.coverImage.data
+					? `data:${group.coverImage.contentType};base64,${group.coverImage.data.toString("base64")}`
+					: undefined,
 			admins: group.admins,
 			members: group.members,
 		};
@@ -133,7 +136,10 @@ export const getGroupAdmins = async (req: Request, res: Response) => {
 			username: admin.username,
 			displayName: admin.displayName,
 			email: admin.email,
-			virtualProfileImage: admin.virtualProfileImage,
+			virtualProfileImage:
+				admin.profileImage && admin.profileImage.contentType && admin.profileImage.data
+					? `data:${admin.profileImage.contentType};base64,${admin.profileImage.data.toString("base64")}`
+					: undefined,
 		}));
 
 		// Return the admins list
@@ -175,7 +181,10 @@ export const getGroupMembers = async (req: Request, res: Response) => {
 			username: member.username,
 			displayName: member.displayName,
 			email: member.email,
-			virtualProfileImage: member.virtualProfileImage,
+			virtualProfileImage:
+				member.profileImage && member.profileImage.contentType && member.profileImage.data
+					? `data:${member.profileImage.contentType};base64,${member.profileImage.data.toString("base64")}`
+					: undefined,
 		}));
 
 		// Return the members list
