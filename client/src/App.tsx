@@ -1,5 +1,6 @@
-import { RouterProvider, createBrowserRouter, json } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './App.css';
+import AdminPage from './pages/admin';
 import FriendsPage from './pages/friends';
 import CreateGroupForm from './pages/groups/create_group';
 import GroupPage from './pages/groups/group';
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
         element: <GroupPage />,
       },
     ],
+  },
+  {
+    path: 'admin',
+    element: <AdminPage />,
   },
 ]);
 
