@@ -77,16 +77,16 @@ export const createGroup = async (req: Request, res: Response) => {
 
 // Update a group by ID
 export const updateGroup = async (req: Request, res: Response) => {
-	try {
-		const group = await Group.findById(req.params.id);
-		if (group) {
-			group.name = req.body.name || group.name;
-			group.description = req.body.description || group.description;
-			group.visibility = req.body.visibility || group.visibility;
-			group.groupImage = req.body.groupImage || group.groupImage;
-			group.coverImage = req.body.coverImage || group.coverImage;
-			group.admins = req.body.admins || group.admins;
-			group.members = req.body.members || group.members;
+  try {
+    const group = await Group.findById(req.params.id);
+    if (group) {
+      group.name = req.body.name || group.name;
+      group.description = req.body.description || group.description;
+      group.visibility = req.body.visibility || group.visibility;
+      group.groupImage = req.body.groupImage || group.groupImage;
+      group.coverImage = req.body.coverImage || group.coverImage;
+      group.admins = req.body.admins || group.admins;
+      group.members = req.body.members || group.members;
 
       const updatedGroup = await group.save();
       res.status(200).json(updatedGroup);
