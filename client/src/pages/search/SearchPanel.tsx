@@ -32,4 +32,8 @@ const TabSections = () => {
   );
 };
 
+const People = () => {
+  return <></>;
+};
+
 export default SearchPanel;
