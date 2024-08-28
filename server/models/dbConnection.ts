@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 const database = () => {
 	const validDBNames: string[] = ["development", "production"];
 	if (process.env.DATABASE === undefined) {
-		return process.env.DATABASE;
-	} else if (validDBNames.includes(process.env.DATABASE)) {
 		console.log("Using development database");
 		return "development";
+	} else if (validDBNames.includes(process.env.DATABASE)) {
+		return process.env.DATABASE;
 	} else {
 		console.log(
 			"Invalid database name - Using default database instead (development)",
