@@ -12,7 +12,7 @@ const Layout: FC<
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
       <div className="flex-1 h-screen overflow-hidden scrollbar-hide p-10">
-        <div className="flex gap-10 mx-auto w-screen max-w-[60vw] h-screen overflow-hidden pb-20">
+        <div className="flex gap-10 mx-auto w-screen max-w-[70vw] h-screen overflow-hidden pb-20">
           <main className="max-w-[60%] flex-auto overflow-y-auto overflow-x-clip pr-4">
             {children}
           </main>
