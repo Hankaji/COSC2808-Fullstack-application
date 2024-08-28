@@ -69,7 +69,7 @@ const GroupFormPanel = () => {
           method: 'POST',
           body: formData,
         });
-      } catch (error) { }
+      } catch (error) {}
     };
   };
 
