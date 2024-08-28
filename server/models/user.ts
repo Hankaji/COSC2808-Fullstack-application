@@ -7,8 +7,8 @@ const userSchema = new mongoose.Schema(
 		email: { type: String, required: true },
 		password: { type: String, required: true },
 		profileImage: {
-			data: { type: Buffer, required: true },
-			contentType: { type: String, required: true },
+			data: { type: Buffer },
+			contentType: { type: String },
 		},
 		status: { type: String, default: "Active", enum: ["Active", "Suspended"] },
 		friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
@@ -29,15 +29,13 @@ const userSchema = new mongoose.Schema(
 		timestamps: true,
 		toJSON: { virtuals: true },
 		toObject: { virtuals: true },
-	},
+	}
 );
 
 userSchema.virtual("virtualProfileImage").get(function () {
-	try {
-		if (this.profileImage != null) {
-			return `data:${this.profileImage.contentType};base64,${this.profileImage.data.toString("base64")}`;
-		}
-	} catch (e) {}
+	if (this.profileImage != null && this.profileImage.contentType != null && this.profileImage.data != null) {
+		return `data:${this.profileImage.contentType};base64,${this.profileImage.data.toString("base64")}`;
+	}
 	return undefined;
 });
 
