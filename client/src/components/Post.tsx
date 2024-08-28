@@ -10,21 +10,21 @@ import {
   MessageCircle,
   SmilePlus,
   ThumbsUp,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   ButtonHTMLAttributes,
   CSSProperties,
   FC,
   HTMLAttributes,
   useState,
-} from 'react';
-import { Comment } from '../types/post';
-import { mergeClassNames } from '../utils';
+} from "react";
+import { Comment } from "../types/post";
+import { mergeClassNames, formatRelativeTime } from "../utils";
 import {
   DropDownItem,
   DropDownMenu,
   DropDownMenuContent,
-} from './ui/DropDownMenu';
+} from "./ui/DropDownMenu";
 
 type Post = {
   id: string;
@@ -171,8 +171,8 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
             return (
               <div
                 className={mergeClassNames(
-                  'transition-all size-3 bg-white rounded-full',
-                  currentIdx == idx ? 'p-2' : 'bg-opacity-50',
+                  "transition-all size-3 bg-white rounded-full",
+                  currentIdx == idx ? "p-2" : "bg-opacity-50",
                 )}
               ></div>
             );
@@ -220,7 +220,7 @@ const PostPopup: FC<{ closePopup: any; data: Post }> = ({
           <Reactions reactions={data.reactions} />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
-            817
+            {data.comments.length}
           </button>
         </div>
         <div className="border-border border-solid border-2"></div>
@@ -244,7 +244,7 @@ const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo }) => {
         src={
           data.avatar
             ? data.avatar
-            : 'https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2'
+            : "https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2"
         }
         alt="User avatar"
       />
@@ -280,20 +280,27 @@ const CommentComp: FC<{ data: Comment }> = ({ data }) => {
         {/* TODO fix image */}
         <img
           className="rounded-full bg-gray-500 size-12"
-          src="https://pbs.twimg.com/profile_images/1581014308397502464/NPogKMyk_400x400.jpg"
+          src={
+            data.author_id.virtualProfileImage
+              ? data.author_id.virtualProfileImage
+              : "https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2"
+          }
           alt="User avatar"
         />
         <div className="flex flex-col justify-center items-start">
           <h1 className="text-xl font-semibold">
-            Greg
-            <span className="text-muted-foreground"> • 23m</span>
+            {data.author_id.displayName}
+            <span className="text-muted-foreground">
+              {" "}
+              • {formatRelativeTime(new Date(data.createdAt))}
+            </span>
           </h1>
           <p className="text-sm text-muted-foreground font-semibold">
-            @TheRealGreg
+            @{data.author_id.username}
           </p>
         </div>
       </div>
-      <p>Love the art, such a masterpiece!</p>
+      <p>{data.content}</p>
       {/* Comment actions */}
       <div className="flex gap-4">
         <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
@@ -391,8 +398,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   ...props
 }) => {
   let baseStyle = {
-    fill: 'transparent',
-    color: 'white',
+    fill: "transparent",
+    color: "white",
   } as CSSProperties;
 
   let activeStyle = isSelected

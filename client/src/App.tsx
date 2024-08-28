@@ -1,5 +1,6 @@
 import { RouterProvider, createBrowserRouter, json } from "react-router-dom";
 import "./App.css";
+import { URL_BASE } from "./config";
 import FriendsPage from "./pages/friends";
 import CreateGroupForm from "./pages/groups/create_group";
 import GroupPage from "./pages/groups/group";
@@ -30,9 +31,9 @@ const router = createBrowserRouter([
     path: "/posts/:postId",
     element: <PostPage />,
     loader: async ({ params }) => {
-      const endpoint = ${ URL_BASE }/posts/${ params.postId };
+      const endpoint = `${URL_BASE}/posts/${params.postId}`;
       const res = await fetch(endpoint, {
-        method: 'GET',
+        method: "GET",
       });
       return res.json();
     },
