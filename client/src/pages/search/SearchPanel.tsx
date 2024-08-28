@@ -1,4 +1,5 @@
 import React, { ReactNode, useState } from 'react';
+import Tabs, { Tab } from '../../components/Tabs';
 
 const SearchPanel = () => {
   return (
@@ -9,14 +10,24 @@ const SearchPanel = () => {
 };
 
 const TabSections = () => {
-  const [selected, setSelected] = useState<number>(0);
-
-  const sectionName: string[] = ['All', 'People', 'Groups'];
-  const sectionNodes: ReactNode[] = ['n', 'i', 'a'];
+  const tabs: Tab[] = [
+    {
+      name: 'All',
+      element: 'All people and groups',
+    },
+    {
+      name: 'People',
+      element: 'Only People here',
+    },
+    {
+      name: 'Groups',
+      element: 'Only groups here',
+    },
+  ];
 
   return (
     <>
-      <div className="flex [&>*]:w-full"></div>
+      <Tabs tabs={tabs} />
     </>
   );
 };
