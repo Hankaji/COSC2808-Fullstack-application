@@ -55,7 +55,6 @@ const GroupFormPanel = () => {
     const payload = Object.fromEntries(formData.entries());
 
     console.log(payload);
-    return;
 
     validateForm(payload);
 
@@ -69,12 +68,18 @@ const GroupFormPanel = () => {
           method: 'POST',
           body: formData,
         });
+        console.log(await res.json());
       } catch (error) {}
     };
+    submit();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form
+      encType="multipart/form-data"
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-4"
+    >
       <h1 className="text-3xl font-semibold">Create a group</h1>
       <Divider alignment="horizontal" />
       {/* Category */}
