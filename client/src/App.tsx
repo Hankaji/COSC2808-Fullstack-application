@@ -1,81 +1,98 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './App.css';
+import RequireAuth from './components/RequireAuth';
 import { URL_BASE } from './config';
+import { AuthProvider } from './context/AuthProvider';
 import AdminPage from './pages/admin';
 import Error from './pages/error';
 import FriendsPage from './pages/friends';
 import CreateGroupForm from './pages/groups/create_group';
 import GroupPage from './pages/groups/group';
 import HomePage from './pages/home';
-import LoginRegisterForm from './pages/login_register';
+import LoginRegisterForm, { formState } from './pages/login_register';
 import NotificationsPage from './pages/notifications';
 import PostPage from './pages/posts/post';
 import Search from './pages/search';
+import Unauthorized from './pages/unauthorized';
 import UserPage from './pages/users/user';
 
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <HomePage />,
-  },
-  {
-    path: '/notifications',
-    element: <NotificationsPage />,
-  },
   {
     path: '/login',
     element: <LoginRegisterForm />,
   },
   {
     path: '/register',
-    // element: <LoginRegisterForm />,
+    element: <LoginRegisterForm initialState={formState.SIGNUP} />,
   },
   {
-    path: '/search',
-    element: <Search />,
-  },
-  {
-    path: '/posts/:postId',
-    element: <PostPage />,
-    loader: async ({ params }) => {
-      const endpoint = `${URL_BASE}/posts/${params.postId}`;
-      const res = await fetch(endpoint, {
-        method: 'GET',
-      });
-      return res.json();
-    },
-  },
-  {
-    path: '/friends',
-    element: <FriendsPage />,
-  },
-  {
-    path: '/users/:userId',
-    element: <UserPage />,
-    loader: async ({ params }) => {
-      const endpoint = `http://localhost:8080/users/${params.userId}`;
-      const res = await fetch(endpoint, {
-        method: 'GET',
-      });
-      return res.json();
-    },
-  },
-  {
-    path: 'groups',
+    element: <RequireAuth />,
     children: [
       {
-        path: 'create',
-        element: <CreateGroupForm />,
+        path: '/',
+        element: <HomePage />,
       },
       {
-        path: ':groupId',
-        element: <GroupPage />,
+        path: '/notifications',
+        element: <NotificationsPage />,
+      },
+      {
+        path: '/search',
+        element: <Search />,
+      },
+      {
+        path: '/posts/:postId',
+        element: <PostPage />,
+        loader: async ({ params }) => {
+          const endpoint = `${URL_BASE}/posts/${params.postId}`;
+          const res = await fetch(endpoint, {
+            method: 'GET',
+          });
+          return res.json();
+        },
+      },
+      {
+        path: '/friends',
+        element: <FriendsPage />,
+      },
+      {
+        path: '/users/:userId',
+        element: <UserPage />,
+        loader: async ({ params }) => {
+          const endpoint = `http://localhost:8080/users/${params.userId}`;
+          const res = await fetch(endpoint, {
+            method: 'GET',
+          });
+          return res.json();
+        },
+      },
+      {
+        path: 'groups',
+        children: [
+          {
+            path: 'create',
+            element: <CreateGroupForm />,
+          },
+          {
+            path: ':groupId',
+            element: <GroupPage />,
+          },
+        ],
       },
     ],
   },
   {
-    path: 'admin',
-    element: <AdminPage />,
+    element: <RequireAuth requireAdminAccess />,
+    children: [
+      {
+        path: 'admin',
+        element: <AdminPage />,
+      },
+    ],
+  },
+  {
+    path: '/unauthorized',
+    element: <Unauthorized />,
   },
   {
     path: '*',
@@ -85,9 +102,11 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <div className="flex App text-foreground bg-background min-h-svh">
-      <RouterProvider router={router} />
-    </div>
+    <AuthProvider>
+      <div className="flex App text-foreground bg-background min-h-svh">
+        <RouterProvider router={router} />
+      </div>
+    </AuthProvider>
   );
 }
 

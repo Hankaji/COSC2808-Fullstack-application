@@ -146,8 +146,11 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
         }}
         className="flex transition-transform ease-in-out"
       >
-        {imgData.map((img) => (
-          <div className="min-w-full flex justify-center items-center aspect-auto object-cover bg-center rounded-lg">
+        {imgData.map((img, idx) => (
+          <div
+            key={idx}
+            className="min-w-full flex justify-center items-center aspect-auto object-cover bg-center rounded-lg"
+          >
             <img
               className="min-w-full aspect-auto object-cover bg-center rounded-lg"
               src={img}
@@ -170,6 +173,7 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
           {imgData.map((_, idx) => {
             return (
               <div
+                key={idx}
                 className={mergeClassNames(
                   'transition-all size-3 bg-white rounded-full',
                   currentIdx == idx ? 'p-2' : 'bg-opacity-50',
