@@ -2,6 +2,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './App.css';
 import { URL_BASE } from './config';
 import AdminPage from './pages/admin';
+import Error from './pages/error';
 import FriendsPage from './pages/friends';
 import CreateGroupForm from './pages/groups/create_group';
 import GroupPage from './pages/groups/group';
@@ -75,6 +76,10 @@ const router = createBrowserRouter([
   {
     path: 'admin',
     element: <AdminPage />,
+  },
+  {
+    path: '*',
+    element: <Error />,
   },
 ]);
 
