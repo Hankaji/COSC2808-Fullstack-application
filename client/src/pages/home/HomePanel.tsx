@@ -2,6 +2,8 @@ import { FC, useCallback, useEffect, useState } from 'react';
 import Post from '../../components/Post';
 import PostCreationPanel from '../../components/PostCreationPanel';
 import PostsView from '../../components/PostsView';
+import { URL_BASE } from '../../config';
+import useAuth from '../../hooks/useAuth';
 
 const mockData: Post[] = [
   {
@@ -23,7 +25,10 @@ const mockData: Post[] = [
 ];
 
 const HomePanel: FC<{ className?: string }> = ({ className }) => {
-  const endpoint = 'https://localhost:3000/posts'; // Placeholder, not real endpoint
+  const { auth } = useAuth();
+  console.log('This is auth: ' + JSON.stringify(auth.user));
+
+  const endpoint = `${URL_BASE}/posts`; // Placeholder, not real endpoint
 
   const [postData, setPostData] = useState<any>([]);
   const [page, setPage] = useState<number>(0);
