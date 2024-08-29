@@ -4,7 +4,7 @@ import NotificationList from './NotificationList';
 
 const NotificationsPage: FC = () => {
   return (
-    <Layout>
+    <Layout mainClassName="overflow-y-hidden">
       <NotificationList />
     </Layout>
   );

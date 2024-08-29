@@ -1,25 +1,19 @@
 import express from "express";
+import { isAuthenticated } from "../middleware/authentication";
 import {
-  getGroups,
-  getGroupById,
-  createGroup,
-  updateGroup,
-  deleteGroup,
+	getGroups,
+	getGroupById,
+	getGroupAdmins,
+	getGroupMembers,
+	removeGroupMember,
 } from "../controllers/groupController";
-import multer from "multer";
-var storage = multer.memoryStorage();
 
-var upload = multer({ storage: storage });
-const uploadFields = upload.fields([
-  { name: "groupImage", maxCount: 1 },
-  { name: "coverImage", maxCount: 1 },
-]);
 const groupRouter = express.Router();
 
-groupRouter.get("/", getGroups);
-groupRouter.get("/:id", getGroupById);
-groupRouter.put("/:id", updateGroup);
-groupRouter.delete("/:id", deleteGroup);
-groupRouter.post("/", uploadFields, createGroup);
+groupRouter.get("/", isAuthenticated, getGroups);
+groupRouter.get("/:id", isAuthenticated, getGroupById);
+groupRouter.get("/:id/admins", isAuthenticated, getGroupAdmins);
+groupRouter.get("/:id/members", isAuthenticated, getGroupMembers);
+groupRouter.delete("/:groupId/members/:userId", isAuthenticated, removeGroupMember);
 
 export default groupRouter;

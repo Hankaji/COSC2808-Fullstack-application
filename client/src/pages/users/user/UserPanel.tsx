@@ -3,6 +3,7 @@ import { FC, ReactNode, useEffect, useState } from 'react';
 import { useLoaderData } from 'react-router';
 import Post, { Author, AuthorPfp } from '../../../components/Post';
 import PostsView from '../../../components/PostsView';
+import Tabs, { Tab } from '../../../components/Tabs';
 import { User } from '../../../types/user';
 import { mergeClassNames } from '../../../utils';
 
@@ -31,6 +32,17 @@ interface Props {
   userData: User;
 }
 
+const tabs: Tab[] = [
+  {
+    name: 'Posts',
+    element: <PostsView posts={mockData} />,
+  },
+  {
+    name: 'Friends',
+    element: 'No friend haha',
+  },
+];
+
 const UserPanel: FC<Props> = ({ userData }) => {
   return (
     <div className="flex flex-col w-full gap-4">
@@ -57,44 +69,8 @@ const UserPanel: FC<Props> = ({ userData }) => {
           </span>
         </div>
       </div>
-      <Tabs />
+      <Tabs tabs={tabs} />
     </div>
-  );
-};
-
-const Tabs = () => {
-  const [selected, setSelected] = useState<number>(0);
-
-  const sections: string[] = ['Posts', 'Friends'];
-
-  const components: ReactNode[] = [
-    <PostsView posts={mockData} />,
-    'No friends haha',
-  ];
-
-  return (
-    <>
-      <div className="flex w-full justify-center [&>*]:flex-grow">
-        {sections.map((name, idx) => {
-          return (
-            <button
-              key={idx}
-              className={mergeClassNames(
-                'text-center py-4 px-8 hover:bg-secondary',
-                selected == idx && 'border-b-border border-b-2',
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelected(idx);
-              }}
-            >
-              {name}
-            </button>
-          );
-        })}
-      </div>
-      {components[selected]}
-    </>
   );
 };
 

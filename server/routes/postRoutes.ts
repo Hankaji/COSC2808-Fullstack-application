@@ -1,31 +1,49 @@
 import express from "express";
-import { createPost, deletePost, updatePost, getAPost, createReactPost, updatePostReaction, deletePostReaction, createPostComment, updatePostComment, deletePostComment, createReactionToPostComment, updateReactionToPostComment, deleteReactionFromPostComment, getAllPostsFromGroup, getAllPostsFromUser, getAllPosts } from "../controllers/postController";
-import { uploadMultipleImages } from '../middleware/multerMiddleware';
+import { isAuthenticated } from "../middleware/authentication";
+import fileUpload from "../middleware/fileUpload";
+import {
+	getPosts,
+	getUserPosts,
+	getGroupPosts,
+	getPostById,
+	getPostHistoryById,
+	createPost,
+	editPost,
+	deletePost,
+	addCommentToPost,
+	editCommentOnPost,
+	deleteCommentFromPost,
+	addReactionToPost,
+	editReactionOnPost,
+	deleteReactionFromPost,
+	addReactionToComment,
+	editReactionOnComment,
+	deleteReactionFromComment,
+} from "../controllers/postController";
 
 const postRouter = express.Router();
 
 // Post routes
-postRouter.post("",uploadMultipleImages, createPost);
-postRouter.post("/:postId/reactions", createReactPost);
-postRouter.post("/:postId/comments", createPostComment);
-postRouter.post("/:postId/comments/:commentId/reactions", createReactionToPostComment);
+postRouter.get("/", isAuthenticated, getPosts);
+postRouter.get("/user/:id", isAuthenticated, getUserPosts);
+postRouter.get("/group/:id", isAuthenticated, getGroupPosts);
+postRouter.get("/:id", isAuthenticated, getPostById);
+postRouter.get("/:id/history", isAuthenticated, getPostHistoryById);
+postRouter.post("/", isAuthenticated, fileUpload.array("images"), createPost);
+postRouter.patch("/:id", isAuthenticated, fileUpload.array("images"), editPost);
+postRouter.delete("/:id", isAuthenticated, deletePost);
 
-// Delete routes
-postRouter.delete("/:postId", deletePost);
-postRouter.delete("/:postId/reactions/:reactionId", deletePostReaction);
-postRouter.delete("/:postId/comments/:commentId", deletePostComment);
-postRouter.delete("/:postId/comments/:commentId/reactions/:reactionId", deleteReactionFromPostComment);
+// Comment routes
+postRouter.post("/:id/comment", isAuthenticated, addCommentToPost);
+postRouter.patch("/:id/comment/:comment_id", isAuthenticated, editCommentOnPost);
+postRouter.delete("/:id/comment/:comment_id", isAuthenticated, deleteCommentFromPost);
 
-// Patch routes
-postRouter.patch("/:postId", uploadMultipleImages, updatePost);
-postRouter.patch("/:postId/reactions/:reactionId", updatePostReaction);
-postRouter.patch("/:postId/comments/:commentId", updatePostComment);
-postRouter.patch("/:postId/comments/:commentId/reactions/:reactionId", updateReactionToPostComment);
-
-// Get routes
-postRouter.get("/:postId", getAPost);
-postRouter.get("/groups/:groupId", getAllPostsFromGroup);
-postRouter.get("/users/:userId", getAllPostsFromUser);
-postRouter.get("", getAllPosts)
+// Reaction routes
+postRouter.post("/:id/reaction", isAuthenticated, addReactionToPost);
+postRouter.patch("/:id/reaction/:reaction_id", isAuthenticated, editReactionOnPost);
+postRouter.delete("/:id/reaction/:reaction_id", isAuthenticated, deleteReactionFromPost);
+postRouter.post("/:id/comment/:comment_id/reaction", isAuthenticated, addReactionToComment);
+postRouter.patch("/:id/comment/:comment_id/reaction/:reaction_id", isAuthenticated, editReactionOnComment);
+postRouter.delete("/:id/comment/:comment_id/reaction/:reaction_id", isAuthenticated, deleteReactionFromComment);
 
 export default postRouter;

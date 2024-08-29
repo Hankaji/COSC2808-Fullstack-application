@@ -2,7 +2,6 @@ import {
   Angry,
   ChevronLeft,
   ChevronRight,
-  ChevronsRight,
   Edit,
   Ellipsis,
   Heart,
@@ -11,7 +10,6 @@ import {
   MessageCircle,
   SmilePlus,
   ThumbsUp,
-  User,
 } from 'lucide-react';
 import {
   ButtonHTMLAttributes,
@@ -20,8 +18,8 @@ import {
   HTMLAttributes,
   useState,
 } from 'react';
+import { Comment } from '../types/post';
 import { mergeClassNames } from '../utils';
-import PopupModal from './PopupModal';
 import {
   DropDownItem,
   DropDownMenu,
@@ -41,14 +39,6 @@ type Post = {
   reactions: Reaction[];
   comments: Comment[];
   editHistories: string[];
-};
-
-type Comment = {
-  id: string;
-  author: Author;
-  content: string;
-  currentReaction: Reaction;
-  reactions: Reaction[];
 };
 
 type Author = {
@@ -277,13 +267,13 @@ const CommentSection: FC<{ data: Comment[] }> = ({ data }) => {
   return (
     <div className="overflow-y-scroll h-full w-full">
       {data.map((cmt) => {
-        return <Comment key={cmt.id} data={cmt} />;
+        return <CommentComp key={cmt._id} data={cmt} />;
       })}
     </div>
   );
 };
 
-const Comment: FC<{ data: Comment }> = ({ data }) => {
+const CommentComp: FC<{ data: Comment }> = ({ data }) => {
   return (
     <div className="flex flex-col justify-start items-start gap-2">
       <div className="flex gap-2">
@@ -407,8 +397,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-        fill: color,
-      } as CSSProperties)
+      fill: color,
+    } as CSSProperties)
     : {};
 
   return (
@@ -433,5 +423,5 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 };
 
 export { CommentSection, PostImages, AuthorPfp };
-export type { Post, Author, Reaction, Comment };
+export type { Post, Author, Reaction, CommentComp as Comment };
 export default Post;

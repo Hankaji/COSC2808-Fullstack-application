@@ -1,5 +1,20 @@
 import mongoose from "mongoose";
 
+const database = () => {
+	const validDBNames: string[] = ["development", "production"];
+	if (process.env.DATABASE === undefined) {
+		console.log("Using development database");
+		return "development";
+	} else if (validDBNames.includes(process.env.DATABASE)) {
+		return process.env.DATABASE;
+	} else {
+		console.log(
+			"Invalid database name - Using default database instead (development)",
+		);
+		return "development";
+	}
+};
+
 const connectDB = async () => {
 	const uri = process.env.MONGO_URI;
 
@@ -9,7 +24,7 @@ const connectDB = async () => {
 
 	try {
 		const conn = await mongoose.connect(`${process.env.MONGO_URI}`, {
-			dbName: "master",
+			dbName: database(),
 		});
 		console.log(`MongoDB Connected: ${conn.connection.host}`);
 	} catch (error) {

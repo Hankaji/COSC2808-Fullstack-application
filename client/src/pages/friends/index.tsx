@@ -13,6 +13,7 @@ const FriendsPage: FC = () => {
           <FriendRequestList />
         </div>
       }
+      mainClassName="overflow-y-hidden"
     >
       <FriendList />
     </Layout>

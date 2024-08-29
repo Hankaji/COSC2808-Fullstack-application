@@ -1,4 +1,11 @@
-import { Bell, Home, LogOut, LucideIcon, User } from 'lucide-react';
+import {
+  Bell,
+  ChartNoAxesGantt,
+  Home,
+  LogOut,
+  LucideIcon,
+  User,
+} from 'lucide-react';
 import { FC } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { mergeClassNames } from '../utils';
@@ -31,6 +38,12 @@ const internalLinkItems: SidebarInternalLinkItem[] = [
     Logo: User,
     name: 'Friends',
     path: '/friends',
+  },
+  // TODO: only show this item if the user is an admin
+  {
+    Logo: ChartNoAxesGantt,
+    name: 'Admin',
+    path: '/admin',
   },
 ];
 

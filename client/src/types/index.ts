@@ -2,6 +2,7 @@ export type Account = {
   id: string;
   name: string;
   imgUrl: string;
+  isSuspended?: boolean;
 };
 
 export enum NotificationType {
@@ -19,4 +20,12 @@ export type Notification = {
   message: string;
   createdAt: Date;
   isRead: boolean;
+};
+
+export type Group = {
+  id: string;
+  name: string;
+  description: string;
+  visibility: 'public' | 'private';
+  imgUrl: string;
 };
