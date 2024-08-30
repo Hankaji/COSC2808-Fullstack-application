@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import User from "../models/user";
 import Group from "../models/group";
+import { FriendRequest, GroupRequest, GroupCreationRequest } from "../models/request";
 
 // Get users
 export const getUsers = async (req: Request, res: Response) => {
@@ -155,9 +156,16 @@ export const getFriendRecommendationsById = async (req: Request, res: Response) 
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		// Find users who are not friends with the current user
+		// Find users that the current user has sent friend requests to
+		const sentRequests = await FriendRequest.find({ sender_id: userId }).select("receiver_id").exec();
+		const sentRequestIds = sentRequests.map((request) => request.receiver_id);
+
+		// Find users who are not friends with the current user and haven't received a friend request from them
 		let recommendations = await User.find({
-			_id: { $ne: userId, $nin: user.friends }, // Exclude current user and their friends
+			_id: {
+				$ne: userId, // Exclude current user
+				$nin: [...user.friends, ...sentRequestIds], // Exclude current friends and users who have received friend requests
+			},
 		})
 			.select("_id username displayName email profileImage contentType") // Select necessary fields
 			.exec();
@@ -240,6 +248,70 @@ export const getUserNotificationsById = async (req: Request, res: Response) => {
 		return res.status(200).json(user.notifications);
 	} catch (error) {
 		console.error("Error retrieving user notifications:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get user's sent requests by ID
+export const getUserSentRequestsById = async (req: Request, res: Response) => {
+	try {
+		const userId = req.params.id;
+		const { status } = req.query;
+
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+
+		// Prepare query filters
+		const filters: any = { status };
+		if (!status) delete filters.status; // Remove status filter if not provided
+
+		// Find all sent requests by the user
+		const friendRequests = FriendRequest.find({ sender_id: userId, ...filters });
+		const groupRequests = GroupRequest.find({ user_id: userId, ...filters });
+		const groupCreationRequests = GroupCreationRequest.find({ user_id: userId, ...filters });
+
+		// Execute all queries concurrently
+		const [friendResults, groupResults, groupCreationResults] = await Promise.all([
+			friendRequests,
+			groupRequests,
+			groupCreationRequests,
+		]);
+
+		// Manually handle the group images for GroupCreationRequests and extract required fields
+		const formattedGroupCreationResults = groupCreationResults.map((request) => {
+			const virtualGroupImage =
+				request.group && request.group.groupImage && request.group.groupImage.data
+					? `data:${request.group.groupImage.contentType};base64,${request.group.groupImage.data.toString(
+							"base64"
+					  )}`
+					: null;
+
+			const virtualCoverImage =
+				request.group && request.group.coverImage && request.group.coverImage.data
+					? `data:${request.group.coverImage.contentType};base64,${request.group.coverImage.data.toString(
+							"base64"
+					  )}`
+					: null;
+
+			return {
+				_id: request._id,
+				name: request.group!.name,
+				description: request.group!.description,
+				visibility: request.group!.visibility,
+				virtualGroupImage,
+				virtualCoverImage,
+			};
+		});
+
+		// Combine all requests into a single array (only return GroupCreationRequest formatted results)
+		const allRequests = [...friendResults, ...groupResults, ...formattedGroupCreationResults];
+
+		// Return the user's sent requests, including manually handled virtual images for group creation requests
+		return res.status(200).json(allRequests);
+	} catch (error) {
+		console.error("Error retrieving user requests:", error);
 		return res.status(500).json({ message: "Internal server error" });
 	}
 };
