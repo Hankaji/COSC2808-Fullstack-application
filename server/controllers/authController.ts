@@ -15,8 +15,11 @@ export const register = async (req: Request, res: Response) => {
 
 		// Check if username or email already exists
 		const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+		console.log(existingUser);
 		if (existingUser) {
-			return res.status(400).json({ message: "Username or email already exists" });
+			return res
+				.status(400)
+				.json({ message: "Username or email already exists" });
 		}
 
 		// Hash the password
@@ -43,7 +46,9 @@ export const register = async (req: Request, res: Response) => {
 		await newUser.save();
 
 		// Return the new user data
-		res.status(201).json({ message: "User registered successfully", user: newUser });
+		res
+			.status(201)
+			.json({ message: "User registered successfully", user: newUser });
 	} catch (error: any) {
 		console.error("Error registering user:", error);
 		return res.status(500).json({ message: "Internal server error" });
@@ -72,7 +77,12 @@ export const login = async (req: Request, res: Response) => {
 
 			// Check if the user is suspended
 			if ((user as any).status === "Suspended") {
-				return res.status(403).json({ message: "Account is suspended. Please contact the Admin to get support." });
+				return res
+					.status(403)
+					.json({
+						message:
+							"Account is suspended. Please contact the Admin to get support.",
+					});
 			}
 		} else {
 			isAdmin = true;
