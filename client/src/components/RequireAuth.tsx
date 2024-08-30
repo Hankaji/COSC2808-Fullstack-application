@@ -10,11 +10,8 @@ const RequireAuth: FC<Props> = ({ requireAdminAccess }) => {
   const { auth } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  console.log('RequireAuth');
 
   useEffect(() => {
-    console.log('RequireAuth but Inside');
-    console.log(JSON.stringify(auth.user?.isAdmin));
     // Do nothing if user is found
     if (auth.user) {
       if (requireAdminAccess) {

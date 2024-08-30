@@ -58,17 +58,19 @@ const GroupFormPanel = () => {
 
     validateForm(payload);
 
-    const endpoint = `${URL_BASE}/groups`;
+    const endpoint = `${URL_BASE}/requests/group_creation_requests`;
     const submit = async () => {
       try {
+        // Send request
         const res = await fetch(endpoint, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          credentials: 'include',
           method: 'POST',
           body: formData,
         });
-        console.log(await res.json());
+
+        // Check request
+        const data = await res.json();
+        console.log(data);
       } catch (error) {}
     };
     submit();

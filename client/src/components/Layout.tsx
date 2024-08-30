@@ -3,6 +3,8 @@ import Sidebar from './Sidebar';
 import SearchAndAddFriend from './SearchAndAddFriend';
 import SuggestionsAccList from './SuggestionAccList';
 import { mergeClassNames } from '../utils';
+import useToast from '../hooks/useToast';
+import { ToastDetail } from '../context/ToastProvider';
 
 const Layout: FC<
   PropsWithChildren & {
@@ -39,10 +41,52 @@ const Layout: FC<
 export default Layout;
 
 const DefaultStickyRightSide: FC = () => {
+  const toast = useToast();
+
+  const myPromise = new Promise((resolve, reject) => {
+    // Simulate an async operation
+    setTimeout(() => {
+      resolve({ name: 'MyOperation' });
+    }, 5000);
+  });
+
   return (
     <div className="space-y-4">
       <SearchAndAddFriend />
       <SuggestionsAccList />
+      <button
+        className="bg-secondary"
+        onClick={() => {
+          toast.showAsync(myPromise, {
+            loading: {
+              title: 'Loading...',
+            },
+            success: (data) => ({
+              title: 'Success',
+              description: `${data.name} toast has been added`,
+              type: 'success',
+            }),
+            error: (_) => ({
+              title: 'Error',
+              description: 'Something went wrong',
+              type: 'error',
+            }),
+          });
+          // toast.show({
+          //   title: 'This is a toast',
+          //   description: 'yes a toast',
+          //   type: 'error',
+          //   action: {
+          //     label: 'undo',
+          //     onClick: () => {
+          //       console.log('try');
+          //     },
+          //   },
+          // });
+        }}
+      >
+        CLICK
+      </button>
     </div>
   );
 };
