@@ -54,39 +54,6 @@ const DefaultStickyRightSide: FC = () => {
     <div className="space-y-4">
       <SearchAndAddFriend />
       <SuggestionsAccList />
-      <button
-        className="bg-secondary"
-        onClick={() => {
-          toast.showAsync(myPromise, {
-            loading: {
-              title: 'Loading...',
-            },
-            success: (data) => ({
-              title: 'Success',
-              description: `${data.name} toast has been added`,
-              type: 'success',
-            }),
-            error: (_) => ({
-              title: 'Error',
-              description: 'Something went wrong',
-              type: 'error',
-            }),
-          });
-          // toast.show({
-          //   title: 'This is a toast',
-          //   description: 'yes a toast',
-          //   type: 'error',
-          //   action: {
-          //     label: 'undo',
-          //     onClick: () => {
-          //       console.log('try');
-          //     },
-          //   },
-          // });
-        }}
-      >
-        CLICK
-      </button>
     </div>
   );
 };
