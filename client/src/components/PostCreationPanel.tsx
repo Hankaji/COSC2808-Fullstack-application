@@ -1,14 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Globe, ChevronDown, Image, X } from 'lucide-react';
-import ImageUpload from './ImageUpload';
-
-// Helper function to get a cookie value by name
-const getCookie = (name: string) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift();
-};
 
 const PostCreationPanel = () => {
   const { groupId } = useParams<{ groupId: string }>();
@@ -20,58 +12,60 @@ const PostCreationPanel = () => {
     setVisibility((prev) => (prev === 'Public' ? 'Friend' : 'Public'));
   };
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const files = Array.from(event.target.files);
+      setImages((prevImages) => [...prevImages, ...files]);
+    }
+  };
+
+  const handleRemoveImage = (index: number, e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // Prevent the default button action
+    e.stopPropagation(); // Stop the event from bubbling up to the form
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+
   const handlePost = async (e: FormEvent<HTMLFormElement>) => {
-    // const userId = getCookie('user_id'); // Get userId from cookie
-    // console.log(userId);
-    // if (!userId) {
-    //   console.error('User ID is required');
-    //   return;
-    // }
+    e.preventDefault();
+    console.log('Attempting to create post...');
 
-    const userIdForTest = "66c6fb31343ef710e0cfa842";
+    if (!content.trim() && images.length === 0) {
+      alert('Please add some content or images before posting.');
+      return;
+    }
 
-    const postData = new FormData(e.currentTarget);
-    // postData.append('user_id', userId); // Use userId from cookie
-    postData.append('user_id', userIdForTest); // Use userId for testing
-    // postData.append('group_id', groupId || ''); // Use groupId from params or null
+    const postData = new FormData();
     postData.append('content', content);
     postData.append('visibility', visibility);
-
-    // Convert FormData to JSON object
-    // const postDataJson: any = {};
-    // postData.forEach((value, key) => {
-    //   postDataJson[key] = value;
-    // });
-
-    // // Set group_id to null if it's an empty string
-    // if (!groupId) {
-    //   postDataJson['group_id'] = null;
-    // }
-    // Append group_id only if it is not null
+    images.forEach((image) => {
+      postData.append('images', image);
+    });
     if (groupId) {
       postData.append('group_id', groupId);
     }
-    console.log(Object.fromEntries(postData.entries()));
 
     try {
       const response = await fetch('http://localhost:8080/posts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: postData
+        body: postData,
+        credentials: 'include'
       });
 
       if (response.ok) {
-        console.log('Post created successfully');
-        // Handle successful post creation (e.g., clear form, show success message)
+        const responseData = await response.json();
+        console.log('Post created successfully:', responseData);
+        alert('Post created successfully!');
+        // Clear the form after successful post
+        setContent('');
+        setImages([]);
       } else {
-        console.error('Failed to create post');
-        // Handle error response
+        const errorData = await response.text();
+        console.error('Failed to create post:', errorData);
+        alert(`Failed to create post: ${errorData}`);
       }
     } catch (error) {
-      console.error('Error:', error);
-      // Handle network or other errors
+      console.error('Network error:', error);
+      alert(`Network error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
     }
   };
 
@@ -112,19 +106,18 @@ const PostCreationPanel = () => {
       <ul>
         <label className="rounded-lg p-2 cursor-pointer">
           <Image className="text-primary" />
-          {/* <input
+          {/* image upload here */}
+          <input
             type="file"
             accept="image/*"
             multiple
             className="hidden"
             onChange={handleImageUpload}
-          /> */}
-          <ImageUpload name='images' />
+          />
         </label>
       </ul>
       {/* Image Previews */}
-      
-      {/* <div className="flex gap-2 mt-4">
+      <div className="flex gap-2 mt-4">
         {images.map((image, index) => (
           <div key={index} className="relative">
             <img
@@ -133,14 +126,15 @@ const PostCreationPanel = () => {
               className="w-20 h-20 object-cover rounded-lg"
             />
             <button
+              type="button" // Explicitly set the type to "button"
               className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-              onClick={() => handleRemoveImage(index)}
+              onClick={(e) => handleRemoveImage(index, e)}
             >
               <X size={16} />
             </button>
           </div>
         ))}
-      </div> */}
+      </div>
     </form>
   );
 };

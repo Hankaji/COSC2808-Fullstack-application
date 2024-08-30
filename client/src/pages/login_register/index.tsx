@@ -204,7 +204,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
             headers: {
               'Content-Type': 'application/json',
             },
-            // credentials: 'include',
+            credentials: 'include',
           });
 
           // Get data
