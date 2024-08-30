@@ -1,8 +1,18 @@
-import { FC, FormEvent, InputHTMLAttributes, useRef, useState } from 'react';
+import {
+  FC,
+  FormEvent,
+  InputHTMLAttributes,
+  useContext,
+  useRef,
+  useState,
+} from 'react';
 import { Input } from '../../components/ui/Input';
 import { mergeClassNames } from '../../utils';
 import { URL_BASE } from '../../config';
 import { redirect, useNavigate } from 'react-router';
+import useAuth from '../../hooks/useAuth';
+import AuthContext from '../../context/AuthProvider';
+import { UserSession } from '../../types/userSession';
 
 enum formState {
   LOGIN,
@@ -14,6 +24,8 @@ interface loginProps {
 }
 
 const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
+  const { auth, setAuth } = useAuth();
+
   const [state, setState] = useState<formState>(initialState);
 
   const [errors, setErrors] = useState<string[]>([]);
@@ -165,7 +177,11 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
             method: 'POST',
             body: formData,
           });
-          console.log(res);
+
+          // Check status
+          if (res.ok) {
+            navigate('/login');
+          }
         } catch (e) {
           console.log(e);
         }
@@ -181,16 +197,31 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
       };
       const login = async () => {
         try {
+          // Fetch data
           const res = await fetch(endpoint, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: {
               'Content-Type': 'application/json',
             },
+            // credentials: 'include',
           });
-          console.log(await res.json());
+
+          // Get data
+          const data = await res.json();
+          console.log(data);
+
+          // Check response status
           if (res.ok) {
+            // Save user session
+            setAuth({
+              user: data as UserSession,
+            });
+
+            // console.log(first)
             return navigate('/');
+          } else if (res.status >= 400 && res.status < 500) {
+            setErrors([data.message]);
           }
         } catch (e) {
           console.log(e);
@@ -314,4 +345,5 @@ const FormInput: FC<FormInputProps> = ({ label, className, ...inputProps }) => {
   );
 };
 
+export { formState };
 export default LoginRegisterForm;
