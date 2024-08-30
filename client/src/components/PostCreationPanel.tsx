@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Globe, ChevronDown, Image, X } from 'lucide-react';
+import ImageUpload from './ImageUpload';
 
 // Helper function to get a cookie value by name
 const getCookie = (name: string) => {
@@ -19,18 +20,7 @@ const PostCreationPanel = () => {
     setVisibility((prev) => (prev === 'Public' ? 'Friend' : 'Public'));
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const files = Array.from(event.target.files);
-      setImages((prevImages) => [...prevImages, ...files]);
-    }
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
-  };
-
-  const handlePost = async () => {
+  const handlePost = async (e: FormEvent<HTMLFormElement>) => {
     // const userId = getCookie('user_id'); // Get userId from cookie
     // console.log(userId);
     // if (!userId) {
@@ -40,26 +30,28 @@ const PostCreationPanel = () => {
 
     const userIdForTest = "66c6fb31343ef710e0cfa842";
 
-    const postData = new FormData();
+    const postData = new FormData(e.currentTarget);
     // postData.append('user_id', userId); // Use userId from cookie
     postData.append('user_id', userIdForTest); // Use userId for testing
-    postData.append('group_id', groupId || ''); // Use groupId from params or null
+    // postData.append('group_id', groupId || ''); // Use groupId from params or null
     postData.append('content', content);
     postData.append('visibility', visibility);
-    images.forEach((image, index) => {
-      postData.append(`images[${index}]`, image);
-    });
 
     // Convert FormData to JSON object
-    const postDataJson: any = {};
-    postData.forEach((value, key) => {
-      postDataJson[key] = value;
-    });
+    // const postDataJson: any = {};
+    // postData.forEach((value, key) => {
+    //   postDataJson[key] = value;
+    // });
 
-    // Set group_id to null if it's an empty string
-    if (!groupId) {
-      postDataJson['group_id'] = null;
+    // // Set group_id to null if it's an empty string
+    // if (!groupId) {
+    //   postDataJson['group_id'] = null;
+    // }
+    // Append group_id only if it is not null
+    if (groupId) {
+      postData.append('group_id', groupId);
     }
+    console.log(Object.fromEntries(postData.entries()));
 
     try {
       const response = await fetch('http://localhost:8080/posts', {
@@ -67,7 +59,7 @@ const PostCreationPanel = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(postDataJson)
+        body: postData
       });
 
       if (response.ok) {
@@ -84,7 +76,7 @@ const PostCreationPanel = () => {
   };
 
   return (
-    <div className="flex flex-col justify-start items-start border-border border-2 border-solid rounded-lg p-4 gap-4 w-full bg-card">
+    <form onSubmit={handlePost} className="flex flex-col justify-start items-start border-border border-2 border-solid rounded-lg p-4 gap-4 w-full bg-card">
       <div className="flex gap-4 w-full">
         {/* TODO fix image */}
         <img
@@ -112,7 +104,7 @@ const PostCreationPanel = () => {
             <ChevronDown size={16} />
           </button>
         </div>
-        <button className="ml-auto py-1 px-4 bg-primary rounded-lg" onClick={handlePost}>
+        <button className="ml-auto py-1 px-4 bg-primary rounded-lg" type='submit'>
           Post
         </button>
       </div>
@@ -120,17 +112,19 @@ const PostCreationPanel = () => {
       <ul>
         <label className="rounded-lg p-2 cursor-pointer">
           <Image className="text-primary" />
-          <input
+          {/* <input
             type="file"
             accept="image/*"
             multiple
             className="hidden"
             onChange={handleImageUpload}
-          />
+          /> */}
+          <ImageUpload name='images' />
         </label>
       </ul>
       {/* Image Previews */}
-      <div className="flex gap-2 mt-4">
+      
+      {/* <div className="flex gap-2 mt-4">
         {images.map((image, index) => (
           <div key={index} className="relative">
             <img
@@ -146,8 +140,8 @@ const PostCreationPanel = () => {
             </button>
           </div>
         ))}
-      </div>
-    </div>
+      </div> */}
+    </form>
   );
 };
 
