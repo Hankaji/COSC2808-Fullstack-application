@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import User from "../models/user";
 import Group from "../models/group";
+import { FriendRequest, GroupRequest, GroupCreationRequest } from "../models/request";
 
 // Get users
 export const getUsers = async (req: Request, res: Response) => {
@@ -155,9 +156,16 @@ export const getFriendRecommendationsById = async (req: Request, res: Response) 
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		// Find users who are not friends with the current user
+		// Find users that the current user has sent friend requests to
+		const sentRequests = await FriendRequest.find({ sender_id: userId }).select("receiver_id").exec();
+		const sentRequestIds = sentRequests.map((request) => request.receiver_id);
+
+		// Find users who are not friends with the current user and haven't received a friend request from them
 		let recommendations = await User.find({
-			_id: { $ne: userId, $nin: user.friends }, // Exclude current user and their friends
+			_id: {
+				$ne: userId, // Exclude current user
+				$nin: [...user.friends, ...sentRequestIds], // Exclude current friends and users who have received friend requests
+			},
 		})
 			.select("_id username displayName email profileImage contentType") // Select necessary fields
 			.exec();
@@ -240,6 +248,34 @@ export const getUserNotificationsById = async (req: Request, res: Response) => {
 		return res.status(200).json(user.notifications);
 	} catch (error) {
 		console.error("Error retrieving user notifications:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get user's sent friend requests by ID
+export const getUserSentFriendRequestsById = async (req: Request, res: Response) => {
+	try {
+		const userId = req.params.id;
+		const { status } = req.query;
+
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+
+		// Prepare query filters
+		const filters: any = { sender_id: userId };
+		if (status) {
+			filters.status = status;
+		}
+
+		// Find all sent friend requests by the user
+		const friendRequests = await FriendRequest.find(filters);
+
+		// Return the user's sent friend requests
+		return res.status(200).json(friendRequests);
+	} catch (error) {
+		console.error("Error retrieving user friend requests:", error);
 		return res.status(500).json({ message: "Internal server error" });
 	}
 };
