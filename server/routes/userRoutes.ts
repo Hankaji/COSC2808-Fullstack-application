@@ -7,6 +7,7 @@ import {
 	getFriendRecommendationsById,
 	getUserGroupsById,
 	getUserNotificationsById,
+	getUserSentRequestsById,
 	readNotification,
 	unfriendById,
 	suspendUser,
@@ -25,5 +26,6 @@ userRouter.get("/:id/friends", isAuthenticated, getUserFriendsById);
 userRouter.get("/:id/friends/recommend", isAuthenticated, getFriendRecommendationsById);
 userRouter.get("/:id/groups", isAuthenticated, getUserGroupsById);
 userRouter.get("/:id/notifications", isAuthenticated, getUserNotificationsById);
+userRouter.get("/:id/requests", isAuthenticated, getUserSentRequestsById);
 
 export default userRouter;
