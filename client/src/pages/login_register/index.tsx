@@ -204,7 +204,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
             headers: {
               'Content-Type': 'application/json',
             },
-            // credentials: 'include',
+            credentials: 'include',
           });
 
           // Get data
@@ -264,7 +264,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
           {/* Input prompt */}
           <div className="flex flex-col gap-8">
             {formInputs.map((input) => {
-              if (!input.renderCondition.includes(state)) return;
+              if (!input.renderCondition.includes(state)) return null;
               return (
                 <FormInput
                   key={input.id}
@@ -286,7 +286,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               })}
             </div>
           )}
-          {state == formState.LOGIN ? (
+          {state === formState.LOGIN ? (
             <p className="py-4">
               Don't have an account?
               <a
@@ -316,7 +316,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
             </p>
           )}
           <button type="submit" className="bg-primary py-4 px-20 rounded-full">
-            {state == formState.LOGIN ? 'Sign in' : 'Sign up'}
+            {state === formState.LOGIN ? 'Sign in' : 'Sign up'}
           </button>
         </div>
       </form>

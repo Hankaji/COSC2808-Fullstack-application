@@ -9,7 +9,7 @@ interface AccInfoWithActionProps {
 }
 
 const AccInfoWithAction: FC<AccInfoWithActionProps> = ({
-  data: { id, name, imgUrl },
+  data: { username, displayName, imgUrl },
   actionFn,
   status,
 }) => {
@@ -45,11 +45,11 @@ const AccInfoWithAction: FC<AccInfoWithActionProps> = ({
         <img
           src={imgUrl}
           className="rounded-full bg-gray-500 size-12"
-          alt={name}
+          alt={username}
         />
         <div>
-          <p className="text-base">{name}</p>
-          <p className="text-sm text-gray-500">@{id}</p>
+          <p className="text-base">{displayName}</p>
+          <p className="text-sm text-gray-500">@{username}</p>
         </div>
       </div>
       {actionButton}
