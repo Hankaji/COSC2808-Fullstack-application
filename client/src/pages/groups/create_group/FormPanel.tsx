@@ -1,4 +1,6 @@
 import { ChevronDown, Globe, Lock, LucideIcon } from 'lucide-react';
+import { type } from 'os';
+import { title } from 'process';
 import { FC, FormEvent, useRef, useState } from 'react';
 import Divider from '../../../components/Divider';
 import ImageUpload from '../../../components/ImageUpload';
@@ -9,9 +11,12 @@ import {
 } from '../../../components/ui/DropDownMenu';
 import { Input } from '../../../components/ui/Input';
 import { URL_BASE } from '../../../config';
+import useToast from '../../../hooks/useToast';
 
 const GroupFormPanel = () => {
   const [visibility, setVisibility] = useState<'Public' | 'Private'>('Public');
+
+  const toast = useToast();
 
   const descriptionRef = useRef<HTMLDivElement>(null);
 
@@ -71,9 +76,20 @@ const GroupFormPanel = () => {
         // Check request
         const data = await res.json();
         console.log(data);
+        return data;
       } catch (error) {}
     };
-    submit();
+    toast.showAsync(submit(), {
+      loading: {
+        title: 'Loading...',
+      },
+      success: (data) => ({
+        title: `${data.message}`,
+      }),
+      error: (e) => ({
+        title: `${e.message}`,
+      }),
+    });
   };
 
   return (

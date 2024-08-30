@@ -78,11 +78,15 @@ const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
     promise
       .then((data) => {
         // Show success toast
-        show(toastOptions.success(data));
+        let toast = toastOptions.success(data) as ToastDetail;
+        toast.type = 'success';
+        show(toast);
       })
       .catch((error) => {
         // Show error toast
-        show(toastOptions.error(error));
+        let toast = toastOptions.error(error) as ToastDetail;
+        toast.type = 'error';
+        show(toast);
       })
       .finally(() => {
         // Close loading toast

@@ -52,59 +52,73 @@ const GroupRequestList: FC = () => {
   const toast = useToast();
 
   const handleAccept = async (id: string) => {
-    try {
-      const endpoint = `${URL_BASE}/requests/group_creation_requests/accept/${id}`;
-      const res = await fetch(endpoint, {
-        method: 'PATCH',
-        credentials: 'include',
-      });
-
-      const data = await res.json();
-
-      console.log(data);
-      if (res.ok) {
-        // Show toast
-        toast.show({
-          title: 'Group request accepted',
+    const acceptRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/requests/group_creation_requests/accept/${id}`;
+        const res = await fetch(endpoint, {
+          method: 'PATCH',
+          credentials: 'include',
         });
 
-        // Remove request
-        setGroupCreationReqs((reqs) => reqs.filter((req) => req.id !== id));
+        const data = await res.json();
+
+        if (res.ok) {
+          // Remove request
+          setGroupCreationReqs((reqs) => reqs.filter((req) => req.id !== id));
+        }
+        return data;
+      } catch (error: any) {
+        console.error(error);
       }
-    } catch (error: any) {
-      console.error(error);
-    }
+    };
+
+    toast.showAsync(acceptRequest(), {
+      loading: {
+        title: 'Loading...',
+      },
+      success: (_) => ({
+        title: 'Group request accepted',
+      }),
+      error: (_) => ({
+        title: 'Something wrong happened',
+      }),
+    });
   };
 
   const handleReject = async (id: string) => {
-    try {
-      const endpoint = `${URL_BASE}/requests/group_creation_requests/reject/${id}`;
-      const res = await fetch(endpoint, {
-        method: 'PATCH',
-        credentials: 'include',
-      });
-
-      const data = await res.json();
-
-      console.log(data);
-      if (res.ok) {
-        // Show toast
-        toast.show({
-          title: 'Group request rejected',
+    const rejectRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/requests/group_creation_requests/reject/${id}`;
+        const res = await fetch(endpoint, {
+          method: 'PATCH',
+          credentials: 'include',
         });
 
-        // Remove request
-        setGroupCreationReqs((reqs) => reqs.filter((req) => req.id !== id));
-      } else {
-        // Show toast
-        toast.show({
-          title: 'Something wrong',
-          type: 'error',
-        });
+        const data = await res.json();
+
+        console.log(data);
+        if (res.ok) {
+          // Remove request
+          setGroupCreationReqs((reqs) => reqs.filter((req) => req.id !== id));
+        } else {
+        }
+        return data;
+      } catch (error: any) {
+        console.error(error);
       }
-    } catch (error: any) {
-      console.error(error);
-    }
+    };
+
+    toast.showAsync(rejectRequest(), {
+      loading: {
+        title: 'Loading...',
+      },
+      success: (_) => ({
+        title: 'Group request rejected successfully',
+      }),
+      error: (_) => ({
+        title: 'Something wrong happened',
+      }),
+    });
   };
 
   console.log(loaderData);
