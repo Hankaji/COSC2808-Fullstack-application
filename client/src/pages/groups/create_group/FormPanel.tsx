@@ -75,9 +75,9 @@ const GroupFormPanel = () => {
         const data = await res.json();
         console.log(data);
         return data;
-      } catch (error) { }
+      } catch (error) {}
     };
-    toast.showAsync(submit(), {
+    toast.showAsync(submit, {
       loading: {
         title: 'Loading...',
       },

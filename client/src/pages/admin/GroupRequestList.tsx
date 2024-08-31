@@ -3,39 +3,11 @@ import { FC, useState } from 'react';
 import { useLoaderData } from 'react-router';
 import { URL_BASE } from '../../config';
 import useToast from '../../hooks/useToast';
-import { Group as GroupTemp } from '../../types';
-import { Group, GroupVisibility } from '../../types/group';
+import { GroupVisibility } from '../../types/group';
 import {
   GroupCreationRequest,
   parseGroupCreationRequest,
 } from '../../types/group_creation_request';
-
-const list: GroupTemp[] = [
-  {
-    id: 'group1',
-    name: 'Dog Lovers',
-    description: 'A group for dog lovers',
-    visibility: 'public',
-    imgUrl:
-      'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
-  },
-  {
-    id: 'group2',
-    name: 'Single Moms',
-    description: 'A group for single moms',
-    visibility: 'public',
-    imgUrl:
-      'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
-  },
-  {
-    id: 'group3',
-    name: 'Gym bros',
-    description: 'A group for gym bros',
-    visibility: 'private',
-    imgUrl:
-      'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
-  },
-];
 
 const GroupRequestList: FC = () => {
   let loaderData = JSON.parse(useLoaderData() as string)
@@ -72,7 +44,7 @@ const GroupRequestList: FC = () => {
       }
     };
 
-    toast.showAsync(acceptRequest(), {
+    toast.showAsync(acceptRequest, {
       loading: {
         title: 'Loading...',
       },
@@ -108,7 +80,7 @@ const GroupRequestList: FC = () => {
       }
     };
 
-    toast.showAsync(rejectRequest(), {
+    toast.showAsync(rejectRequest, {
       loading: {
         title: 'Loading...',
       },

@@ -295,28 +295,28 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
           )}
           {state === formState.LOGIN ? (
             <p className="py-4">
-              Don't have an account?
+              Don't have an account?{' '}
               <Link
                 to="/register"
                 onClick={() => {
                   setErrors([]);
                   setState(formState.SIGNUP);
                 }}
-                className="font-bold cursor-pointer"
+                className="font-bold cursor-pointer hover:underline"
               >
                 Register
               </Link>
             </p>
           ) : (
             <p className="py-4">
-              Already had an account?
+              Already had an account?{' '}
               <Link
                 to="/login"
                 onClick={() => {
                   setErrors([]);
                   setState(formState.LOGIN);
                 }}
-                className="font-bold cursor-pointer"
+                className="font-bold cursor-pointer hover:underline"
               >
                 Login
               </Link>
