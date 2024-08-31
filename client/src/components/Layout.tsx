@@ -3,8 +3,6 @@ import Sidebar from './Sidebar';
 import SearchAndAddFriend from './SearchAndAddFriend';
 import SuggestionsAccList from './SuggestionAccList';
 import { mergeClassNames } from '../utils';
-import useToast from '../hooks/useToast';
-import { ToastDetail } from '../context/ToastProvider';
 
 const Layout: FC<
   PropsWithChildren & {
@@ -13,7 +11,7 @@ const Layout: FC<
   }
 > = ({ children, stickyRightSideCmp, mainClassName }) => {
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex w-full h-screen overflow-hidden">
       <Sidebar />
       <div className="flex-1 h-screen overflow-hidden scrollbar-hide p-10">
         <div className="flex gap-10 mx-auto w-screen max-w-[60vw] h-screen overflow-hidden pb-20">

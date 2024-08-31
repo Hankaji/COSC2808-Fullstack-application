@@ -9,7 +9,7 @@ interface AccInfoWithActionProps {
 }
 
 const AccInfoWithAction: FC<AccInfoWithActionProps> = ({
-  data: { id, name, imgUrl },
+  data: { username, displayName, imgUrl },
   actionFn,
   status,
 }) => {
@@ -23,7 +23,7 @@ const AccInfoWithAction: FC<AccInfoWithActionProps> = ({
         );
       case 'requestSent':
         return (
-          <button className="rounded-full p-1.5 bg-gray-100">
+          <button className="rounded-full p-1.5 bg-gray-100 cursor-default">
             <Check size={12} className="stroke-gray-900" />
           </button>
         );
@@ -40,16 +40,16 @@ const AccInfoWithAction: FC<AccInfoWithActionProps> = ({
   })();
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <img
           src={imgUrl}
-          className="rounded-full bg-gray-500 size-12"
-          alt={name}
+          className="rounded-full bg-gray-500 size-12 flex-shrink-0"
+          alt={username}
         />
-        <div>
-          <p className="text-base">{name}</p>
-          <p className="text-sm text-gray-500">@{id}</p>
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <p className="text-base font-medium truncate">{displayName}</p>
+          <p className="text-sm text-gray-500 truncate">@{username}</p>
         </div>
       </div>
       {actionButton}

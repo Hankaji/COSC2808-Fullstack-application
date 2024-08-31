@@ -11,7 +11,7 @@ import { mergeClassNames } from '../utils';
 interface AppContext {
   show: (toast: ToastDetail, timeoutMs?: number) => void;
   showAsync: (
-    promise: Promise<any>,
+    promise: () => Promise<any>,
     toastOptions: {
       loading: AsyncToastDetail;
       success: (data: any) => AsyncToastDetail;
@@ -63,7 +63,7 @@ const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   };
 
   const showAsync = (
-    promise: Promise<any>,
+    promise: () => Promise<any>,
     toastOptions: {
       loading: AsyncToastDetail;
       success: (data: any) => AsyncToastDetail;
@@ -75,7 +75,7 @@ const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
     // Show loading toast
     displayToast(toastOptions.loading, id, true);
 
-    promise
+    promise()
       .then((data) => {
         // Show success toast
         let toast = toastOptions.success(data) as ToastDetail;
@@ -134,6 +134,7 @@ const ToastComp: FC<ToastCompProps> = ({ detail, useLoading }) => {
     }
   };
 
+  // TODO: update styling for each case
   return (
     <div
       className={mergeClassNames(
@@ -152,21 +153,22 @@ const ToastComp: FC<ToastCompProps> = ({ detail, useLoading }) => {
             r="10"
             stroke="currentColor"
             stroke-width="4"
-          ></circle>
+          />
           <path
             className="opacity-75"
             fill="currentColor"
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
+          />
         </svg>
       )}
       {/* Info */}
       <div>
-        <h1 className="truncate text-xl font-bold"> {title} </h1>
+        <h1 className="truncate text-lg">{title}</h1>
         <p className="truncate text-muted-foreground text-sm font-semibold">
           {description}
         </p>
       </div>
+
       {/* Action */}
       {action && (
         <button

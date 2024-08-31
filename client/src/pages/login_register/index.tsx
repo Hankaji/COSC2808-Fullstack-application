@@ -271,7 +271,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
           {/* Input prompt */}
           <div className="flex flex-col gap-8">
             {formInputs.map((input) => {
-              if (!input.renderCondition.includes(state)) return;
+              if (!input.renderCondition.includes(state)) return null;
               return (
                 <FormInput
                   key={input.id}
@@ -293,37 +293,37 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               })}
             </div>
           )}
-          {state == formState.LOGIN ? (
+          {state === formState.LOGIN ? (
             <p className="py-4">
-              Don't have an account?
+              Don't have an account?{' '}
               <Link
                 to="/register"
                 onClick={() => {
                   setErrors([]);
                   setState(formState.SIGNUP);
                 }}
-                className="font-bold cursor-pointer"
+                className="font-bold cursor-pointer hover:underline"
               >
                 Register
               </Link>
             </p>
           ) : (
             <p className="py-4">
-              Already had an account?
+              Already had an account?{' '}
               <Link
                 to="/login"
                 onClick={() => {
                   setErrors([]);
                   setState(formState.LOGIN);
                 }}
-                className="font-bold cursor-pointer"
+                className="font-bold cursor-pointer hover:underline"
               >
                 Login
               </Link>
             </p>
           )}
           <button type="submit" className="bg-primary py-4 px-20 rounded-full">
-            {state == formState.LOGIN ? 'Sign in' : 'Sign up'}
+            {state === formState.LOGIN ? 'Sign in' : 'Sign up'}
           </button>
         </div>
       </form>
