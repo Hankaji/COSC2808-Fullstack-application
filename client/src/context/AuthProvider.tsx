@@ -15,7 +15,7 @@ interface AppContext {
 const AuthContext = createContext<AppContext | undefined>(undefined);
 
 const getInitialState = () => {
-  const currentUser = sessionStorage.getItem('user');
+  const currentUser = localStorage.getItem('user');
   return currentUser ? (JSON.parse(currentUser) as Auth) : {};
 };
 
@@ -23,7 +23,7 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const [auth, setAuth] = useState<Auth>(getInitialState);
 
   useEffect(() => {
-    sessionStorage.setItem('user', JSON.stringify(auth));
+    localStorage.setItem('user', JSON.stringify(auth));
   }, [auth]);
 
   return (

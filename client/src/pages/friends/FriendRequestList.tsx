@@ -5,19 +5,22 @@ import { Account } from '../../types';
 const list: Account[] = [
   {
     id: 'alice_on_chain',
-    name: 'Alice',
+    username: 'alice_on_chain',
+    displayName: 'Alice',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
   },
   {
     id: 'its_bob',
-    name: 'Bob',
+    username: 'its_bob',
+    displayName: 'Bob',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
   },
   {
     id: 'charliexcx',
-    name: 'Charlie',
+    username: 'charliexcx',
+    displayName: 'Charlie',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
   },
@@ -52,7 +55,7 @@ interface FriendRequestItemProps {
 }
 
 const FriendRequestItem: FC<FriendRequestItemProps> = ({
-  data: { id, name, imgUrl },
+  data: { username, displayName, imgUrl },
   onAccept,
   onReject,
 }) => {
@@ -62,11 +65,11 @@ const FriendRequestItem: FC<FriendRequestItemProps> = ({
         <img
           src={imgUrl}
           className="rounded-full bg-gray-500 size-12"
-          alt={name}
+          alt={username}
         />
         <div>
-          <p className="text-base">{name}</p>
-          <p className="text-sm text-gray-500">@{id}</p>
+          <p className="text-base">{displayName}</p>
+          <p className="text-sm text-gray-500">@{username}</p>
         </div>
       </div>
       <div className="flex gap-1.5 items-center">

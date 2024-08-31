@@ -1,47 +1,116 @@
 import { Check, Globe, Lock, X } from 'lucide-react';
-import { FC } from 'react';
-import { Group } from '../../types';
-
-const list: Group[] = [
-  {
-    id: 'group1',
-    name: 'Dog Lovers',
-    description: 'A group for dog lovers',
-    visibility: 'public',
-    imgUrl:
-      'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
-  },
-  {
-    id: 'group2',
-    name: 'Single Moms',
-    description: 'A group for single moms',
-    visibility: 'public',
-    imgUrl:
-      'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
-  },
-  {
-    id: 'group3',
-    name: 'Gym bros',
-    description: 'A group for gym bros',
-    visibility: 'private',
-    imgUrl:
-      'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
-  },
-];
+import { FC, useState } from 'react';
+import { useLoaderData } from 'react-router';
+import { URL_BASE } from '../../config';
+import useToast from '../../hooks/useToast';
+import { GroupVisibility } from '../../types/group';
+import {
+  GroupCreationRequest,
+  parseGroupCreationRequest,
+} from '../../types/group_creation_request';
 
 const GroupRequestList: FC = () => {
+  let loaderData = JSON.parse(useLoaderData() as string)
+    .groupCreationReqs as GroupCreationRequest[];
+
+  const [groupCreationReqs, setGroupCreationReqs] = useState<
+    GroupCreationRequest[]
+  >(
+    loaderData.map((req) => {
+      return parseGroupCreationRequest(req);
+    }),
+  );
+
+  const toast = useToast();
+
+  const handleAccept = async (id: string) => {
+    const acceptRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/requests/group_creation_requests/accept/${id}`;
+        const res = await fetch(endpoint, {
+          method: 'PATCH',
+          credentials: 'include',
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          // Remove request
+          setGroupCreationReqs((reqs) => reqs.filter((req) => req.id !== id));
+        }
+        return data;
+      } catch (error: any) {
+        console.error(error);
+      }
+    };
+
+    toast.showAsync(acceptRequest, {
+      loading: {
+        title: 'Loading...',
+      },
+      success: (_) => ({
+        title: 'Group request accepted',
+      }),
+      error: (_) => ({
+        title: 'Something wrong happened',
+      }),
+    });
+  };
+
+  const handleReject = async (id: string) => {
+    const rejectRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/requests/group_creation_requests/reject/${id}`;
+        const res = await fetch(endpoint, {
+          method: 'PATCH',
+          credentials: 'include',
+        });
+
+        const data = await res.json();
+
+        console.log(data);
+        if (res.ok) {
+          // Remove request
+          setGroupCreationReqs((reqs) => reqs.filter((req) => req.id !== id));
+        } else {
+        }
+        return data;
+      } catch (error: any) {
+        console.error(error);
+      }
+    };
+
+    toast.showAsync(rejectRequest, {
+      loading: {
+        title: 'Loading...',
+      },
+      success: (_) => ({
+        title: 'Group request rejected successfully',
+      }),
+      error: (_) => ({
+        title: 'Something wrong happened',
+      }),
+    });
+  };
+
+  console.log(loaderData);
+
   return (
     <div className="border-2 border-border rounded-xl p-4">
       <h3 className="text-xl font-bold pb-3 border-b-2 border-border">
         Group Requests
       </h3>
       <div className="h-[400px] overflow-y-auto space-y-4 py-4 pr-2">
-        {[...list].map((acc) => (
+        {groupCreationReqs.map((req) => (
           <GroupRequestItem
-            key={acc.id}
-            data={acc}
-            onAccept={() => {}}
-            onReject={() => {}}
+            key={req.id}
+            data={req}
+            onAccept={() => {
+              handleAccept(req.id);
+            }}
+            onReject={() => {
+              handleReject(req.id);
+            }}
           />
         ))}
       </div>
@@ -52,36 +121,39 @@ const GroupRequestList: FC = () => {
 export default GroupRequestList;
 
 interface GroupRequestItemProps {
-  data: Group;
+  data: GroupCreationRequest;
   onAccept: () => void;
   onReject: () => void;
 }
 
 const GroupRequestItem: FC<GroupRequestItemProps> = ({
-  data: { id, name, imgUrl, visibility },
+  data: { id, user_id, status, group },
   onAccept,
   onReject,
 }) => {
+  console.log('data: ' + group);
+  const { groupImage, coverImage, visibility, description, name } = group;
+
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full">
         <img
-          src={imgUrl}
+          src={groupImage}
           className="rounded-full bg-gray-500 size-12"
-          alt={name}
+          alt="group image"
         />
         <div>
           <div className="flex items-center gap-1">
             <p className="text-base">{name}</p>
             <div>
-              {visibility === 'public' ? (
+              {visibility === GroupVisibility.PUBLIC ? (
                 <Globe size={14} className="stroke-gray-500" />
               ) : (
                 <Lock size={14} className="stroke-gray-500" />
               )}
             </div>
           </div>
-          <p className="text-sm text-gray-500">@{id}</p>
+          <p className="text-sm w-24 text-gray-500 truncate">@{id}</p>
         </div>
       </div>
       <div className="flex gap-1.5 items-center">

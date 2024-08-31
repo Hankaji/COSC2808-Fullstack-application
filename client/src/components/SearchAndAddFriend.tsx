@@ -6,19 +6,22 @@ import AccInfoWithAction from './AccInfoWithAction';
 const list: Account[] = [
   {
     id: 'alice_on_chain',
-    name: 'Alice',
+    username: 'alice_on_chain',
+    displayName: 'Alice',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
   },
   {
     id: 'its_bob',
-    name: 'Bob',
+    username: 'its_bob',
+    displayName: 'Bob',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
   },
   {
     id: 'charliexcx',
-    name: 'Charlie',
+    username: 'charliexcx',
+    displayName: 'Charlie',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
   },

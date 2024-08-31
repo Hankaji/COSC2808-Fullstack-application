@@ -3,6 +3,7 @@ import './App.css';
 import RequireAuth from './components/RequireAuth';
 import { URL_BASE } from './config';
 import { AuthProvider } from './context/AuthProvider';
+import ToastProvider from './context/ToastProvider';
 import AdminPage from './pages/admin';
 import Error from './pages/error';
 import FriendsPage from './pages/friends';
@@ -87,6 +88,26 @@ const router = createBrowserRouter([
       {
         path: 'admin',
         element: <AdminPage />,
+        loader: async () => {
+          try {
+            const groupCreationRequestEndpoint = `${URL_BASE}/requests/group_creation_requests`;
+            const groupCreationReqRes = await fetch(
+              groupCreationRequestEndpoint,
+              {
+                method: 'GET',
+                credentials: 'include',
+              },
+            );
+
+            const groupCreationRequestData = await groupCreationReqRes.json();
+
+            return JSON.stringify({
+              groupCreationReqs: groupCreationRequestData,
+            });
+          } catch (error: any) {
+            console.error(error);
+          }
+        },
       },
     ],
   },
@@ -103,9 +124,11 @@ const router = createBrowserRouter([
 function App() {
   return (
     <AuthProvider>
-      <div className="flex App text-foreground bg-background min-h-svh">
-        <RouterProvider router={router} />
-      </div>
+      <ToastProvider>
+        <div className="flex App text-foreground bg-background min-h-svh">
+          <RouterProvider router={router} />
+        </div>
+      </ToastProvider>
     </AuthProvider>
   );
 }
