@@ -3,16 +3,22 @@ import {
   ChartNoAxesGantt,
   Home,
   LogOut,
-  LucideIcon,
+  type LucideIcon,
+  Search,
+  SquarePlus,
   User,
 } from 'lucide-react';
-import { FC } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import type { FC } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { URL_BASE } from '../config';
+import useAuth from '../hooks/useAuth';
+import useToast from '../hooks/useToast';
 import { mergeClassNames } from '../utils';
 
 type SidebarItemBase = {
   Logo: LucideIcon;
   name: string;
+  requireAdmin?: boolean;
 };
 
 type SidebarInternalLinkItem = SidebarItemBase & {
@@ -35,30 +41,60 @@ const internalLinkItems: SidebarInternalLinkItem[] = [
     path: '/notifications',
   },
   {
+    Logo: Search,
+    name: 'Search',
+    path: '/search',
+  },
+  {
     Logo: User,
     name: 'Friends',
     path: '/friends',
   },
-  // TODO: only show this item if the user is an admin
+  {
+    Logo: SquarePlus,
+    name: 'Create group',
+    path: '/groups/create',
+  },
   {
     Logo: ChartNoAxesGantt,
     name: 'Admin',
     path: '/admin',
-  },
-];
-
-const bottomActions: SidebarActionItem[] = [
-  {
-    Logo: LogOut,
-    name: 'Logout',
-    onClick: () => {
-      // TODO: add logic here
-    },
+    requireAdmin: true,
   },
 ];
 
 const Sidebar = () => {
+  const { auth, setAuth } = useAuth();
+  const toast = useToast();
+
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const bottomActions: SidebarActionItem[] = [
+    {
+      Logo: LogOut,
+      name: 'Logout',
+      onClick: () => {
+        const logoutRequest = async () => {
+          const endpoint = `${URL_BASE}/authentication/logout`;
+          const res = await fetch(endpoint, {
+            method: 'POST',
+          });
+
+          if (res.ok) {
+            setAuth({});
+            toast.show({
+              title: 'Logged out successfully',
+              type: 'info',
+            });
+            navigate('/login');
+          }
+        };
+
+        logoutRequest();
+      },
+    },
+  ];
 
   return (
     <nav className="flex flex-col p-10 gap-8 border-r-2 border-border">
@@ -76,6 +112,11 @@ const Sidebar = () => {
       {/* Navigation items */}
       <ul className="flex flex-col gap-3 w-full">
         {internalLinkItems.map((item, idx) => {
+          if (item.requireAdmin) {
+            if (!auth.user?.isAdmin) {
+              return null;
+            }
+          }
           return (
             <li key={idx}>
               <SidebarButton
@@ -93,7 +134,7 @@ const Sidebar = () => {
           {bottomActions.map((item, idx) => {
             return (
               <li key={idx}>
-                <SidebarButton data={item} />
+                <SidebarButton onClick={item.onClick} data={item} />
               </li>
             );
           })}
@@ -137,7 +178,11 @@ const SidebarButton: FC<SidebarButtonProps> = ({
         'flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all',
         isActive ? 'bg-secondary' : '',
       )}
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault();
+        console.log(onClick);
+        onClick && onClick();
+      }}
     >
       <Logo size={28} />
       <span className="text-lg">{name}</span>
