@@ -33,7 +33,7 @@ app.use(
 		cookie: {
 			maxAge: 1000 * 60 * 60 * 24,
 		},
-	})
+	}),
 );
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -44,7 +44,7 @@ app.use(
 		origin: "http://localhost:3000",
 		optionsSuccessStatus: 200,
 		credentials: true,
-	})
+	}),
 );
 
 app.get("/", (req: express.Request, res: express.Response) => {

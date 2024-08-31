@@ -3,6 +3,8 @@ import Sidebar from './Sidebar';
 import SearchAndAddFriend from './SearchAndAddFriend';
 import SuggestionsAccList from './SuggestionAccList';
 import { mergeClassNames } from '../utils';
+import useToast from '../hooks/useToast';
+import { ToastDetail } from '../context/ToastProvider';
 
 const Layout: FC<
   PropsWithChildren & {

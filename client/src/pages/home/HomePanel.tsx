@@ -37,9 +37,7 @@ const HomePanel: FC<{ className?: string }> = ({ className }) => {
     try {
       const response = await fetch(endpoint, {
         method: 'GET',
-        headers: {
-          'content-type': 'application/json;charset=UTF-8',
-        },
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -47,7 +45,8 @@ const HomePanel: FC<{ className?: string }> = ({ className }) => {
       }
 
       const data = await response.json();
-      setPostData((prev: any) => [...prev, ...data.posts]);
+      console.log(data);
+      // setPostData((prev: any) => [...prev, ...data.posts]);
     } catch (err) {
       console.error(err);
     }
