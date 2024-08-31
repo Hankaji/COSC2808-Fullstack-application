@@ -86,6 +86,7 @@ const Post: FC<Props> = ({ className, data }) => {
               content={
                 <DropDownMenuContent className="-translate-x-1/2">
                   <DropDownItem>Edit post</DropDownItem>
+                  <DropDownItem>Delete</DropDownItem>
                   <DropDownItem>History</DropDownItem>
                 </DropDownMenuContent>
               }

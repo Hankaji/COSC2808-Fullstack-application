@@ -1,12 +1,16 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { Globe, ChevronDown, Image, X } from 'lucide-react';
+import { ToastContext } from '../context/ToastProvider';
 
 const PostCreationPanel = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const [visibility, setVisibility] = useState('Public');
   const [images, setImages] = useState<File[]>([]);
   const [content, setContent] = useState('');
+  const [isPosting, setIsPosting] = useState(false);
+
+  const toast = useContext(ToastContext);
 
   const handleVisibilityChange = () => {
     setVisibility((prev) => (prev === 'Public' ? 'Friend' : 'Public'));
@@ -30,7 +34,11 @@ const PostCreationPanel = () => {
     console.log('Attempting to create post...');
 
     if (!content.trim() && images.length === 0) {
-      alert('Please add some content or images before posting.');
+      toast?.show({
+        title: 'Empty Post',
+        description: 'Please add some content or images before posting.',
+        type: 'warning'
+      });
       return;
     }
 
@@ -44,29 +52,42 @@ const PostCreationPanel = () => {
       postData.append('group_id', groupId);
     }
 
-    try {
-      const response = await fetch('http://localhost:8080/posts', {
-        method: 'POST',
-        body: postData,
-        credentials: 'include'
-      });
+    toast?.showAsync(
+      async () => {
+        setIsPosting(true);
+        const response = await fetch('http://localhost:8080/posts', {
+          method: 'POST',
+          body: postData,
+          credentials: 'include'
+        });
 
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log('Post created successfully:', responseData);
-        alert('Post created successfully!');
-        // Clear the form after successful post
-        setContent('');
-        setImages([]);
-      } else {
-        const errorData = await response.text();
-        console.error('Failed to create post:', errorData);
-        alert(`Failed to create post: ${errorData}`);
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(errorData);
+        }
+
+        return await response.json();
+      },
+      {
+        loading: {
+          title: 'Creating Post',
+          description: 'Please wait while we create your post...'
+        },
+        success: (data) => {
+          setContent('');
+          setImages([]);
+          setIsPosting(false);
+          return {
+            title: 'Post Created',
+            description: 'Your post has been created successfully!'
+          };
+        },
+        error: (error) => ({
+          title: 'Post Creation Failed',
+          description: error.message || 'An unknown error occurred'
+        })
       }
-    } catch (error) {
-      console.error('Network error:', error);
-      alert(`Network error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
-    }
+    );
   };
 
   return (
@@ -98,8 +119,12 @@ const PostCreationPanel = () => {
             <ChevronDown size={16} />
           </button>
         </div>
-        <button className="ml-auto py-1 px-4 bg-primary rounded-lg" type='submit'>
-          Post
+        <button 
+          type="submit" 
+          className="ml-auto py-1 px-4 bg-primary rounded-lg"
+          disabled={isPosting}
+        >
+          {isPosting ? 'Posting...' : 'Post'}
         </button>
       </div>
       <div className="border-border border-2 border-solid w-full "></div>
