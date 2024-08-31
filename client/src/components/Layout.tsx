@@ -41,15 +41,6 @@ const Layout: FC<
 export default Layout;
 
 const DefaultStickyRightSide: FC = () => {
-  const toast = useToast();
-
-  const myPromise = new Promise((resolve, reject) => {
-    // Simulate an async operation
-    setTimeout(() => {
-      resolve({ name: 'MyOperation' });
-    }, 5000);
-  });
-
   return (
     <div className="space-y-4">
       <SearchAndAddFriend />

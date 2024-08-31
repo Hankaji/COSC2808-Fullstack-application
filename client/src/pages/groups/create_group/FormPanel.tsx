@@ -1,6 +1,4 @@
 import { ChevronDown, Globe, Lock, LucideIcon } from 'lucide-react';
-import { type } from 'os';
-import { title } from 'process';
 import { FC, FormEvent, useRef, useState } from 'react';
 import Divider from '../../../components/Divider';
 import ImageUpload from '../../../components/ImageUpload';
@@ -77,7 +75,7 @@ const GroupFormPanel = () => {
         const data = await res.json();
         console.log(data);
         return data;
-      } catch (error) {}
+      } catch (error) { }
     };
     toast.showAsync(submit(), {
       loading: {

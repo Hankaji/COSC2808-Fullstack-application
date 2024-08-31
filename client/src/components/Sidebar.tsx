@@ -3,14 +3,16 @@ import {
   ChartNoAxesGantt,
   Home,
   LogOut,
-  LucideIcon,
+  type LucideIcon,
   Search,
   SquarePlus,
   User,
 } from 'lucide-react';
-import { FC } from 'react';
+import type { FC } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { URL_BASE } from '../config';
 import useAuth from '../hooks/useAuth';
+import useToast from '../hooks/useToast';
 import { mergeClassNames } from '../utils';
 
 type SidebarItemBase = {
@@ -63,6 +65,7 @@ const internalLinkItems: SidebarInternalLinkItem[] = [
 
 const Sidebar = () => {
   const { auth, setAuth } = useAuth();
+  const toast = useToast();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -72,9 +75,23 @@ const Sidebar = () => {
       Logo: LogOut,
       name: 'Logout',
       onClick: () => {
-        console.log('Clicked');
-        setAuth({});
-        navigate('/login');
+        const logoutRequest = async () => {
+          const endpoint = `${URL_BASE}/authentication/logout`;
+          const res = await fetch(endpoint, {
+            method: 'POST',
+          });
+
+          if (res.ok) {
+            setAuth({});
+            toast.show({
+              title: 'Logged out successfully',
+              type: 'info',
+            });
+            navigate('/login');
+          }
+        };
+
+        logoutRequest();
       },
     },
   ];
