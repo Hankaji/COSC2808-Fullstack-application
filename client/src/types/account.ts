@@ -1,4 +1,4 @@
-import { Account } from ".";
+import { Account } from '.';
 
 export function convertFetchDataToAccount(data: {
   _id: string;

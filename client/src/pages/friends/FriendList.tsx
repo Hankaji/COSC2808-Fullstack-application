@@ -1,17 +1,14 @@
-import { ComponentProps, FC, useCallback, useEffect, useState } from 'react';
-import Alert from '../../components/ui/Alert';
+import { FC, useCallback, useEffect, useState } from 'react';
 import useAuth from '../../hooks/useAuth';
+import useToast from '../../hooks/useToast';
 import type { Account } from '../../types';
 import { URL_BASE } from '../../config';
 
 const FriendList: FC = () => {
   const { auth } = useAuth();
+  const toast = useToast();
 
   const [list, setList] = useState<Account[]>([]);
-  const [alert, setAlert] = useState<Pick<
-    ComponentProps<typeof Alert>,
-    'title' | 'type'
-  > | null>(null);
 
   const fetchFriendList = useCallback(async () => {
     if (!auth.user) return;
@@ -37,25 +34,33 @@ const FriendList: FC = () => {
   const handleRemoveFriend = useCallback(
     async (user: Account) => {
       if (!auth.user) return;
-      const endpoint = `${URL_BASE}/users/unfriend/${user.id}`;
-      try {
-        await fetch(endpoint, {
+      const removeFriend = async () => {
+        const endpoint = `${URL_BASE}/users/unfriend/${user.id}`;
+
+        const res = await fetch(endpoint, {
           method: 'DELETE',
           credentials: 'include',
         });
-        fetchFriendList();
-        setAlert({
-          type: 'success',
-          title: `Successfully removed ${user.displayName} from your friend list`,
-        });
-      } catch (error: any) {
-        setAlert({
-          type: 'error',
-          title: `Failed to remove ${user.displayName} from your friend list`,
-        });
-      }
+        if (res.ok) {
+          await fetchFriendList();
+        } else {
+          throw Error('Failed to remove friend');
+        }
+      };
+
+      toast.showAsync(removeFriend, {
+        loading: {
+          title: 'Loading...',
+        },
+        success: (_) => ({
+          title: `Removed ${user.displayName} from your friend list`,
+        }),
+        error: (_) => ({
+          title: 'Something wrong happened',
+        }),
+      });
     },
-    [auth.user, fetchFriendList],
+    [auth.user, fetchFriendList, toast],
   );
 
   useEffect(() => {
@@ -67,14 +72,6 @@ const FriendList: FC = () => {
       <h2 className="font-bold text-3xl pb-3 border-b-2 border-border mb-2">
         All Friends
       </h2>
-      {alert !== null && (
-        <Alert
-          {...alert}
-          onRemove={() => {
-            setAlert(null);
-          }}
-        />
-      )}
       <div className="flex-grow overflow-y-auto mt-6 pr-3">
         <div className="space-y-6">
           {list.map((acc) => (
