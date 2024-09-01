@@ -24,7 +24,7 @@ import {
   useNavigate, 
   useLocation 
 } from 'react-router-dom';
-import { Comment } from '../types/post';
+import { Posts, Comment, User, Reaction, ReactionTypes } from '../types/post';
 import { mergeClassNames } from '../utils';
 import {
   DropDownItem,
@@ -34,47 +34,17 @@ import {
 import PopupModal from './PopupModal';
 import { ToastContext } from '../context/ToastProvider';
 
-type Post = {
-  id: string;
-  author: {
-    avatar: string;
-    username: string;
-    displayName: string;
-  };
-  content: string;
-  images?: string[];
-  currentReaction?: Reaction;
-  reactions: Reaction[];
-  comments: Comment[];
-  editHistories: string[];
-};
-
-type Author = {
-  avatar: string;
-  username: string;
-  displayName: string;
-};
-
-type Reaction = {
-  author: Author;
-  type: ReactionTypes;
-};
-
-const enum ReactionTypes {
-  NULL,
-  LIKE,
-  LOVE,
-  HAHA,
-  ANGRY,
-}
-
 interface Props extends HTMLAttributes<HTMLDivElement> {
-  data: Post;
+  data: Posts;
 }
 
-const Post: FC<Props> = ({ className, data }) => {
+const PostComponent: FC<Props> = ({ className, data }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
-  const openModalButtonRef = useRef<HTMLButtonElement>(null);
+  const [isEditPopup, setIsEditPopup] = useState<boolean>(false); // State for edit modal
+  const [postContent, setPostContent] = useState<string>(data.content); // State for post content
+  const [postVisibility, setPostVisibility] = useState<'Public' | 'Friend'>(data.visibility as 'Public' | 'Friend'); // State for post visibility
+  const openModalButtonRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button
+  const openModalButtonEditRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button for editing
   const toastContext = useContext(ToastContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -93,7 +63,7 @@ const Post: FC<Props> = ({ className, data }) => {
   // handle the Delete for post
   const handleDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
+      const response = await fetch(`http://localhost:8080/posts/${data._id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -131,6 +101,47 @@ const Post: FC<Props> = ({ className, data }) => {
     }
   };
 
+  // handle the Edit for post
+  const handleEdit = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/posts/${data._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          content: postContent,
+          visibility: postVisibility,
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Post edited successfully');
+        show({
+          title: 'Success',
+          description: 'Post edited successfully',
+          type: 'success',
+        });
+        window.location.reload(); // Refresh the page to show updated content
+      } else {
+        console.error('Failed to edit the post');
+        show({
+          title: 'Error',
+          description: 'Failed to edit the post',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      show({
+        title: 'Error',
+        description: 'An error occurred while editing the post',
+        type: 'error',
+      });
+    }
+  };
+
   return (
     <>
       <div
@@ -139,13 +150,15 @@ const Post: FC<Props> = ({ className, data }) => {
       >
         {/* Author */}
         <div className="flex gap-2 items-center">
-          <AuthorPfp data={data.author} />
+          <AuthorPfp data={data.user} />
           <div className="flex ml-auto">
             {/* <Edit className="text-primary" /> */}
             <DropDownMenu
               content={
                 <DropDownMenuContent className="-translate-x-1/2">
-                  <DropDownItem>Edit post</DropDownItem>
+                  <DropDownItem onClick={() => {
+                    openModalButtonEditRef.current?.click(); // Trigger the "Open Modal" button click for editing
+                  }}>Edit post</DropDownItem>
                   <DropDownItem onClick={() => {
                     openModalButtonRef.current?.click(); // Trigger the "Open Modal" button click
                   }}
@@ -212,6 +225,67 @@ const Post: FC<Props> = ({ className, data }) => {
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded"
           ref={openModalButtonRef}
+          style={{ display: 'none' }} // Make the button invisible
+        >
+          Open Modal
+        </button>
+      </PopupModal>
+      {/* popup for edit configuration */}
+      <PopupModal
+        widthPercent={0.5}
+        heightPercent={0.5}
+        className="custom-class"
+        backdropBlur={5}
+        modelRender={
+          // Style for modal
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-transparent"
+          >
+            <div className="p-4 bg-white rounded shadow-lg">
+              <h2 className="text-black">Edit Post</h2>
+              <textarea
+                className="w-full p-2 mt-2 border border-gray-300 rounded text-black"
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
+                onClick={(e) => e.stopPropagation()} // Prevent click propagation
+              />
+              <button
+                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent click propagation
+                  setPostVisibility(postVisibility === 'Public' ? 'Friend' : 'Public');
+                }}
+              >
+                {postVisibility === 'Public' ? 'Change to Friend' : 'Change to Public'}
+              </button>
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => {
+                    console.log('Cancel button clicked');
+                    setIsEditPopup(false);
+                  }}
+                  className="mr-2 px-4 py-2 bg-gray-300 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    console.log('Confirm button clicked');
+                    handleEdit();
+                  }}
+                  className="px-4 py-2 bg-green-500 text-white rounded"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      >
+        {/* This button is hidden and is used to trigger the modal by external components */}
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded"
+          ref={openModalButtonEditRef}
           style={{ display: 'none' }} // Make the button invisible
         >
           Open Modal
@@ -294,7 +368,7 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
   );
 };
 
-const PostPopup: FC<{ closePopup: any; data: Post }> = ({
+const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
   closePopup,
   data,
 }) => {
@@ -316,7 +390,7 @@ const PostPopup: FC<{ closePopup: any; data: Post }> = ({
       >
         {/* Author */}
         <div className="flex gap-2">
-          <AuthorPfp data={data.author} />
+          <AuthorPfp data={data.user} />
           <div className="flex ml-auto">
             <Edit className="text-primary" />
           </div>
@@ -343,7 +417,7 @@ const PostPopup: FC<{ closePopup: any; data: Post }> = ({
 };
 
 interface AuthorPfpProps {
-  data: Author;
+  data: User;
   extraInfo?: string;
 }
 
@@ -353,8 +427,8 @@ const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo }) => {
       <img
         className="rounded-full flex-[0_0_auto] aspect-square bg-gray-500 size-12"
         src={
-          data.avatar
-            ? data.avatar
+          data.virtualProfileImage
+            ? data.virtualProfileImage
             : 'https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2'
         }
         alt="User avatar"
@@ -534,5 +608,6 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 };
 
 export { CommentSection, PostImages, AuthorPfp };
-export type { Post, Author, Reaction, CommentComp as Comment };
+export type { Posts, User, Reaction, CommentComp as Comment };
+const Post = PostComponent;
 export default Post;
