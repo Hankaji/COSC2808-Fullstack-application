@@ -50,6 +50,7 @@ const router = createBrowserRouter([
           const endpoint = `${URL_BASE}/posts/${params.postId}`;
           const res = await fetch(endpoint, {
             method: 'GET',
+            credentials: 'include',
           });
           return res.json();
         },

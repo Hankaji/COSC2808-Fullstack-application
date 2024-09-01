@@ -2,10 +2,10 @@ import Layout from '../../../components/Layout';
 import { useLoaderData, useParams } from 'react-router';
 import GroupPanel from '../../groups/group/GroupPanel';
 import PostPanel from './PostPanel';
-import { Post } from '../../../types/post';
+import { Posts } from '../../../types/post';
 
 const PostPage = () => {
-  const loaderData = useLoaderData() as Post;
+  const loaderData = useLoaderData() as Posts;
   console.log(loaderData);
 
   return (
