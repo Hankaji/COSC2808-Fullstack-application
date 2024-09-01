@@ -47,13 +47,30 @@ export const getPosts = async (req: Request, res: Response) => {
 			.skip(skip)
 			.limit(pageSize)
 			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.populate({
+				path: "user_id",
+				select: "_id username displayName profileImage contentType",
+			})
 			.exec();
 
 		// Process virtual images to be included in the response
 		const processedPosts = posts.map((post) => {
+			const user = post.user_id as any;
+
+			// Manually create the virtualProfileImage
+			const virtualProfileImage =
+				user.profileImage && user.profileImage.data
+					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+					: null;
+
 			return {
 				_id: post._id,
-				user_id: post.user_id,
+				user: {
+					_id: user._id,
+					username: user.username,
+					displayName: user.displayName,
+					virtualProfileImage,
+				},
 				group_id: post.group_id,
 				content: post.content,
 				// @ts-ignore
@@ -112,23 +129,42 @@ export const getUserPosts = async (req: Request, res: Response) => {
 
 		// Execute the query and process the results
 		const posts = await postsQuery
-			.sort({ createdAt: -1 }) // Order by createdAt desc
+			.sort({ createdAt: -1 })
 			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.populate({
+				path: "user_id",
+				select: "_id username displayName profileImage contentType",
+			})
 			.exec();
 
 		// Process virtual images to be included in the response
-		const processedPosts = posts.map((post) => ({
-			_id: post._id,
-			user_id: post.user_id,
-			group_id: post.group_id,
-			content: post.content,
-			// @ts-ignore
-			images: post.virtualImages,
-			visibility: post.visibility,
-			reactions: post.reactions,
-			comments: post.comments,
-			createdAt: post.createdAt,
-		}));
+		const processedPosts = posts.map((post) => {
+			const user = post.user_id as any;
+
+			// Manually create the virtualProfileImage
+			const virtualProfileImage =
+				user.profileImage && user.profileImage.data
+					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+					: null;
+
+			return {
+				_id: post._id,
+				user: {
+					_id: user._id,
+					username: user.username,
+					displayName: user.displayName,
+					virtualProfileImage,
+				},
+				group_id: post.group_id,
+				content: post.content,
+				// @ts-ignore
+				images: post.virtualImages,
+				visibility: post.visibility,
+				reactions: post.reactions,
+				comments: post.comments,
+				createdAt: post.createdAt,
+			};
+		});
 
 		return res.status(200).json(processedPosts);
 	} catch (error) {
@@ -177,21 +213,40 @@ export const getGroupPosts = async (req: Request, res: Response) => {
 		const posts = await postsQuery
 			.sort({ createdAt: -1 }) // Order by createdAt desc
 			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.populate({
+				path: "user_id",
+				select: "_id username displayName profileImage contentType",
+			})
 			.exec();
 
 		// Process virtual images to be included in the response
-		const processedPosts = posts.map((post) => ({
-			_id: post._id,
-			user_id: post.user_id,
-			group_id: post.group_id,
-			content: post.content,
-			// @ts-ignore
-			images: post.virtualImages,
-			visibility: post.visibility,
-			reactions: post.reactions,
-			comments: post.comments,
-			createdAt: post.createdAt,
-		}));
+		const processedPosts = posts.map((post) => {
+			const user = post.user_id as any;
+
+			// Manually create the virtualProfileImage
+			const virtualProfileImage =
+				user.profileImage && user.profileImage.data
+					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+					: null;
+
+			return {
+				_id: post._id,
+				user: {
+					_id: user._id,
+					username: user.username,
+					displayName: user.displayName,
+					virtualProfileImage,
+				},
+				group_id: post.group_id,
+				content: post.content,
+				// @ts-ignore
+				images: post.virtualImages,
+				visibility: post.visibility,
+				reactions: post.reactions,
+				comments: post.comments,
+				createdAt: post.createdAt,
+			};
+		});
 
 		return res.status(200).json(processedPosts);
 	} catch (error) {
@@ -213,6 +268,10 @@ export const getPostById = async (req: Request, res: Response) => {
 		// Find the post by ID
 		const post = await Post.findById(postId)
 			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.populate({
+				path: "user_id",
+				select: "_id username displayName profileImage contentType",
+			})
 			.exec();
 
 		// If the post is not found, return a 404 error
@@ -220,10 +279,23 @@ export const getPostById = async (req: Request, res: Response) => {
 			return res.status(404).json({ message: "Post not found" });
 		}
 
-		// Prepare the response data, including virtual images
+		// Manually handle virtualProfileImage
+		const user = post.user_id as any;
+
+		const virtualProfileImage =
+			user.profileImage && user.profileImage.data
+				? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+				: null;
+
+		// Prepare the response data, including virtual images and user info
 		const response = {
 			_id: post._id,
-			user_id: post.user_id,
+			user: {
+				_id: user._id,
+				username: user.username,
+				displayName: user.displayName,
+				virtualProfileImage,
+			},
 			group_id: post.group_id,
 			content: post.content,
 			// @ts-ignore
