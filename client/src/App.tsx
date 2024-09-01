@@ -4,9 +4,11 @@ import RequireAuth from './components/RequireAuth';
 import { URL_BASE } from './config';
 import { AuthProvider } from './context/AuthProvider';
 import ToastProvider from './context/ToastProvider';
+import useAuth from './hooks/useAuth';
 import AdminPage from './pages/admin';
 import Error from './pages/error';
 import FriendsPage from './pages/friends';
+import JoinedGroups from './pages/groups';
 import CreateGroupForm from './pages/groups/create_group';
 import GroupPage from './pages/groups/group';
 import HomePage from './pages/home';
@@ -70,6 +72,10 @@ const router = createBrowserRouter([
       {
         path: 'groups',
         children: [
+          {
+            path: '',
+            element: <JoinedGroups />,
+          },
           {
             path: 'create',
             element: <CreateGroupForm />,
