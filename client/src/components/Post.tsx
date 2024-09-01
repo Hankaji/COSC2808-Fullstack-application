@@ -17,7 +17,13 @@ import {
   FC,
   HTMLAttributes,
   useState,
+  useRef,
+  useContext
 } from 'react';
+import { 
+  useNavigate, 
+  useLocation 
+} from 'react-router-dom';
 import { Comment } from '../types/post';
 import { mergeClassNames } from '../utils';
 import {
@@ -25,6 +31,8 @@ import {
   DropDownMenu,
   DropDownMenuContent,
 } from './ui/DropDownMenu';
+import PopupModal from './PopupModal';
+import { ToastContext } from '../context/ToastProvider';
 
 type Post = {
   id: string;
@@ -66,9 +74,61 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 
 const Post: FC<Props> = ({ className, data }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
+  const openModalButtonRef = useRef<HTMLButtonElement>(null);
+  const toastContext = useContext(ToastContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // error handler for toast
+  if (!toastContext) {
+    throw new Error('ToastContext must be used within a ToastProvider');
+  }
 
   const handlePostClick = () => {
     setIsPopup(true);
+  };
+
+  const { show } = toastContext;
+
+  // handle the Delete for post
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        console.log('Post deleted successfully');
+        show({
+          title: 'Success',
+          description: 'Post deleted successfully',
+          type: 'success',
+        });
+
+        // Check if the current URL matches /posts/:postId
+        const postIdPattern = /^\/posts\/[a-zA-Z0-9]+$/;
+        if (postIdPattern.test(location.pathname)) {
+          navigate('/'); // Navigate to the home page
+        } else {
+          window.location.reload(); // Refresh the page
+        }
+      } else {
+        console.error('Failed to delete the post');
+        show({
+          title: 'Error',
+          description: 'Failed to delete the post',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      show({
+        title: 'Error',
+        description: 'An error occurred while deleting the post',
+        type: 'error',
+      });
+    }
   };
 
   return (
@@ -86,7 +146,10 @@ const Post: FC<Props> = ({ className, data }) => {
               content={
                 <DropDownMenuContent className="-translate-x-1/2">
                   <DropDownItem>Edit post</DropDownItem>
-                  <DropDownItem>Delete</DropDownItem>
+                  <DropDownItem onClick={() => {
+                    openModalButtonRef.current?.click(); // Trigger the "Open Modal" button click
+                  }}
+                  >Delete</DropDownItem>
                   <DropDownItem>History</DropDownItem>
                 </DropDownMenuContent>
               }
@@ -111,6 +174,49 @@ const Post: FC<Props> = ({ className, data }) => {
         </div>
       </div>
       {isPopup && <PostPopup closePopup={setIsPopup} data={data} />}
+      {/* popup for delete confirmation */}
+      <PopupModal
+        widthPercent={0.5}
+        heightPercent={0.5}
+        className="custom-class"
+        backdropBlur={5}
+        modelRender={
+          // Style for modal
+          <div className="fixed inset-0 flex items-center justify-center bg-transparent">
+            <div className="p-4 bg-white rounded shadow-lg">
+              <h2 className="text-black">Are you sure you want to delete this post?</h2>
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => {
+                    console.log('Cancel button clicked');
+                  }}
+                  className="mr-2 px-4 py-2 bg-gray-300 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    console.log('Delete button clicked');
+                    handleDelete();
+                  }}
+                  className="px-4 py-2 bg-red-500 text-white rounded"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      >
+        {/* This button is hidden and is used to trigger the modal by external components */}
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded"
+          ref={openModalButtonRef}
+          style={{ display: 'none' }} // Make the button invisible
+        >
+          Open Modal
+        </button>
+      </PopupModal>
     </>
   );
 };

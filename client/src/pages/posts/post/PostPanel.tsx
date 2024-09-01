@@ -11,8 +11,8 @@ const PostPanel = () => {
         id: postData._id,
         author: {
           avatar: '',
-          username: postData.user_id.username,
-          displayName: postData.user_id.displayName,
+          username: postData.user.username,
+          displayName: postData.user.displayName,
         },
         content: postData.content,
         comments: postData.comments,
