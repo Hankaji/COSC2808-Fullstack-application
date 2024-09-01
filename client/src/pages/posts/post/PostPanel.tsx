@@ -16,7 +16,7 @@ const PostPanel = () => {
         },
         content: postData.content,
         comments: postData.comments,
-        reactions: [],
+        reactions: postData.reactions,
         editHistories: [],
       }}
     />

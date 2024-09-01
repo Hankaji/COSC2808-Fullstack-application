@@ -10,12 +10,14 @@ import {
   MessageCircle,
   SmilePlus,
   ThumbsUp,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   ButtonHTMLAttributes,
   CSSProperties,
   FC,
   HTMLAttributes,
+  useEffect,
+  useRef,
   useState,
 } from "react";
 import { Comment } from "../types/post";
@@ -25,7 +27,6 @@ import {
   DropDownMenu,
   DropDownMenuContent,
 } from "./ui/DropDownMenu";
-
 type Post = {
   id: string;
   author: {
@@ -49,15 +50,15 @@ type Author = {
 
 type Reaction = {
   author: Author;
-  type: ReactionTypes;
+  type: string;
 };
 
-const enum ReactionTypes {
-  NULL,
-  LIKE,
-  LOVE,
-  HAHA,
-  ANGRY,
+enum ReactionTypes {
+  LIKE = "LIKE",
+  LOVE = "LOVE",
+  HAHA = "HAHA",
+  ANGRY = "ANGRY",
+  NULL = "NULL",
 }
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
@@ -304,8 +305,7 @@ const CommentComp: FC<{ data: Comment }> = ({ data }) => {
       {/* Comment actions */}
       <div className="flex gap-4">
         <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
-          <Heart className="" />
-          87
+          <Reactions reactions={data.reactions} />
         </button>
       </div>
     </div>
@@ -317,11 +317,55 @@ const Reactions: FC<{ reactions: Reaction[] }> = ({ reactions }) => {
     ReactionTypes.NULL,
   );
 
-  const changeReaction = (to: ReactionTypes) => {
-    if (to === reactedReaction) setReactedReaction(ReactionTypes.NULL);
-    else setReactedReaction(to);
-  };
+  const [reactionCounts, setReactionCounts] = useState<
+    Record<ReactionTypes, number>
+  >({
+    [ReactionTypes.LIKE]: 0,
+    [ReactionTypes.LOVE]: 0,
+    [ReactionTypes.HAHA]: 0,
+    [ReactionTypes.ANGRY]: 0,
+    [ReactionTypes.NULL]: 0,
+  });
 
+  const changeReaction = (to: ReactionTypes) => {
+    if (to === reactedReaction) {
+      setReactionCounts((prev) => ({
+        ...prev,
+        [to]: prev[to] - 1,
+      }));
+      setReactedReaction(ReactionTypes.NULL);
+    } else {
+      if (reactedReaction !== ReactionTypes.NULL) {
+        setReactionCounts((prev) => ({
+          ...prev,
+          [reactedReaction]: prev[reactedReaction] - 1,
+        }));
+      }
+      setReactionCounts((prev) => ({
+        ...prev,
+        [to]: prev[to] + 1,
+      }));
+      setReactedReaction(to);
+    }
+  };
+  useEffect(() => {
+    const newCounts = {
+      [ReactionTypes.LIKE]: 0,
+      [ReactionTypes.LOVE]: 0,
+      [ReactionTypes.HAHA]: 0,
+      [ReactionTypes.ANGRY]: 0,
+      [ReactionTypes.NULL]: 0,
+    };
+
+    reactions.forEach((reaction) => {
+      const reactionType = reaction.type.toUpperCase() as ReactionTypes;
+      if (reactionType in newCounts) {
+        newCounts[reactionType]++;
+      }
+    });
+
+    setReactionCounts(newCounts);
+  }, [reactions]);
   return (
     <DropDownMenu
       hoverable
@@ -330,51 +374,42 @@ const Reactions: FC<{ reactions: Reaction[] }> = ({ reactions }) => {
           <DropDownItem asChild>
             <ReactionButton
               isSelected={reactedReaction === ReactionTypes.LIKE}
-              onClick={() => {
-                changeReaction(ReactionTypes.LIKE);
-              }}
+              onClick={() => changeReaction(ReactionTypes.LIKE)}
               color="#7aa2f7"
-              amount={2496}
+              amount={reactionCounts[ReactionTypes.LIKE]}
               Icon={ThumbsUp}
             />
           </DropDownItem>
           <DropDownItem asChild>
             <ReactionButton
               isSelected={reactedReaction === ReactionTypes.LOVE}
-              onClick={() => {
-                changeReaction(ReactionTypes.LOVE);
-              }}
+              onClick={() => changeReaction(ReactionTypes.LOVE)}
               color="#f7768e"
-              amount={5070}
+              amount={reactionCounts[ReactionTypes.LOVE]}
               Icon={Heart}
             />
           </DropDownItem>
           <DropDownItem asChild>
             <ReactionButton
               isSelected={reactedReaction === ReactionTypes.HAHA}
-              onClick={() => {
-                changeReaction(ReactionTypes.HAHA);
-              }}
+              onClick={() => changeReaction(ReactionTypes.HAHA)}
               color="#e0af68"
-              amount={156}
+              amount={reactionCounts[ReactionTypes.HAHA]}
               Icon={Laugh}
             />
           </DropDownItem>
           <DropDownItem asChild>
             <ReactionButton
               isSelected={reactedReaction === ReactionTypes.ANGRY}
-              onClick={() => {
-                changeReaction(ReactionTypes.ANGRY);
-              }}
+              onClick={() => changeReaction(ReactionTypes.ANGRY)}
               color="#f7768e"
-              amount={78}
+              amount={reactionCounts[ReactionTypes.ANGRY]}
               Icon={Angry}
             />
           </DropDownItem>
         </DropDownMenuContent>
       }
     >
-      {/* <ReactionButton color="#7aa2f7" amount={27} Icon={ThumbsUp} /> */}
       <SmilePlus />
       {reactions.length}
     </DropDownMenu>
@@ -415,7 +450,10 @@ const ReactionButton: FC<ReactionBtnProps> = ({
         onClick && onClick(e);
       }}
       {...props}
-      className={`flex justify-center items-center group gap-2 p-2 rounded-lg hover:bg-secondary ${className}`}
+      className={mergeClassNames(
+        `flex justify-center items-center group gap-2 p-2 rounded-lg hover:bg-secondary`,
+        className,
+      )}
     >
       <Icon
         style={{

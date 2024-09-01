@@ -14,19 +14,19 @@ import UserPage from './pages/users/user';
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <HomePage />,
   },
   {
-    path: "/notifications",
+    path: '/notifications',
     element: <NotificationsPage />,
   },
   {
-    path: "/login",
+    path: '/login',
     element: <LoginRegisterForm />,
   },
   {
-    path: "/register",
+    path: '/register',
     // element: <LoginRegisterForm />,
   },
   {
@@ -45,29 +45,29 @@ const router = createBrowserRouter([
     },
   },
   {
-    path: "/friends",
+    path: '/friends',
     element: <FriendsPage />,
   },
   {
-    path: "/users/:userId",
+    path: '/users/:userId',
     element: <UserPage />,
     loader: async ({ params }) => {
       const endpoint = `http://localhost:8080/users/${params.userId}`;
       const res = await fetch(endpoint, {
-        method: "GET",
+        method: 'GET',
       });
       return res.json();
     },
   },
   {
-    path: "groups",
+    path: 'groups',
     children: [
       {
-        path: "create",
+        path: 'create',
         element: <CreateGroupForm />,
       },
       {
-        path: ":groupId",
+        path: ':groupId',
         element: <GroupPage />,
       },
     ],

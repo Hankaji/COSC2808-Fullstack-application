@@ -1,7 +1,7 @@
 export function mergeClassNames(
   ...classes: (string | undefined | null | false)[]
 ): string {
-  return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 }
 
 export function formatRelativeTime(date: Date): string {
@@ -12,18 +12,18 @@ export function formatRelativeTime(date: Date): string {
   const diffInDays = Math.floor(diffInHours / 24);
 
   if (diffInSeconds < 60) {
-    return "now";
+    return 'now';
   } else if (diffInMinutes < 60) {
-    return `${diffInMinutes} min${diffInMinutes !== 1 ? "s" : ""}`;
+    return `${diffInMinutes} min${diffInMinutes !== 1 ? 's' : ''}`;
   } else if (diffInHours < 24) {
-    return `${diffInHours} hr${diffInHours !== 1 ? "s" : ""}`;
+    return `${diffInHours} hr${diffInHours !== 1 ? 's' : ''}`;
   } else if (diffInDays === 1) {
-    return "yesterday";
+    return 'yesterday';
   } else {
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   }
 }
