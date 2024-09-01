@@ -18,6 +18,7 @@ import PostPage from './pages/posts/post';
 import Search from './pages/search';
 import Unauthorized from './pages/unauthorized';
 import UserPage from './pages/users/user';
+import { parseGroup } from './types/group';
 
 const router = createBrowserRouter([
   {
@@ -84,6 +85,20 @@ const router = createBrowserRouter([
           {
             path: ':groupId',
             element: <GroupPage />,
+            loader: async ({ params }) => {
+              try {
+                const endpoint = `${URL_BASE}/groups/${params.groupId}`;
+                const res = await fetch(endpoint, {
+                  method: 'GET',
+                  credentials: 'include',
+                });
+
+                const data = await res.json();
+                const groupData = parseGroup(data);
+
+                return groupData;
+              } catch (error) {}
+            },
           },
         ],
       },

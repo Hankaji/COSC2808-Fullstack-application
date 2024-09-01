@@ -4,7 +4,7 @@ export interface GroupCreationRequest {
   id: string;
   user_id: string;
   status: RequestStatus;
-  group: Group;
+  group: Omit<Group, 'admins' | 'members'>;
 }
 
 export enum RequestStatus {

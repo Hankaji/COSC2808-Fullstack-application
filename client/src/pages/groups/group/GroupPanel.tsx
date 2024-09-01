@@ -1,9 +1,13 @@
-import { useParams } from 'react-router';
+import { useLoaderData, useParams } from 'react-router';
 import PostCreationPanel from '../../../components/PostCreationPanel';
 import { mergeClassNames } from '../../../utils';
 import PostsView from '../../../components/PostsView';
+import { Group } from '../../../types/group';
+import { FC } from 'react';
 
 const GroupPanel = () => {
+  const groupData = useLoaderData() as Group;
+
   const params = useParams();
   const groupId = params.groupId;
 
@@ -11,40 +15,66 @@ const GroupPanel = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      {groupId}
-      <GroupHeader />
+      <GroupHeader
+        coverImg={groupData.coverImage}
+        avatarImg={groupData.groupImage}
+        name={groupData.name}
+        isJoined={true}
+      />
       <PostCreationPanel />
       {/* <PostsView posts={null} /> */}
     </div>
   );
 };
 
-const GroupHeader = () => {
+interface GroupHeaderProps {
+  coverImg?: string;
+  avatarImg?: string;
+  name: string;
+  isJoined: boolean;
+}
+
+const GroupHeader: FC<GroupHeaderProps> = ({
+  coverImg,
+  avatarImg,
+  name,
+  isJoined,
+}) => {
   return (
     <div className="w-full">
       <img
-        className="w-full object-cover rounded-lg h-40"
-        src="https://styles.redditmedia.com/t5_2sx2i/styles/bannerBackgroundImage_qhzusrmg7cl61.png?width=2176&frame=1&auto=webp&s=62cf20f42cbf8d32f8e4b9500fbf9cba08b1e3a8"
-        alt="group cover image"
+        className="w-full bg-gray-500 object-cover rounded-lg h-40"
+        src={coverImg}
+        alt="group cover"
       />
       <div className="relative flex gap-2 p-2">
         {/* Avatar img container */}
         <div className="h-0 min-w-fit">
           <img
             className={mergeClassNames(
+              'bg-gray-500 object-cover',
               'relative aspect-square rounded-full size-24 -translate-y-1/2',
               'border-background border-solid border-4',
             )}
-            src="https://styles.redditmedia.com/t5_2sx2i/styles/communityIcon_7fixeonxbxd41.png"
+            src={avatarImg}
             alt="group avatar"
           />
         </div>
         {/* Group info */}
         <div className="flex gap-2 w-full items-center">
-          <h1 className="font-bold text-2xl">g/Punixorn</h1>
-          <button className="px-4 py-2 ml-auto border-border border-solid border-2 rounded-lg bg-background hover:bg-secondary">
+          <h1 className="font-bold text-2xl">g/{name}</h1>
+          <div className="px-4 py-2 ml-auto border-border border-solid border-2 rounded-lg bg-background">
             Joined
-          </button>
+          </div>
+          {!isJoined ? (
+            <button className="px-4 py-2 transition-colors rounded-lg bg-primary hover:bg-secondary">
+              Join
+            </button>
+          ) : (
+            <button className="px-4 py-2 transition-colors rounded-lg bg-danger hover:bg-secondary">
+              Leave
+            </button>
+          )}
         </div>
       </div>
     </div>

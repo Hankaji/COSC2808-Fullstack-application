@@ -23,11 +23,10 @@ export interface Comment {
 }
 
 export interface User {
-  _id: string;
+  id: string;
   username: string;
   displayName: string;
-  virtualProfileImage: string;
-  id: string;
+  profileImage?: string;
 }
 
 export interface Reaction {
@@ -42,3 +41,12 @@ export enum ReactionTypes {
   HAHA,
   ANGRY,
 }
+
+export const parseBasicUser = (data: any) => {
+  return {
+    id: data._id,
+    username: data.username,
+    displayName: data.displayName,
+    profileImage: data.virtualProfileImage,
+  } as User;
+};

@@ -10,10 +10,9 @@ const PostPanel = () => {
       data={{
         _id: postData._id,
         user: {
-          virtualProfileImage: '',
+          profileImage: '',
           username: postData.user.username,
           displayName: postData.user.displayName,
-          _id: '',
           id: '',
         },
         content: postData.content,

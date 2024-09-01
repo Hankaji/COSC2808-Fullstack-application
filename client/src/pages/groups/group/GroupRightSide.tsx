@@ -1,89 +1,143 @@
-import { Check, Globe, Mail, Trash, UserRound } from 'lucide-react';
+import { Check, Globe, Lock, Mail, Trash, UserRound } from 'lucide-react';
 import { mergeClassNames } from '../../../utils';
 import PopupModal from '../../../components/PopupModal';
-import { FC, ReactElement, useState } from 'react';
+import { FC, ReactElement, useEffect, useState } from 'react';
+import { useLoaderData, useParams } from 'react-router';
+import { Group, GroupVisibility } from '../../../types/group';
+import { parseBasicUser, User } from '../../../types/post';
+import { URL_BASE } from '../../../config';
+import { AuthorPfp } from '../../../components/Post';
+import useAuth from '../../../hooks/useAuth';
+import Loading from '../../../components/ui/Loading';
 
 const GroupRightSide = () => {
+  const groupData = useLoaderData() as Group;
+  const { auth } = useAuth();
+
+  const [admins, setAdmins] = useState<User[]>([]);
+
+  const isGroupAdmin = (): boolean => {
+    for (let admin of admins) {
+      if (admin.id === auth.user!.userId) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      const endpoint = `${URL_BASE}/groups/${groupData.id}/admins`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const data: any[] = await res.json();
+      const adminsData = data.map((user) => {
+        return parseBasicUser(user);
+      });
+      setAdmins(adminsData);
+    };
+
+    fetchAdmins();
+  }, []);
+
+  const showPopup = (tab: number) => {
+    return <Popup initialTab={tab} />;
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className={mergeClassNames('block-container flex-col')}>
         {/* Group Description */}
         <div className="flex flex-col">
-          <h1 className="font-bold text-lg">
-            g/Punixorn - the home for cunny NIXXER!
-          </h1>
+          <h1 className="font-bold text-lg">{groupData.name}</h1>
           <p>
-            Submit screenshots of all your *NIX desktops, themes, and nifty
-            configurations, or submit anything else that will make ricers happy.
-            Maybe a server running on an Amiga, or a Thinkpad signed by Bjarne
-            Stroustrup? Show the world how pretty your computer can be!
+            {groupData.description
+              ? groupData.description
+              : 'No description was provided'}
           </p>
         </div>
         {/* Visibility */}
         <p className="flex gap-2 items-center justify-center font-semibold rounded-lg bg-secondary py-2">
-          <Globe size={24} /> Public group
+          {groupData.visibility === GroupVisibility.PUBLIC ? (
+            <>
+              <Globe size={24} /> Public group
+            </>
+          ) : (
+            <>
+              <Lock size={24} /> Private
+            </>
+          )}
         </p>
         {/* Members */}
         <div className="flex gap-2">
           <div className="flex flex-col w-full">
-            <h2 className="font-bold">487K</h2>
+            <h2 className="font-bold">{groupData.members.length}</h2>
             <p className="text-muted">Members</p>
           </div>
           <div className="flex flex-col w-full">
-            <h2 className="font-bold">911</h2>
-            <p className="text-muted flex gap-2 items-center">
-              <div className="size-2 bg-success rounded-full"></div> Online
-            </p>
+            <h2 className="font-bold">{groupData.admins.length}</h2>
+            <p className="text-muted flex gap-2 items-center">Moderators</p>
           </div>
         </div>
       </div>
       {/* Current role */}
-      <div className="block-container">
-        <img
-          className="rounded-full bg-gray-500 size-12"
-          src="https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6"
-          alt="User avatar"
-        />
-        <div className="flex flex-col justify-center items-start">
-          <h1 className="text-xl font-semibold">Admin</h1>
-        </div>
+      <div className="block-container flex-col">
+        <h1 className="text-2xl font-bold">Moderators</h1>
+        {/* Display only 3 moderators max */}
+        {admins.slice(0, 3).map((admin) => (
+          <AuthorPfp key={admin.id} data={admin} />
+        ))}
       </div>
       {/* Actions */}
       <div className="block-container flex-col">
         <PopupModal
           heightPercent={0.8}
           className="w-full"
-          modelRender={<Popup />}
+          modelRender={showPopup(0)}
         >
           <button className="flex gap-2 w-full items-center justify-center font-semibold rounded-lg bg-primary text-foreground py-2">
             <UserRound size={24} /> People
           </button>
         </PopupModal>
-        <PopupModal
-          heightPercent={0.8}
-          className="w-full"
-          modelRender={<Popup initialTab={1} />}
-        >
-          <button className="flex gap-2 w-full items-center justify-center font-semibold rounded-lg bg-primary text-foreground py-2">
-            <Mail size={24} /> Requests
-          </button>
-        </PopupModal>
+        {isGroupAdmin() && (
+          <PopupModal
+            heightPercent={0.8}
+            className="w-full"
+            modelRender={showPopup(1)}
+          >
+            <button className="flex gap-2 w-full items-center justify-center font-semibold rounded-lg bg-primary text-foreground py-2">
+              <Mail size={24} /> Requests
+            </button>
+          </PopupModal>
+        )}
       </div>
     </div>
   );
 };
 
-const Popup: FC<{ initialTab?: number }> = ({ initialTab = 0 }) => {
+const Popup: FC<{ initialTab?: number; isGroupAdmin?: boolean }> = ({
+  initialTab = 0,
+  isGroupAdmin = false,
+}) => {
   const [selectedTab, setSelectedTab] = useState<number>(initialTab);
 
   const tabs: string[] = ['People', 'Requests'];
+  const requireAdminAccess: boolean[] = [false, true];
   const tabNodes: ReactElement[] = [<ViewAllPeople />, <ViewRequests />];
+
+  // if (requireAdminAccess[selectedTab] && !isGroupAdmin) {
+  //   setSelectedTab(0);
+  // }
 
   return (
     <div className="block-container flex-col size-full">
       {/* Tab selection */}
       <div className="flex">
         {tabs.map((name, idx) => {
+          if (requireAdminAccess[idx] && !isGroupAdmin) return;
           return (
             <button
               onClick={(e) => {
@@ -109,26 +163,61 @@ const Popup: FC<{ initialTab?: number }> = ({ initialTab = 0 }) => {
 };
 
 const ViewAllPeople = () => {
-  const data: string[] = ['as', 'asa', 'asasasasasa'];
+  const groupData = useLoaderData() as Group;
 
-  console.log(data.length);
+  const [members, setMembers] = useState<User[]>([]);
+  const [isLoading, setIsloading] = useState<boolean>(true);
+
+  const adminIds: string[] = groupData.admins.map(
+    (admin) => parseBasicUser(admin).id,
+  );
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      const endpoint = `${URL_BASE}/groups/${groupData.id}/members`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const data: any[] = await res.json();
+      const membersData = data.map((user) => {
+        return parseBasicUser(user);
+      });
+      setMembers(membersData);
+      setIsloading(false);
+    };
+
+    fetchMembers();
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 justify-start items-center size-full">
-      {data.length > 0 ? (
+      {isLoading && <Loading />}
+      {!isLoading && (
         <>
-          {data.map((item, idx) => {
-            return (
-              <div key={idx} className="block-container w-full">
-                {item}
-              </div>
-            );
-          })}
+          {members.length > 0 ? (
+            <>
+              {members.map((member) => {
+                return (
+                  <div
+                    key={member.id}
+                    className="block-container w-full items-center"
+                  >
+                    <AuthorPfp data={member} />
+                    {adminIds.includes(member.id) && (
+                      <p className="text-xl ml-auto font-bold">Moderator</p>
+                    )}
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <div className="flex justify-center items-center size-full">
+              No members here
+            </div>
+          )}
         </>
-      ) : (
-        <div className="flex justify-center items-center size-full">
-          No members here
-        </div>
       )}
     </div>
   );
