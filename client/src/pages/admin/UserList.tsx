@@ -5,140 +5,160 @@ import { mergeClassNames } from '../../utils';
 const list: Account[] = [
   {
     id: 'alice_on_chain',
-    name: 'Alice',
+    username: 'alice_on_chain',
+    displayName: 'Alice',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'its_bob',
-    name: 'Bob',
+    username: 'its_bob',
+    displayName: 'Bob',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: true,
   },
   {
     id: 'charliexcx',
-    name: 'Charlie',
+    username: 'charliexcx',
+    displayName: 'Charlie',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'david.nguyen',
-    name: 'David',
+    username: 'david.nguyen',
+    displayName: 'David',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: true,
   },
   {
     id: 'eve_irl',
-    name: 'Eve',
+    username: 'eve_irl',
+    displayName: 'Eve',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'frank_castle',
-    name: 'Frank',
+    username: 'frank_castle',
+    displayName: 'Frank',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'grace_hopper',
-    name: 'Grace',
+    username: 'grace_hopper',
+    displayName: 'Grace',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: true,
   },
   {
     id: 'henry8',
-    name: 'Henry',
+    username: 'henry8',
+    displayName: 'Henry',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'isabella_swan',
-    name: 'Isabella',
+    username: 'isabella_swan',
+    displayName: 'Isabella',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'jack_sparrow',
-    name: 'Jack',
+    username: 'jack_sparrow',
+    displayName: 'Jack',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: true,
   },
   {
     id: 'kate_austen',
-    name: 'Kate',
+    username: 'kate_austen',
+    displayName: 'Kate',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'liam_neeson',
-    name: 'Liam',
+    username: 'liam_neeson',
+    displayName: 'Liam',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'mia_wallace',
-    name: 'Mia',
+    username: 'mia_wallace',
+    displayName: 'Mia',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: true,
   },
   {
     id: 'neo_matrix',
-    name: 'Neo',
+    username: 'neo_matrix',
+    displayName: 'Neo',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'olivia_pope',
-    name: 'Olivia',
+    username: 'olivia_pope',
+    displayName: 'Olivia',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'peter_parker',
-    name: 'Peter',
+    username: 'peter_parker',
+    displayName: 'Peter',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: true,
   },
   {
     id: 'quinn_fabray',
-    name: 'Quinn',
+    username: 'quinn_fabray',
+    displayName: 'Quinn',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'ron_weasley',
-    name: 'Ron',
+    username: 'ron_weasley',
+    displayName: 'Ron',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
   },
   {
     id: 'sarah_connor',
-    name: 'Sarah',
+    username: 'sarah_connor',
+    displayName: 'Sarah',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: true,
   },
   {
     id: 'tony_stark',
-    name: 'Tony',
+    username: 'tony_stark',
+    displayName: 'Tony',
     imgUrl:
       'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
     isSuspended: false,
@@ -208,7 +228,7 @@ interface UserListItemProps {
 }
 
 const UserListItem: FC<UserListItemProps> = ({
-  data: { id, name, imgUrl, isSuspended },
+  data: { username, displayName, imgUrl, isSuspended },
   actionFn,
 }) => {
   return (
@@ -217,11 +237,11 @@ const UserListItem: FC<UserListItemProps> = ({
         <img
           src={imgUrl}
           className="rounded-full bg-gray-500 size-12"
-          alt={name}
+          alt={username}
         />
         <div>
-          <p className="text-base">{name}</p>
-          <p className="text-sm text-gray-500">@{id}</p>
+          <p className="text-base">{displayName}</p>
+          <p className="text-sm text-gray-500">@{username}</p>
         </div>
       </div>
       <button

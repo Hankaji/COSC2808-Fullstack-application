@@ -9,9 +9,12 @@ import {
 } from '../../../components/ui/DropDownMenu';
 import { Input } from '../../../components/ui/Input';
 import { URL_BASE } from '../../../config';
+import useToast from '../../../hooks/useToast';
 
 const GroupFormPanel = () => {
   const [visibility, setVisibility] = useState<'Public' | 'Private'>('Public');
+
+  const toast = useToast();
 
   const descriptionRef = useRef<HTMLDivElement>(null);
 
@@ -58,20 +61,33 @@ const GroupFormPanel = () => {
 
     validateForm(payload);
 
-    const endpoint = `${URL_BASE}/groups`;
+    const endpoint = `${URL_BASE}/requests/group_creation_requests`;
     const submit = async () => {
       try {
+        // Send request
         const res = await fetch(endpoint, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          credentials: 'include',
           method: 'POST',
           body: formData,
         });
-        console.log(await res.json());
+
+        // Check request
+        const data = await res.json();
+        console.log(data);
+        return data;
       } catch (error) {}
     };
-    submit();
+    toast.showAsync(submit, {
+      loading: {
+        title: 'Loading...',
+      },
+      success: (data) => ({
+        title: `${data.message}`,
+      }),
+      error: (e) => ({
+        title: `${e.message}`,
+      }),
+    });
   };
 
   return (

@@ -21,6 +21,7 @@ const TabSections = () => {
     const endpoint = `${URL_BASE}/users`;
     const res = await fetch(endpoint, {
       method: 'GET',
+      credentials: 'include',
     });
     const data = await res.json();
     setUsers(data as User[]);

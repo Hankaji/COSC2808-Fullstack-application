@@ -1,6 +1,6 @@
 export interface Post {
   _id: string;
-  user_id: UserID;
+  user: User;
   group_id: null;
   content: string;
   images: string[];
@@ -14,7 +14,7 @@ export interface Post {
 }
 
 export interface Comment {
-  author_id: AuthorID;
+  author_id: User;
   content: string;
   reactions: any[];
   createdAt: Date;
@@ -22,17 +22,10 @@ export interface Comment {
   _id: string;
 }
 
-export interface AuthorID {
+export interface User {
   _id: string;
   username: string;
   displayName: string;
   virtualProfileImage: string;
-  id: string;
-}
-
-export interface UserID {
-  _id: string;
-  username: string;
-  displayName: string;
   id: string;
 }

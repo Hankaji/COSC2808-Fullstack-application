@@ -1,631 +1,1132 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
+import mongoose from "mongoose";
 import Post from "../models/post";
-import Admin from "../models/admin";
 import User from "../models/user";
 import Group from "../models/group";
-import type { SortOrder } from "mongoose";
 
-// create a post
+// Get posts
+export const getPosts = async (req: Request, res: Response) => {
+	try {
+		const userId = req.session.userId;
+		const isAdmin = req.session.isAdmin;
+		const { page = 1, limit = 10 } = req.query;
+
+		// Pagination setup
+		const pageNumber = parseInt(page as string);
+		const pageSize = parseInt(limit as string);
+		const skip = (pageNumber - 1) * pageSize;
+
+		let postsQuery;
+
+		if (isAdmin) {
+			// Admin: Get all posts in the database
+			postsQuery = Post.find({});
+		} else {
+			// Current User: Get posts from friends and groups
+			const user = await User.findById(userId).select("friends").exec();
+
+			if (!user) {
+				return res.status(404).json({ message: "User not found" });
+			}
+
+			// Get user's friends and groups
+			const friendIds = user.friends.map((friend) => friend._id);
+
+			const userGroups = await Group.find({ members: userId }).select("_id").exec();
+			const groupIds = userGroups.map((group) => group._id);
+
+			// Find posts from friends and groups
+			postsQuery = Post.find({
+				$or: [{ user_id: { $in: friendIds } }, { group_id: { $in: groupIds } }],
+			});
+		}
+
+		// Execute the query and process the results
+		const posts = await postsQuery
+			.sort({ createdAt: -1 })
+			.skip(skip)
+			.limit(pageSize)
+			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.populate({
+				path: "user_id",
+				select: "_id username displayName profileImage contentType",
+			})
+			.exec();
+
+		// Process virtual images to be included in the response
+		const processedPosts = posts.map((post) => {
+			const user = post.user_id as any;
+
+			// Manually create the virtualProfileImage
+			const virtualProfileImage =
+				user.profileImage && user.profileImage.data
+					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+					: null;
+
+			return {
+				_id: post._id,
+				user: {
+					_id: user._id,
+					username: user.username,
+					displayName: user.displayName,
+					virtualProfileImage,
+				},
+				group_id: post.group_id,
+				content: post.content,
+				// @ts-ignore
+				images: post.virtualImages,
+				visibility: post.visibility,
+				reactions: post.reactions,
+				comments: post.comments,
+				createdAt: post.createdAt,
+			};
+		});
+
+		return res.status(200).json(processedPosts);
+	} catch (error) {
+		console.error("Error retrieving posts:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get user's posts
+export const getUserPosts = async (req: Request, res: Response) => {
+	try {
+		const userId = req.params.id;
+		const currentUserId = req.session.userId;
+		const isAdmin = req.session.isAdmin;
+
+		// Validate the user ID format
+		if (!mongoose.Types.ObjectId.isValid(userId)) {
+			return res.status(400).json({ message: "Invalid user ID" });
+		}
+
+		// Check if the user exists
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		let postsQuery;
+
+		if (isAdmin) {
+			// Admin: Get all posts of the specified user
+			postsQuery = Post.find({ user_id: userId });
+		} else {
+			// Current User: Check if the current user is a friend of the user whose posts are being requested
+			const currentUser = await User.findById(currentUserId).select("friends").exec();
+
+			const isFriend = currentUser?.friends.some((friendId) => friendId.equals(userId));
+
+			if (isFriend) {
+				// If they are friends, return all posts
+				postsQuery = Post.find({ user_id: userId });
+			} else {
+				// If not friends, return only "Public" posts
+				postsQuery = Post.find({ user_id: userId, visibility: "Public" });
+			}
+		}
+
+		// Execute the query and process the results
+		const posts = await postsQuery
+			.sort({ createdAt: -1 })
+			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.populate({
+				path: "user_id",
+				select: "_id username displayName profileImage contentType",
+			})
+			.exec();
+
+		// Process virtual images to be included in the response
+		const processedPosts = posts.map((post) => {
+			const user = post.user_id as any;
+
+			// Manually create the virtualProfileImage
+			const virtualProfileImage =
+				user.profileImage && user.profileImage.data
+					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+					: null;
+
+			return {
+				_id: post._id,
+				user: {
+					_id: user._id,
+					username: user.username,
+					displayName: user.displayName,
+					virtualProfileImage,
+				},
+				group_id: post.group_id,
+				content: post.content,
+				// @ts-ignore
+				images: post.virtualImages,
+				visibility: post.visibility,
+				reactions: post.reactions,
+				comments: post.comments,
+				createdAt: post.createdAt,
+			};
+		});
+
+		return res.status(200).json(processedPosts);
+	} catch (error) {
+		console.error("Error retrieving user's posts:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get group's posts
+export const getGroupPosts = async (req: Request, res: Response) => {
+	try {
+		const groupId = req.params.id;
+		const currentUserId = req.session.userId;
+		const isAdmin = req.session.isAdmin;
+
+		// Validate the group ID format
+		if (!mongoose.Types.ObjectId.isValid(groupId)) {
+			return res.status(400).json({ message: "Invalid group ID" });
+		}
+
+		// Check if the group exists
+		const group = await Group.findById(groupId);
+		if (!group) {
+			return res.status(404).json({ message: "Group not found" });
+		}
+
+		let postsQuery;
+
+		if (isAdmin) {
+			// Admin: Get all posts of the specified group
+			postsQuery = Post.find({ group_id: groupId });
+		} else {
+			if (group.visibility === "Private") {
+				// Current User: If the group is private, check if the user is a member
+				const isMember = group.members.some((memberId) => memberId.equals(currentUserId));
+
+				if (!isMember) {
+					return res.status(403).json({ message: "You are not authorized to view posts in this group" });
+				}
+			}
+			// Get all posts of the specified group (for public groups or if the user is a member of the private group)
+			postsQuery = Post.find({ group_id: groupId });
+		}
+
+		// Execute the query and sort by createdAt in descending order
+		const posts = await postsQuery
+			.sort({ createdAt: -1 }) // Order by createdAt desc
+			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.populate({
+				path: "user_id",
+				select: "_id username displayName profileImage contentType",
+			})
+			.exec();
+
+		// Process virtual images to be included in the response
+		const processedPosts = posts.map((post) => {
+			const user = post.user_id as any;
+
+			// Manually create the virtualProfileImage
+			const virtualProfileImage =
+				user.profileImage && user.profileImage.data
+					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+					: null;
+
+			return {
+				_id: post._id,
+				user: {
+					_id: user._id,
+					username: user.username,
+					displayName: user.displayName,
+					virtualProfileImage,
+				},
+				group_id: post.group_id,
+				content: post.content,
+				// @ts-ignore
+				images: post.virtualImages,
+				visibility: post.visibility,
+				reactions: post.reactions,
+				comments: post.comments,
+				createdAt: post.createdAt,
+			};
+		});
+
+		return res.status(200).json(processedPosts);
+	} catch (error) {
+		console.error("Error retrieving group posts:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get a post by ID
+export const getPostById = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
+
+		// Find the post by ID
+		const post = await Post.findById(postId)
+			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.populate({
+				path: "user_id",
+				select: "_id username displayName profileImage contentType",
+			})
+			.exec();
+
+		// If the post is not found, return a 404 error
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
+
+		// Manually handle virtualProfileImage
+		const user = post.user_id as any;
+
+		const virtualProfileImage =
+			user.profileImage && user.profileImage.data
+				? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+				: null;
+
+		// Prepare the response data, including virtual images and user info
+		const response = {
+			_id: post._id,
+			user: {
+				_id: user._id,
+				username: user.username,
+				displayName: user.displayName,
+				virtualProfileImage,
+			},
+			group_id: post.group_id,
+			content: post.content,
+			// @ts-ignore
+			images: post.virtualImages,
+			visibility: post.visibility,
+			reactions: post.reactions,
+			comments: post.comments,
+			createdAt: post.createdAt,
+		};
+
+		// Return the post data
+		return res.status(200).json(response);
+	} catch (error) {
+		console.error("Error retrieving the post:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get a post's history by ID
+export const getPostHistoryById = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
+
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
+
+		// Retrieve the edit history
+		const editHistory = post.editHistory;
+
+		// Initialize an array to hold the processed history
+		const processedHistory = [];
+
+		// Iterate through the edit history in reverse order to fill in missing values
+		let lastContent = post.content;
+		let lastImages = post.images.map((img) => `data:${img.contentType};base64,${img.data!.toString("base64")}`);
+		let lastVisibility = post.visibility;
+
+		for (let i = editHistory.length - 1; i >= 0; i--) {
+			const historyEntry = editHistory[i];
+
+			// Fill in missing values with the last known value
+			const content = historyEntry.content || lastContent;
+			const images =
+				historyEntry.images.length > 0
+					? historyEntry.images.map((img) => `data:${img.contentType};base64,${img.data!.toString("base64")}`)
+					: lastImages;
+			const visibility = historyEntry.visibility || lastVisibility;
+
+			// Update last known values
+			lastContent = content;
+			lastImages = images;
+			lastVisibility = visibility;
+
+			// Push the processed history entry
+			processedHistory.unshift({
+				content,
+				images,
+				visibility,
+				createdAt: historyEntry.createdAt,
+			});
+		}
+
+		// Return the processed history
+		return res.status(200).json(processedHistory);
+	} catch (error) {
+		console.error("Error retrieving post history:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Create a new post
 export const createPost = async (req: Request, res: Response) => {
-    try {
-        const { user_id, group_id, content, visibility, reactions, comments, editHistory } = req.body;
-        const images = req.files ? (req.files as Express.Multer.File[]).map(file => file.path) : [];
+	try {
+		const userId = req.session.userId;
+		const { group_id, content, visibility } = req.body;
+		const files = req.files as Express.Multer.File[];
+		// Validate required fields
+		if (!content) {
+			return res.status(400).json({ message: "Content is required" });
+		}
 
-        const newPost = new Post({
-            user_id,
-            group_id,
-            content,
-            images,
-            visibility,
-            reactions,
-            comments,
-            editHistory
-        });
+		// Validate group_id if provided
+		let groupId = null;
+		if (group_id) {
+			if (!mongoose.Types.ObjectId.isValid(group_id)) {
+				return res.status(400).json({ message: "Invalid group ID" });
+			}
+			groupId = new mongoose.Types.ObjectId(group_id);
+		}
 
-        const savedPost = await newPost.save();
+		// If group_id is provided, set visibility to "Public"
+		const postVisibility = groupId ? "Public" : visibility;
 
-        res.status(201).json(savedPost);
-    } catch (error: any) {
-        console.error("Error creating post:", error);
-        res.status(500).json({ message: "Error creating post", error: error.message || error });
-    }
+		// Handle images
+		const images = files?.map((file) => ({
+			data: file.buffer,
+			contentType: file.mimetype,
+		}));
+
+		// Create the new post
+		const newPost = new Post({
+			user_id: userId,
+			group_id: groupId,
+			content,
+			images,
+			visibility: postVisibility,
+			createdAt: new Date(),
+			editHistory: [],
+		});
+
+		await newPost.save();
+
+		// Find the user who created the post
+		const user = await User.findById(userId).select("displayName friends").exec();
+
+		if (groupId) {
+			// Notify all group members
+			const group = await Group.findById(groupId).select("members name").exec();
+
+			if (group) {
+				const notificationMessage = `New post in ${group.name} created by ${user!.displayName}.`;
+
+				// Send notification to all group members
+				await User.updateMany(
+					{ _id: { $in: group.members } },
+					{
+						$push: {
+							notifications: {
+								type: "Post",
+								message: notificationMessage,
+								isRead: false,
+								createdAt: new Date(),
+							},
+						},
+					}
+				);
+			}
+		} else {
+			// Notify all user's friends
+			const notificationMessage = `${user!.displayName} has created a new post.`;
+
+			// Send notification to all friends
+			await User.updateMany(
+				{ _id: { $in: user!.friends } },
+				{
+					$push: {
+						notifications: {
+							type: "Post",
+							message: notificationMessage,
+							isRead: false,
+							createdAt: new Date(),
+						},
+					},
+				}
+			);
+		}
+
+		// Return the newly created post
+		return res.status(201).json("Post created successfully");
+	} catch (error) {
+		console.error("Error creating post:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// delete a post by ID
-export const deletePost = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { postId } = req.params;
-        const deletedPost = await Post.findByIdAndDelete(postId);
+// Edit a post
+export const editPost = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const userId = req.session.userId; // Assume user ID is stored in session
+		const { content, visibility } = req.body;
+		const files = req.files; // Ensure files is treated as an array of multer files
 
-        if (!deletedPost) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        res.status(200).json({ message: 'Post deleted successfully' });
-    } catch (error) {
-        next(error);
-    }
-};
-// get a post by ID
-export const getAPost = async (req: Request, res: Response) => {
-    try {
-        const currentUserId = req.session.userId;
-        const { postId } = req.params;
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
 
-        // Find the post by ID and populate user_id and author_id fields
-        const post = await Post.findById(postId)
-            .populate("user_id", "username displayName profileImage") 
-            .populate("comments.author_id", "username displayName profileImage")
-            .populate("reactions.author_id", "username displayName profileImage")
-            .populate("comments.reactions.author_id", "username displayName profileImage")
-            .populate("group_id", "name");
+		// Check if the current user is the owner of the post
+		if (post.user_id != userId) {
+			return res.status(403).json({ message: "You are not authorized to edit this post" });
+		}
 
-        if (!post) {
-            return res.status(404).json({ message: "Post not found" });
-        }
+		// Prepare the edit history record
+		const editHistoryRecord: any = {
+			content: post.content,
+			images: [...post.images], // Copy the existing images safely
+			visibility: post.visibility,
+			createdAt: new Date(),
+		};
 
-        // Fetch the user who created the post
-        const user = await User.findById(post.user_id).select("friends");
+		// Update the post's content, images, and visibility
+		if (content) {
+			post.content = content;
+		} else {
+			delete editHistoryRecord.content;
+		}
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
+		if (Array.isArray(files) && files.length > 0) {
+			// Clear existing images safely
+			post.set("images", []);
+			files.forEach((file) => {
+				post.images.push({
+					data: file.buffer,
+					contentType: file.mimetype,
+				});
+			});
+		} else {
+			delete editHistoryRecord.images;
+		}
 
-        // Check if the post visibility is "Friend" and if the current user is not in the friends list
-        // Allow the post author to view their own post
-        if (post.visibility === "Friend" && post.group_id === null && post.user_id._id.toString() !== currentUserId && !user.friends.includes(currentUserId.toString())) {
-            return res.status(403).json({ message: "This post can only be seen by user's friends" });
-        }
+		if (visibility) {
+			post.visibility = visibility;
+		} else {
+			delete editHistoryRecord.visibility;
+		}
 
-        // Check if the post is in a group
-        if (post.group_id && post.group_id !== null) {
-            // Fetch the group details
-            const group = await Group.findById(post.group_id._id).select("visibility members");
+		// Add the edit history record if any of the fields were updated
+		if (Object.keys(editHistoryRecord).length > 1) {
+			post.editHistory.push(editHistoryRecord);
+		}
 
-            if (!group) {
-                return res.status(404).json({ message: "Group not found" });
-            }
+		// Save the updated post
+		await post.save();
 
-            // Check if the group is private and the current user is not a member of the group
-            if (group.visibility === "Private" && !group.members.includes(currentUserId.toString())) {
-                return res.status(403).json({ message: "This post is in a private group" });
-            }
-        }
-
-        return res.status(200).json(post);
-    } catch (error) {
-        return res.status(500).json({ message: "Server error", error });
-    }
-};
-
-// update a post by ID
-export const updatePost = async (req: Request, res: Response) => {
-    try {
-        const postId = req.params.postId;
-        const updateData = req.body;
-
-        // Find the post by ID
-        const post = await Post.findById(postId);
-
-        if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
-
-        // Save the current state of the post to editHistory
-        post.editHistory.push({
-            content: post.content,
-            images: post.images,
-            visibility: post.visibility,
-            createdAt: new Date(),
-        });
-
-        // Update the post with the new data
-        post.content = updateData.content || post.content;
-        post.visibility = updateData.visibility || post.visibility;
-
-        // Handle uploaded images
-        if (Array.isArray(req.files) && req.files.length > 0) {
-            const uploadedImages = (req.files as Express.Multer.File[]).map(file => file.path);
-            post.images = uploadedImages;
-        } else {
-            post.images = updateData.images || post.images;
-        }
-
-        // Save the updated post
-        const updatedPost = await post.save();
-
-        res.status(200).json(updatedPost);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
-    }
+		// Return the updated post
+		return res.status(200).json({ message: "Post edited successfully" });
+	} catch (error) {
+		console.error("Error editing post:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// create a reaction to a post
-export const createReactPost = async (req: Request, res: Response) => {
-    try {
-        const { postId } = req.params;
-        const { author_id, type } = req.body;
+// Delete a post
+export const deletePost = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const userId = req.session.userId;
+		const isAdmin = req.session.isAdmin;
 
-        // Find the post by ID and add the new reaction
-        const updatedPost = await Post.findByIdAndUpdate(
-            postId,
-            {
-                $push: {
-                    reactions: {
-                        author_id,
-                        type
-                    }
-                }
-            },
-            { new: true } // Return the updated document
-        );
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        if (!updatedPost) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
 
-        // Return the updated post in the response
-        res.status(200).json(updatedPost);
-    } catch (error) {
-        console.error(`Error adding reaction to post: ${error}`);
-        res.status(500).json({ message: 'Server error', error });
-    }
+		// Check if the current user is the owner of the post or an admin
+		if (post.user_id != userId && !isAdmin) {
+			return res.status(403).json({ message: "You are not authorized to delete this post" });
+		}
+
+		// Delete the post
+		await Post.deleteOne({ _id: postId });
+
+		// Return success response
+		return res.status(200).json({ message: "Post deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting post:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// change a reaction
-export const updatePostReaction = async (req: Request, res: Response) => {
-    try {
-        const { postId, reactionId } = req.params;
-        const { type } = req.body;
+// Add a comment to a post
+export const addCommentToPost = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const author_id = req.session.userId;
+		const { content } = req.body;
 
-        // Find the post by ID and update the specific reaction
-        const updatedPost = await Post.findOneAndUpdate(
-            { _id: postId, 'reactions._id': reactionId },
-            {
-                $set: {
-                    'reactions.$.type': type
-                }
-            },
-            { new: true } // Return the updated document
-        );
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        if (!updatedPost) {
-            return res.status(404).json({ message: 'Post or reaction not found' });
-        }
+		// Validate the author ID format
+		if (!author_id || !mongoose.Types.ObjectId.isValid(author_id)) {
+			return res.status(400).json({ message: "Invalid author ID" });
+		}
 
-        // Return the updated post in the response
-        res.status(200).json(updatedPost);
-    } catch (error) {
-        console.error(`Error updating reaction in post: ${error}`);
-        res.status(500).json({ message: 'Server error', error });
-    }
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
+
+		// Create the new comment
+		const newComment = {
+			author_id: new mongoose.Types.ObjectId(author_id),
+			content,
+			reactions: [],
+			createdAt: new Date(),
+			editHistory: [],
+		};
+
+		// Add the new comment to the post's comments array
+		post.comments.push(newComment);
+
+		// Save the updated post
+		await post.save();
+
+		// Notify the post author
+		if (post.user_id != author_id) {
+			// Ensure the user is not notifying themselves
+			// Find the comment author to get the displayName
+			const commentAuthor = await User.findById(author_id).select("displayName");
+			if (commentAuthor) {
+				const postAuthor = await User.findById(post.user_id);
+				if (postAuthor) {
+					const notificationMessage = `${commentAuthor.displayName} commented on your post.`;
+					postAuthor.notifications.push({
+						type: "Comment",
+						message: notificationMessage,
+						isRead: false,
+						createdAt: new Date(),
+					});
+					await postAuthor.save();
+				}
+			}
+		}
+
+		// Return success response
+		return res.status(201).json({ message: "Comment added successfully" });
+	} catch (error) {
+		console.error("Error adding comment:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// remove a reaction
-export const deletePostReaction = async (req: Request, res: Response) => {
-    try {
-        const { postId, reactionId } = req.params;
+// Edit a comment on a post
+export const editCommentOnPost = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const commentId = req.params.comment_id;
+		const userId = req.session.userId;
+		const { content } = req.body;
 
-        // Find the post by ID
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ message: "Post not found" });
-        }
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        // Find the reaction with the given reactionId and remove it
-        const reactionIndex = post.reactions.findIndex(
-            (reaction: any) => reaction._id.toString() === reactionId
-        );
+		// Validate the comment ID format
+		if (!mongoose.Types.ObjectId.isValid(commentId)) {
+			return res.status(400).json({ message: "Invalid comment ID" });
+		}
 
-        if (reactionIndex === -1) {
-            return res.status(404).json({ message: "Reaction not found" });
-        }
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
 
-        post.reactions.splice(reactionIndex, 1);
+		// Find the comment by comment_id
+		const comment = post.comments.id(commentId);
+		if (!comment) {
+			return res.status(404).json({ message: "Comment not found" });
+		}
 
-        // Save the updated post
-        await post.save();
+		// Check if the current user is the author of the comment
+		if (comment.author_id != userId) {
+			return res.status(403).json({ message: "You are not authorized to edit this comment" });
+		}
 
-        return res.status(200).json({ message: "Reaction deleted successfully", post });
-    } catch (error) {
-        return res.status(500).json({ message: "Server error", error });
-    }
+		// Add the current comment content to the edit history before editing
+		comment.editHistory.push({
+			content: comment.content,
+			createdAt: new Date(),
+		});
+
+		// Update the comment's content
+		comment.content = content;
+
+		// Save the updated post
+		await post.save();
+
+		// Return success response with the updated comment
+		return res.status(200).json({ message: "Comment edited successfully" });
+	} catch (error) {
+		console.error("Error editing comment:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// add comment to a post
-export const createPostComment = async (req: Request, res: Response) => {
-    try {
-        const { postId } = req.params;
-        const { author_id, content } = req.body;
+// Delete a comment from a post
+export const deleteCommentFromPost = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const commentId = req.params.comment_id;
+		const userId = req.session.userId;
+		const isAdmin = req.session.isAdmin;
 
-        // Find the post by ID
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        // Add the new comment to the post's comments array
-        const newComment = {
-            author_id,
-            content,
-            reactions: [],
-            createdAt: new Date(),
-            editHistory: []
-        };
-        post.comments.push(newComment);
+		// Validate the comment ID format
+		if (!mongoose.Types.ObjectId.isValid(commentId)) {
+			return res.status(400).json({ message: "Invalid comment ID" });
+		}
 
-        // Save the updated post
-        await post.save();
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
 
-        res.status(200).json({ message: 'Comment added successfully', post });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
-    }
+		// Find the comment by comment_id
+		const comment = post.comments.id(commentId);
+		if (!comment) {
+			return res.status(404).json({ message: "Comment not found" });
+		}
+
+		// Check if the current user is the author of the comment, the owner of the post, or an admin
+		if (comment.author_id != userId && post.user_id != userId && !isAdmin) {
+			return res.status(403).json({ message: "You are not authorized to delete this comment" });
+		}
+
+		// Remove the comment from the post's comments array using pull
+		post.comments.pull(commentId);
+
+		// Save the updated post
+		await post.save();
+
+		// Return success response with the updated post's comments
+		return res.status(200).json({ message: "Comment deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting comment:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// update a comment in a post
-export const updatePostComment = async (req: Request, res: Response) => {
-    try {
-        const { postId, commentId } = req.params;
-        const { content } = req.body;
+// Add a reaction to a post
+export const addReactionToPost = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const userId = req.session.userId;
+		const { type } = req.body;
 
-        // Find the post by ID
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        // Find the comment within the post's comments array by comment ID
-        const comment = post.comments.id(commentId);
-        if (!comment) {
-            return res.status(404).json({ message: 'Comment not found' });
-        }
+		// Validate the reaction type
+		const validReactions = ["Like", "Love", "Haha", "Angry"];
+		if (!validReactions.includes(type)) {
+			return res.status(400).json({ message: "Invalid reaction type" });
+		}
 
-        // Add the current content to the edit history before updating
-        comment.editHistory.push({ content: comment.content, createdAt: new Date() });
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
 
-        // Update the comment's content
-        comment.content = content;
+		// Check if the user has already reacted
+		const existingReaction = post.reactions.find((reaction) => reaction.author_id == userId);
 
-        // Save the updated post
-        await post.save();
+		if (existingReaction) {
+			// If the user has already reacted, update the reaction type
+			existingReaction.type = type;
+		} else {
+			// Otherwise, create a new reaction
+			const newReaction = {
+				author_id: new mongoose.Types.ObjectId(userId),
+				type,
+			};
 
-        res.status(200).json({ message: 'Comment updated successfully', post });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
-    }
+			// Add the new reaction to the post's reactions array
+			post.reactions.push(newReaction);
+		}
+
+		// Save the updated post
+		await post.save();
+
+		// Notify the post owner
+		if (post.user_id != userId) {
+			// Find the user who reacted to get the displayName
+			const reactingUser = await User.findById(userId).select("displayName");
+			if (reactingUser) {
+				const postAuthor = await User.findById(post.user_id);
+				if (postAuthor) {
+					const notificationMessage = `${reactingUser.displayName} reacted to your post.`;
+					postAuthor.notifications.push({
+						type: "Reaction",
+						message: notificationMessage,
+						isRead: false,
+						createdAt: new Date(),
+					});
+					await postAuthor.save();
+				}
+			}
+		}
+
+		// Return success response with the updated reactions
+		return res.status(201).json({ message: "Reaction added successfully" });
+	} catch (error) {
+		console.error("Error adding reaction:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// delete a comment in a post
-export const deletePostComment = async (req: Request, res: Response) => {
-    try {
-        const { postId, commentId } = req.params;
+// Edit a reaction on a post
+export const editReactionOnPost = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const reactionId = req.params.reaction_id;
+		const userId = req.session.userId;
+		const { type } = req.body;
 
-        // Find the post by ID
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        // Find the comment within the post's comments array by comment ID
-        const comment = post.comments.id(commentId);
-        if (!comment) {
-            return res.status(404).json({ message: 'Comment not found' });
-        }
+		// Validate the reaction ID format
+		if (!mongoose.Types.ObjectId.isValid(reactionId)) {
+			return res.status(400).json({ message: "Invalid reaction ID" });
+		}
 
-        // Remove the comment
-        post.comments.remove(comment);
+		// Validate the reaction type
+		const validReactions = ["Like", "Love", "Haha", "Angry"];
+		if (!validReactions.includes(type)) {
+			return res.status(400).json({ message: "Invalid reaction type" });
+		}
 
-        // Save the updated post
-        await post.save();
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
 
-        res.status(200).json({ message: 'Comment deleted successfully', post });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
-    }
+		// Find the reaction by reaction_id
+		const reaction = post.reactions.id(reactionId);
+		if (!reaction) {
+			return res.status(404).json({ message: "Reaction not found" });
+		}
+
+		// Check if the current user is the author of the reaction
+		if (reaction.author_id != userId) {
+			return res.status(403).json({ message: "You are not authorized to edit this reaction" });
+		}
+
+		// Update the reaction's type
+		reaction.type = type;
+
+		// Save the updated post
+		await post.save();
+
+		// Return success response with the updated reaction
+		return res.status(200).json({ message: "Reaction edited successfully", reaction });
+	} catch (error) {
+		console.error("Error editing reaction:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// make a reaction to a comment in a post
-export const createReactionToPostComment = async (req: Request, res: Response) => {
-    try {
-        const { postId, commentId } = req.params;
-        const { author_id, type } = req.body;
+// Delete a reaction from a post
+export const deleteReactionFromPost = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const reactionId = req.params.reaction_id;
+		const userId = req.session.userId;
+		const isAdmin = req.session.isAdmin;
 
-        // Find the post by ID
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ message: "Post not found" });
-        }
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        // Find the comment by ID
-        const comment = post.comments.id(commentId);
-        if (!comment) {
-            return res.status(404).json({ message: "Comment not found" });
-        }
+		// Validate the reaction ID format
+		if (!mongoose.Types.ObjectId.isValid(reactionId)) {
+			return res.status(400).json({ message: "Invalid reaction ID" });
+		}
 
-        // Create a new reaction
-        const newReaction = {
-            author_id,
-            type,
-        };
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
 
-        // Add the new reaction to the comment's reactions array
-        comment.reactions.push(newReaction);
+		// Find the reaction by reaction_id
+		const reaction = post.reactions.id(reactionId);
+		if (!reaction) {
+			return res.status(404).json({ message: "Reaction not found" });
+		}
 
-        // Save the updated post
-        await post.save();
+		// Check if the current user is the author of the reaction or an admin
+		if (reaction.author_id != userId && !isAdmin) {
+			return res.status(403).json({ message: "You are not authorized to delete this reaction" });
+		}
 
-        return res.status(201).json({ message: "Reaction added successfully", post });
-    } catch (error) {
-        return res.status(500).json({ message: "Server error", error });
-    }
+		// Remove the reaction from the post's reactions array using pull
+		post.reactions.pull(reactionId);
+
+		// Save the updated post
+		await post.save();
+
+		// Return success response
+		return res.status(200).json({ message: "Reaction deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting reaction:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// update reaction to a comment in a post
-export const updateReactionToPostComment = async (req: Request, res: Response) => {
-    try {
-        const { postId, commentId, reactionId } = req.params;
-        const { type } = req.body;
+// Add a reaction to a comment
+export const addReactionToComment = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const commentId = req.params.comment_id;
+		const userId = req.session.userId;
+		const { type } = req.body;
 
-        // Find the post and update the specific reaction in the specified comment
-        const post = await Post.findOneAndUpdate(
-            { 
-                _id: postId, 
-                "comments._id": commentId, 
-                "comments.reactions._id": reactionId 
-            },
-            { 
-                $set: { "comments.$.reactions.$[reaction].type": type } 
-            },
-            { 
-                arrayFilters: [{ "reaction._id": reactionId }],
-                new: true 
-            }
-        );
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        if (!post) {
-            return res.status(404).json({ message: "Post or reaction not found" });
-        }
+		// Validate the comment ID format
+		if (!mongoose.Types.ObjectId.isValid(commentId)) {
+			return res.status(400).json({ message: "Invalid comment ID" });
+		}
 
-        return res.status(200).json(post);
-    } catch (error) {
-        return res.status(500).json({ message: "Server error", error });
-    }
+		// Validate the reaction type
+		const validReactions = ["Like", "Love", "Haha", "Angry"];
+		if (!validReactions.includes(type)) {
+			return res.status(400).json({ message: "Invalid reaction type" });
+		}
+
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
+
+		// Find the comment by comment_id
+		const comment = post.comments.id(commentId);
+		if (!comment) {
+			return res.status(404).json({ message: "Comment not found" });
+		}
+
+		// Check if the user has already reacted to the comment
+		const existingReaction = comment.reactions.find((reaction) => reaction.author_id == userId);
+
+		if (existingReaction) {
+			// If the user has already reacted, update the reaction type
+			existingReaction.type = type;
+		} else {
+			// Otherwise, create a new reaction
+			const newReaction = {
+				author_id: new mongoose.Types.ObjectId(userId),
+				type,
+			};
+
+			// Add the new reaction to the comment's reactions array
+			comment.reactions.push(newReaction);
+		}
+
+		// Save the updated post
+		await post.save();
+
+		// Find the reacting user's details for the notification
+		const reactingUser = await User.findById(userId).select("displayName");
+
+		// Send notification to the comment author
+		if (comment.author_id != userId) {
+			const commentAuthor = await User.findById(comment.author_id);
+			if (commentAuthor) {
+				commentAuthor.notifications.push({
+					type: "Reaction",
+					message: `${reactingUser?.displayName} reacted to your comment.`,
+					isRead: false,
+					createdAt: new Date(),
+				});
+				await commentAuthor.save();
+			}
+		}
+
+		// Return success response with the updated comment's reactions
+		return res.status(201).json({ message: "Reaction added successfully" });
+	} catch (error) {
+		console.error("Error adding reaction to comment:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// delete reaction from a comment in a post
-export const deleteReactionFromPostComment = async (req: Request, res: Response) => {
-    try {
-        const { postId, commentId, reactionId } = req.params;
+// Edit a reaction on a comment
+export const editReactionOnComment = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const commentId = req.params.comment_id;
+		const reactionId = req.params.reaction_id;
+		const userId = req.session.userId;
+		const { type } = req.body;
 
-        // Find the post and remove the specific reaction from the specified comment
-        const post = await Post.findOneAndUpdate(
-            { 
-                _id: postId, 
-                "comments._id": commentId 
-            },
-            { 
-                $pull: { "comments.$.reactions": { _id: reactionId } } 
-            },
-            { 
-                new: true 
-            }
-        );
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        if (!post) {
-            return res.status(404).json({ message: "Post or reaction not found" });
-        }
+		// Validate the comment ID format
+		if (!mongoose.Types.ObjectId.isValid(commentId)) {
+			return res.status(400).json({ message: "Invalid comment ID" });
+		}
 
-        return res.status(200).json(post);
-    } catch (error) {
-        return res.status(500).json({ message: "Server error", error });
-    }
+		// Validate the reaction ID format
+		if (!mongoose.Types.ObjectId.isValid(reactionId)) {
+			return res.status(400).json({ message: "Invalid reaction ID" });
+		}
+
+		// Validate the reaction type
+		const validReactions = ["Like", "Love", "Haha", "Angry"];
+		if (!validReactions.includes(type)) {
+			return res.status(400).json({ message: "Invalid reaction type" });
+		}
+
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
+
+		// Find the comment by comment_id
+		const comment = post.comments.id(commentId);
+		if (!comment) {
+			return res.status(404).json({ message: "Comment not found" });
+		}
+
+		// Find the reaction by reaction_id within the comment's reactions array
+		const reaction = comment.reactions.id(reactionId);
+		if (!reaction) {
+			return res.status(404).json({ message: "Reaction not found" });
+		}
+
+		// Check if the current user is the author of the reaction
+		if (reaction.author_id != userId) {
+			return res.status(403).json({ message: "You are not authorized to edit this reaction" });
+		}
+
+		// Update the reaction's type
+		reaction.type = type;
+
+		// Save the updated post
+		await post.save();
+
+		// Return success response with the updated reaction
+		return res.status(200).json({ message: "Reaction edited successfully" });
+	} catch (error) {
+		console.error("Error editing reaction:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
-// get all posts from a group
-export const getAllPostsFromGroup = async (req: Request, res: Response) => {
-    try {
-        const currentUserId = req.session.userId;
-        const { groupId } = req.params;
-        const { q, page = 1, limit = 10 } = req.query;
+// Delete a reaction from a comment
+export const deleteReactionFromComment = async (req: Request, res: Response) => {
+	try {
+		const postId = req.params.id;
+		const commentId = req.params.comment_id;
+		const reactionId = req.params.reaction_id;
+		const userId = req.session.userId;
+		const isAdmin = req.session.isAdmin;
 
-        // Check if the current user is an admin
-        const isAdmin = await Admin.exists({ _id: currentUserId });
+		// Validate the post ID format
+		if (!mongoose.Types.ObjectId.isValid(postId)) {
+			return res.status(400).json({ message: "Invalid post ID" });
+		}
 
-        // Check if the current user is a member of the group
-        const group = await Group.findById(groupId);
-        const isMember = group?.members?.includes(currentUserId.toString()) ?? false;
+		// Validate the comment ID format
+		if (!mongoose.Types.ObjectId.isValid(commentId)) {
+			return res.status(400).json({ message: "Invalid comment ID" });
+		}
 
-        // If the user is not an admin and not a member of the group, return "The Group is private"
-        if (!isAdmin && !isMember && group?.visibility === 'Private') {
-            return res.status(403).json({ message: "The Group is private" });
-        }
+		// Validate the reaction ID format
+		if (!mongoose.Types.ObjectId.isValid(reactionId)) {
+			return res.status(400).json({ message: "Invalid reaction ID" });
+		}
 
-        // Create a query object to filter posts by group_id and search term in content
-        const query = {
-            group_id: groupId,
-            content: { $regex: q || '', $options: 'i' } // Search for posts containing the search term in content
-        };
-        
-        // Pagination and sorting options
-        const options = {
-            skip: (parseInt(page as string, 10) - 1) * parseInt(limit as string, 10),
-            limit: parseInt(limit as string, 10),
-            sort: { createdAt: -1 } as { createdAt: SortOrder } // Sort by createdAt in descending order
-        };
-        
-        // Fetch posts based on the query and options
-        const posts = await Post.find(query)
-            .skip(options.skip)
-            .limit(options.limit)
-            .sort(options.sort)
-            .populate("user_id", "username displayName profileImage")
-            .populate("comments.author_id", "username displayName profileImage")
-            .populate("reactions.author_id", "username displayName profileImage")
-            .populate("comments.reactions.author_id", "username displayName profileImage")
-            .populate("group_id", "name")
-            .exec();
+		// Find the post by ID
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
 
-        // Count total number of posts matching the query
-        const total = await Post.countDocuments(query);
+		// Find the comment by comment_id
+		const comment = post.comments.id(commentId);
+		if (!comment) {
+			return res.status(404).json({ message: "Comment not found" });
+		}
 
-        // Return the posts along with pagination information
-        return res.status(200).json({
-            docs: posts,
-            totalDocs: total,
-            limit: options.limit,
-            page: parseInt(page as string, 10),
-            totalPages: Math.ceil(total / options.limit)
-        });
-    } catch (error) {
-        return res.status(500).json({ message: "Server error", error });
-    }
-};
+		// Find the reaction by reaction_id within the comment's reactions array
+		const reaction = comment.reactions.id(reactionId);
+		if (!reaction) {
+			return res.status(404).json({ message: "Reaction not found" });
+		}
 
-// get all posts from a user
-export const getAllPostsFromUser = async (req: Request, res: Response) => {
-    try {
-        const currentUserId = req.session.userId;
-        const targetUserId = req.params.userId;
+		// Check if the current user is the author of the reaction or an admin
+		if (reaction.author_id != userId && !isAdmin) {
+			return res.status(403).json({ message: "You are not authorized to delete this reaction" });
+		}
 
-        // Extract page, limit, and search term from query parameters
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
-        const searchTerm = req.query.q as string || '';
-        const skip = (page - 1) * limit;
+		// Remove the reaction from the comment's reactions array using pull
+		comment.reactions.pull(reactionId);
 
-        // Check if the current user is an admin
-        const isAdmin = await Admin.exists({ _id: currentUserId });
+		// Save the updated post
+		await post.save();
 
-        // Create a search filter for the content
-        const contentFilter = searchTerm ? { content: { $regex: searchTerm, $options: 'i' } } : {};
-
-        if (isAdmin) {
-            // If the current user is an admin, return all posts from the target user with pagination, sorting, and content search
-            const posts = await Post.find({ user_id: targetUserId, ...contentFilter })
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit)
-                .populate("user_id", "username displayName profileImage")
-                .populate("comments.author_id", "username displayName profileImage")
-                .populate("reactions.author_id", "username displayName profileImage")
-                .populate("comments.reactions.author_id", "username displayName profileImage")
-                .populate("group_id", "name");
-            return res.json(posts);
-        }
-
-        // Check if the current user is the same as the target user
-        if (currentUserId.toString() === targetUserId) {
-            // Return all posts with group_id null with pagination, sorting, and content search
-            const posts = await Post.find({ user_id: targetUserId, group_id: null, ...contentFilter })
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit)
-                .populate("user_id", "username displayName profileImage")
-                .populate("comments.author_id", "username displayName profileImage")
-                .populate("reactions.author_id", "username displayName profileImage")
-                .populate("comments.reactions.author_id", "username displayName profileImage")
-                .populate("group_id", "name");
-            return res.json(posts);
-        }
-
-        // Check if the current user is a friend of the target user
-        const targetUser = await User.findById(targetUserId);
-        const isFriend = targetUser?.friends?.includes(currentUserId.toString()) ?? false;
-
-        if (isFriend) {
-            // Return all posts with group_id null with pagination, sorting, and content search
-            const posts = await Post.find({ user_id: targetUserId, group_id: null, ...contentFilter })
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit)
-                .populate("user_id", "username displayName profileImage")
-                .populate("comments.author_id", "username displayName profileImage")
-                .populate("reactions.author_id", "username displayName profileImage")
-                .populate("comments.reactions.author_id", "username displayName profileImage")
-                .populate("group_id", "name");
-            return res.json(posts);
-        }
-
-        // If the current user is not a friend, return all posts with group_id null and visibility set to Public with pagination, sorting, and content search
-        const posts = await Post.find({ user_id: targetUserId, group_id: null, visibility: 'Public', ...contentFilter })
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .populate("user_id", "username displayName profileImage")
-            .populate("comments.author_id", "username displayName profileImage")
-            .populate("reactions.author_id", "username displayName profileImage")
-            .populate("comments.reactions.author_id", "username displayName profileImage")
-            .populate("group_id", "name");
-        return res.json(posts);
-
-    } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-};
-
-// get all posts
-export const getAllPosts = async (req: Request, res: Response) => {
-    try {
-        const currentUserId = req.session.userId;
-
-        // Extract page, limit, and search term from query parameters
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
-        const searchTerm = req.query.q as string || '';
-        const skip = (page - 1) * limit;
-
-        // Check if the current user is an admin
-        const isAdmin = await Admin.exists({ _id: currentUserId });
-
-        // Create a search filter for the content
-        const contentFilter = searchTerm ? { content: { $regex: searchTerm, $options: 'i' } } : {};
-
-        if (isAdmin) {
-            // If the current user is an admin, return all posts sorted by createdAt in descending order
-            const posts = await Post.find({ ...contentFilter })
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit)
-                .populate("user_id", "username displayName profileImage")
-                .populate("comments.author_id", "username displayName profileImage")
-                .populate("reactions.author_id", "username displayName profileImage")
-                .populate("comments.reactions.author_id", "username displayName profileImage")
-                .populate("group_id", "name");
-            return res.json(posts);
-        }
-
-        // Get the current user's friends
-        const currentUser = await User.findById(currentUserId);
-        if (!currentUser) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        const friends = currentUser.friends;
-
-        // Get the groups the current user is a member of
-        const groups = await Group.find({ members: currentUserId });
-        const groupIds = groups.map(group => group._id);
-
-        // Find posts from friends and groups the user is a member of and sorted by createdAt in descending order
-        const posts = await Post.find({
-            $or: [
-                { user_id: { $in: friends } },
-                { group_id: { $in: groupIds } }
-            ],
-            ...contentFilter
-        })
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .populate("user_id", "username displayName profileImage")
-            .populate("comments.author_id", "username displayName profileImage")
-            .populate("reactions.author_id", "username displayName profileImage")
-            .populate("comments.reactions.author_id", "username displayName profileImage")
-            .populate("group_id", "name");
-
-        return res.json(posts);
-
-    } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
+		// Return success response
+		return res.status(200).json({ message: "Reaction deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting reaction:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };

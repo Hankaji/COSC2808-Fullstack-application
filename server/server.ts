@@ -41,6 +41,8 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(
 	cors({
+		origin: "http://localhost:3000",
+		optionsSuccessStatus: 200,
 		credentials: true,
 	}),
 );

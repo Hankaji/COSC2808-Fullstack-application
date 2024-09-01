@@ -1,8 +1,20 @@
-import { FC, FormEvent, InputHTMLAttributes, useRef, useState } from 'react';
+import {
+  FC,
+  FormEvent,
+  InputHTMLAttributes,
+  useContext,
+  useRef,
+  useState,
+} from 'react';
 import { Input } from '../../components/ui/Input';
 import { mergeClassNames } from '../../utils';
 import { URL_BASE } from '../../config';
 import { redirect, useNavigate } from 'react-router';
+import useAuth from '../../hooks/useAuth';
+import AuthContext from '../../context/AuthProvider';
+import { UserSession } from '../../types/userSession';
+import { Link } from 'react-router-dom';
+import ImageUpload from '../../components/ImageUpload';
 
 enum formState {
   LOGIN,
@@ -14,6 +26,8 @@ interface loginProps {
 }
 
 const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
+  const { auth, setAuth } = useAuth();
+
   const [state, setState] = useState<formState>(initialState);
 
   const [errors, setErrors] = useState<string[]>([]);
@@ -165,7 +179,16 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
             method: 'POST',
             body: formData,
           });
-          console.log(res);
+
+          const data = await res.json();
+          console.log(data);
+
+          // Check status
+          if (res.ok) {
+            navigate('/login');
+          } else if (res.status >= 400 && res.status < 500) {
+            setErrors([data.message]);
+          }
         } catch (e) {
           console.log(e);
         }
@@ -181,16 +204,31 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
       };
       const login = async () => {
         try {
+          // Fetch data
           const res = await fetch(endpoint, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: {
               'Content-Type': 'application/json',
             },
+            credentials: 'include',
           });
-          console.log(await res.json());
+
+          // Get data
+          const data = await res.json();
+          console.log(data);
+
+          // Check response status
           if (res.ok) {
+            // Save user session
+            setAuth({
+              user: data as UserSession,
+            });
+
+            // console.log(first)
             return navigate('/');
+          } else if (res.status >= 400 && res.status < 500) {
+            setErrors([data.message]);
           }
         } catch (e) {
           console.log(e);
@@ -233,7 +271,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
           {/* Input prompt */}
           <div className="flex flex-col gap-8">
             {formInputs.map((input) => {
-              if (!input.renderCondition.includes(state)) return;
+              if (!input.renderCondition.includes(state)) return null;
               return (
                 <FormInput
                   key={input.id}
@@ -255,37 +293,37 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               })}
             </div>
           )}
-          {state == formState.LOGIN ? (
+          {state === formState.LOGIN ? (
             <p className="py-4">
-              Don't have an account?
-              <a
+              Don't have an account?{' '}
+              <Link
+                to="/register"
                 onClick={() => {
                   setErrors([]);
                   setState(formState.SIGNUP);
                 }}
-                className="font-bold cursor-pointer"
+                className="font-bold cursor-pointer hover:underline"
               >
-                {' '}
                 Register
-              </a>
+              </Link>
             </p>
           ) : (
             <p className="py-4">
-              Already had an account?
-              <a
+              Already had an account?{' '}
+              <Link
+                to="/login"
                 onClick={() => {
                   setErrors([]);
                   setState(formState.LOGIN);
                 }}
-                className="font-bold cursor-pointer"
+                className="font-bold cursor-pointer hover:underline"
               >
-                {' '}
                 Login
-              </a>
+              </Link>
             </p>
           )}
           <button type="submit" className="bg-primary py-4 px-20 rounded-full">
-            {state == formState.LOGIN ? 'Sign in' : 'Sign up'}
+            {state === formState.LOGIN ? 'Sign in' : 'Sign up'}
           </button>
         </div>
       </form>
@@ -305,13 +343,18 @@ const FormInput: FC<FormInputProps> = ({ label, className, ...inputProps }) => {
       className={mergeClassNames('flex flex-col gap-2 items-start', className)}
     >
       <label htmlFor="email">{label}</label>
-      <Input
-        {...inputProps}
-        className="p-4 py-6 rounded-lg min-w-[25vw]"
-        id={inputProps.name}
-      />
+      {inputProps.type !== 'file' ? (
+        <Input
+          {...inputProps}
+          className="p-4 py-6 rounded-lg min-w-[25vw]"
+          id={inputProps.name}
+        />
+      ) : (
+        <ImageUpload {...inputProps} className="rounded-lg size-full" />
+      )}
     </div>
   );
 };
 
+export { formState };
 export default LoginRegisterForm;

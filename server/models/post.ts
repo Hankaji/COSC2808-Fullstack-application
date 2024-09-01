@@ -52,11 +52,15 @@ const postSchema = new mongoose.Schema(
 		createdAt: { type: Date, default: Date.now },
 		editHistory: [
 			{
-				content: { type: String, required: true },
-				images: [{ type: String, required: true }],
+				content: { type: String },
+				images: [
+					{
+						data: { type: Buffer },
+						contentType: { type: String },
+					},
+				],
 				visibility: {
 					type: String,
-					required: true,
 					enum: ["Public", "Friend"],
 				},
 				createdAt: { type: Date, required: true },

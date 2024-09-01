@@ -1,7 +1,8 @@
 export type Account = {
   id: string;
-  name: string;
-  imgUrl: string;
+  username: string;
+  displayName: string;
+  imgUrl?: string;
   isSuspended?: boolean;
 };
 
