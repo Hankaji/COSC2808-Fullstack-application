@@ -9,6 +9,7 @@ import { URL_BASE } from '../../../config';
 import { AuthorPfp } from '../../../components/Post';
 import useAuth from '../../../hooks/useAuth';
 import Loading from '../../../components/ui/Loading';
+import useToast from '../../../hooks/useToast';
 
 const GroupRightSide = () => {
   const groupData = useLoaderData() as Group;
@@ -44,7 +45,7 @@ const GroupRightSide = () => {
   }, []);
 
   const showPopup = (tab: number) => {
-    return <Popup initialTab={tab} />;
+    return <Popup initialTab={tab} isGroupAdmin={isGroupAdmin()} />;
   };
 
   return (
@@ -128,9 +129,9 @@ const Popup: FC<{ initialTab?: number; isGroupAdmin?: boolean }> = ({
   const requireAdminAccess: boolean[] = [false, true];
   const tabNodes: ReactElement[] = [<ViewAllPeople />, <ViewRequests />];
 
-  // if (requireAdminAccess[selectedTab] && !isGroupAdmin) {
-  //   setSelectedTab(0);
-  // }
+  if (requireAdminAccess[selectedTab] && !isGroupAdmin) {
+    setSelectedTab(0);
+  }
 
   return (
     <div className="block-container flex-col size-full">
@@ -164,6 +165,7 @@ const Popup: FC<{ initialTab?: number; isGroupAdmin?: boolean }> = ({
 
 const ViewAllPeople = () => {
   const groupData = useLoaderData() as Group;
+  const toast = useToast();
 
   const [members, setMembers] = useState<User[]>([]);
   const [isLoading, setIsloading] = useState<boolean>(true);
@@ -171,6 +173,36 @@ const ViewAllPeople = () => {
   const adminIds: string[] = groupData.admins.map(
     (admin) => parseBasicUser(admin).id,
   );
+
+  const removeMember = async (memberId: string) => {
+    const removeRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/groups/${groupData.id}/members/${memberId}`;
+        const res = await fetch(endpoint, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+
+        if (res.ok) {
+          setMembers((members) =>
+            members.filter((member) => member.id !== memberId),
+          );
+        }
+      } catch (error) {}
+    };
+
+    toast.showAsync(removeRequest, {
+      loading: {
+        title: 'Removing...',
+      },
+      success: (_) => ({
+        title: 'Member removed successfully',
+      }),
+      error: (_) => ({
+        title: 'Couldnt remove member, please try again',
+      }),
+    });
+  };
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -207,6 +239,18 @@ const ViewAllPeople = () => {
                     <AuthorPfp data={member} />
                     {adminIds.includes(member.id) && (
                       <p className="text-xl ml-auto font-bold">Moderator</p>
+                    )}
+                    {!adminIds.includes(member.id) && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeMember(member.id);
+                        }}
+                        className="flex ml-auto items-center justify-center font-semibold rounded-lg bg-danger hover:bg-secondary transition-colors text-foreground py-2 px-4"
+                      >
+                        Remove
+                      </button>
                     )}
                   </div>
                 );
