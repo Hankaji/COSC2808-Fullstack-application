@@ -1,6 +1,7 @@
 import { Globe, Lock } from 'lucide-react';
 import React, { FC, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Tabs, { Tab } from '../../components/Tabs';
 import { URL_BASE } from '../../config';
 import useAuth from '../../hooks/useAuth';
 
@@ -15,7 +16,10 @@ type CompactedGroup = {
 const JoinedGroupList = () => {
   const { auth } = useAuth();
 
-  const [grpList, setGroups] = useState<CompactedGroup[]>([]);
+  const [joinedGrpList, setJoinedGroups] = useState<CompactedGroup[]>([]);
+  const [moderatingGrpList, setModeratingGroups] = useState<CompactedGroup[]>(
+    [],
+  );
 
   const endpoint = `${URL_BASE}/users/${auth.user?.userId}/groups`;
 
@@ -28,29 +32,45 @@ const JoinedGroupList = () => {
         });
 
         const data = (await res.json()) as CompactedGroup[];
+        // const joined = data.filter((grp) => {
+        //   grp
+        // })
         console.log(data);
-        setGroups(data);
-      } catch (error) {}
+        setJoinedGroups(data);
+      } catch (error) { }
     };
 
     getData();
   }, []);
+
+  const tabs: Tab[] = [
+    {
+      name: 'Joined groups',
+      element: <JoinedGroupsTab groups={joinedGrpList} />,
+    },
+  ];
 
   return (
     <div className="flex flex-col h-[calc(100vh-100px)]">
       <h2 className="font-bold text-3xl pb-3 border-b-2 border-border mb-2">
         All Groups
       </h2>
-      <div className="flex-grow overflow-y-auto mt-6 pr-3">
-        <div className="space-y-6">
-          {grpList.length > 0 ? (
-            grpList.map((grp) => {
-              return <CompactedGroupComp key={grp.id} data={grp} />;
-            })
-          ) : (
-            <p>You have yet joined a group</p>
-          )}
-        </div>
+      <Tabs tabs={tabs} />
+    </div>
+  );
+};
+
+const JoinedGroupsTab: FC<{ groups: CompactedGroup[] }> = ({ groups }) => {
+  return (
+    <div className="flex-grow overflow-y-auto mt-6 pr-3">
+      <div className="space-y-6">
+        {groups.length > 0 ? (
+          groups.map((grp) => {
+            return <CompactedGroupComp key={grp.id} data={grp} />;
+          })
+        ) : (
+          <p>You have yet joined a group</p>
+        )}
       </div>
     </div>
   );

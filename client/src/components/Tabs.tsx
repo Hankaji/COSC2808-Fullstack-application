@@ -23,7 +23,8 @@ const Tabs: FC<Props> = ({ tabs, defaultTab = 0 }) => {
               key={idx}
               className={mergeClassNames(
                 'text-center py-4 px-8 hover:bg-secondary',
-                selected == idx && 'border-b-border border-b-2',
+                selected == idx &&
+                'border-b-primary border-b-2 text-primary font-bold text-xl truncate',
               )}
               onClick={(e) => {
                 e.stopPropagation();
