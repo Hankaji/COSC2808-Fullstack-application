@@ -2,16 +2,38 @@ import { useLoaderData, useParams } from 'react-router';
 import PostCreationPanel from '../../../components/PostCreationPanel';
 import { mergeClassNames } from '../../../utils';
 import PostsView from '../../../components/PostsView';
-import { Group } from '../../../types/group';
+import { Group, parseGroup } from '../../../types/group';
 import { FC } from 'react';
+import useAuth from '../../../hooks/useAuth';
+import { URL_BASE } from '../../../config';
+import useToast from '../../../hooks/useToast';
 
 const GroupPanel = () => {
   const groupData = useLoaderData() as Group;
+  const { auth } = useAuth();
 
   const params = useParams();
   const groupId = params.groupId;
 
-  console.log(groupId);
+  const joinGroup = async () => {
+    try {
+      const endpoint = `${URL_BASE}/requests/group_requests`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          group_id: groupId,
+        }),
+      });
+
+      const data = await res.json();
+      console.log(data);
+      return data;
+    } catch (error) { }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -19,7 +41,11 @@ const GroupPanel = () => {
         coverImg={groupData.coverImage}
         avatarImg={groupData.groupImage}
         name={groupData.name}
-        isJoined={true}
+        onJoin={joinGroup}
+        isJoined={
+          groupData.members.filter((mem) => mem.id === auth.user!.userId)
+            .length > 0
+        }
       />
       <PostCreationPanel />
       {/* <PostsView posts={null} /> */}
@@ -30,6 +56,7 @@ const GroupPanel = () => {
 interface GroupHeaderProps {
   coverImg?: string;
   avatarImg?: string;
+  onJoin: () => Promise<any>;
   name: string;
   isJoined: boolean;
 }
@@ -37,9 +64,12 @@ interface GroupHeaderProps {
 const GroupHeader: FC<GroupHeaderProps> = ({
   coverImg,
   avatarImg,
+  onJoin,
   name,
   isJoined,
 }) => {
+  const toast = useToast();
+
   return (
     <div className="w-full">
       <img
@@ -63,11 +93,28 @@ const GroupHeader: FC<GroupHeaderProps> = ({
         {/* Group info */}
         <div className="flex gap-2 w-full items-center">
           <h1 className="font-bold text-2xl">g/{name}</h1>
-          <div className="px-4 py-2 ml-auto border-border border-solid border-2 rounded-lg bg-background">
-            Joined
-          </div>
+          {isJoined && (
+            <div className="px-4 py-2 ml-auto border-border border-solid border-2 rounded-lg bg-background">
+              Joined
+            </div>
+          )}
           {!isJoined ? (
-            <button className="px-4 py-2 transition-colors rounded-lg bg-primary hover:bg-secondary">
+            <button
+              onClick={(e) => {
+                toast.showAsync(onJoin, {
+                  loading: {
+                    title: 'Sending request...',
+                  },
+                  success: (_) => ({
+                    title: 'Request sent',
+                  }),
+                  error: (_) => ({
+                    title: 'Coulnt send request',
+                  }),
+                });
+              }}
+              className="px-4 py-2 transition-colors rounded-lg bg-primary hover:bg-secondary ml-auto"
+            >
               Join
             </button>
           ) : (

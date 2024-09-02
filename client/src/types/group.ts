@@ -1,4 +1,6 @@
-import { User } from './post';
+import { log } from 'console';
+import { CloudCog } from 'lucide-react';
+import { parseBasicUser, User } from './post';
 
 export interface Group {
   id: string;
@@ -23,13 +25,13 @@ export const parseGroup = (data: any) => {
     description: data.description,
     visibility:
       GroupVisibility[
-        (
-          data.visibility as string
-        ).toUpperCase() as keyof typeof GroupVisibility
+      (
+        data.visibility as string
+      ).toUpperCase() as keyof typeof GroupVisibility
       ],
     groupImage: data.virtualGroupImage,
     coverImage: data.virtualCoverImage,
     admins: data.admins,
-    members: data.members,
+    members: (data.members as any[]).map((mem) => parseBasicUser(mem)),
   } as Group;
 };

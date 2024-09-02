@@ -1,15 +1,20 @@
 import { Check, Globe, Lock, Mail, Trash, UserRound } from 'lucide-react';
 import { mergeClassNames } from '../../../utils';
 import PopupModal from '../../../components/PopupModal';
-import { FC, ReactElement, useEffect, useState } from 'react';
+import { FC, ReactElement, Suspense, useEffect, useState } from 'react';
 import { useLoaderData, useParams } from 'react-router';
 import { Group, GroupVisibility } from '../../../types/group';
 import { parseBasicUser, User } from '../../../types/post';
 import { URL_BASE } from '../../../config';
-import { AuthorPfp } from '../../../components/Post';
+import { AuthorPfp, FallBackPfp } from '../../../components/Post';
 import useAuth from '../../../hooks/useAuth';
 import Loading from '../../../components/ui/Loading';
 import useToast from '../../../hooks/useToast';
+import {
+  GroupJoinRequest,
+  parseGroupJoinReq,
+} from '../../../types/group_join_request';
+import Tabs, { Tab } from '../../../components/Tabs';
 
 const GroupRightSide = () => {
   const groupData = useLoaderData() as Group;
@@ -88,9 +93,19 @@ const GroupRightSide = () => {
       <div className="block-container flex-col">
         <h1 className="text-2xl font-bold">Moderators</h1>
         {/* Display only 3 moderators max */}
-        {admins.slice(0, 3).map((admin) => (
-          <AuthorPfp key={admin.id} data={admin} />
-        ))}
+        {admins.length > 0 ? (
+          <>
+            {admins.slice(0, 3).map((admin) => (
+              <AuthorPfp
+                currentUser={auth.user!.userId == admin.id}
+                key={admin.id}
+                data={admin}
+              />
+            ))}
+          </>
+        ) : (
+          <FallBackPfp />
+        )}
       </div>
       {/* Actions */}
       <div className="block-container flex-col">
@@ -125,9 +140,18 @@ const Popup: FC<{ initialTab?: number; isGroupAdmin?: boolean }> = ({
 }) => {
   const [selectedTab, setSelectedTab] = useState<number>(initialTab);
 
-  const tabs: string[] = ['People', 'Requests'];
   const requireAdminAccess: boolean[] = [false, true];
-  const tabNodes: ReactElement[] = [<ViewAllPeople />, <ViewRequests />];
+
+  const tabs: Tab[] = [
+    {
+      name: 'People',
+      element: <ViewAllPeople />,
+    },
+    {
+      name: 'Join requests',
+      element: <ViewRequests />,
+    },
+  ];
 
   if (requireAdminAccess[selectedTab] && !isGroupAdmin) {
     setSelectedTab(0);
@@ -135,30 +159,7 @@ const Popup: FC<{ initialTab?: number; isGroupAdmin?: boolean }> = ({
 
   return (
     <div className="block-container flex-col size-full">
-      {/* Tab selection */}
-      <div className="flex">
-        {tabs.map((name, idx) => {
-          if (requireAdminAccess[idx] && !isGroupAdmin) return;
-          return (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedTab(idx);
-              }}
-              className={mergeClassNames(
-                'flex p-4 justify-center items-center w-full',
-                'hover:bg-secondary transition-colors rounded-tl-lg rounded-tr-lg border-border',
-                selectedTab == idx && 'border-b-2 border-solid',
-              )}
-              key={idx}
-            >
-              {name}
-            </button>
-          );
-        })}
-      </div>
-      {/* Content */}
-      {tabNodes[selectedTab]}
+      <Tabs defaultTab={initialTab} tabs={tabs} />
     </div>
   );
 };
@@ -188,7 +189,7 @@ const ViewAllPeople = () => {
             members.filter((member) => member.id !== memberId),
           );
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(removeRequest, {
@@ -268,36 +269,138 @@ const ViewAllPeople = () => {
 };
 
 const ViewRequests = () => {
-  const data: string[] = ['Guria', 'Menege', 'Kaguya'];
+  const groupData = useLoaderData() as Group;
+  const toast = useToast();
 
-  console.log(data.length);
+  const [reqs, setReqs] = useState<GroupJoinRequest[]>([]);
+  const [isLoading, setLoading] = useState<boolean>(true);
+
+  const acceptJoinGroup = async (reqId: string) => {
+    const acceptRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/requests/group_requests/accept/${reqId}`;
+        const res = await fetch(endpoint, {
+          method: 'PATCH',
+          credentials: 'include',
+        });
+
+        if (res.ok) {
+          setReqs((req) => req.filter((req) => req.id !== reqId));
+        }
+      } catch (error) { }
+    };
+
+    toast.showAsync(acceptRequest, {
+      loading: {
+        title: 'Accepting...',
+      },
+      success: (_) => ({
+        title: 'Congratulation! your group is now more popular',
+      }),
+      error: (_) => ({
+        title: 'Couldnt accept member, please try again',
+      }),
+    });
+  };
+
+  const rejectJoinGroup = async (reqId: string) => {
+    const rejectRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/requests/group_requests/reject/${reqId}`;
+        const res = await fetch(endpoint, {
+          method: 'PATCH',
+          credentials: 'include',
+        });
+
+        if (res.ok) {
+          setReqs((req) => req.filter((req) => req.id !== reqId));
+        }
+      } catch (error) { }
+    };
+
+    toast.showAsync(rejectRequest, {
+      loading: {
+        title: 'Rejecting...',
+      },
+      success: (_) => ({
+        title: 'Member is no longer in this group',
+      }),
+      error: (_) => ({
+        title: 'Couldnt reject member, please try again',
+      }),
+    });
+  };
+
+  useEffect(() => {
+    const fetchReqs = async () => {
+      const endpoint = `${URL_BASE}/groups/${groupData.id}/requests`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const data: any[] = await res.json();
+      const reqs = data.map((req) => {
+        return parseGroupJoinReq(req);
+      });
+
+      console.log(reqs);
+      if (res.ok) {
+        setReqs(reqs);
+        setLoading(false);
+      }
+    };
+
+    fetchReqs();
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 justify-start items-center size-full">
-      {data.length > 0 ? (
-        <>
-          {data.map((item, idx) => {
-            return (
-              <div key={idx} className="block-container w-full items-center">
-                Request from @{item}
-                <div className="flex gap-2 h-full ml-auto">
-                  <button className="flex justify-center items-center gap-2 py-2 px-4 bg-success rounded-lg">
-                    <Check />
-                    Accept
-                  </button>
-                  <button className="flex justify-center items-center gap-2 py-2 px-4 bg-danger rounded-lg">
-                    <Trash />
-                    Deny
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </>
+      {isLoading ? (
+        <Loading />
       ) : (
-        <div className="flex justify-center items-center size-full">
-          No members here
-        </div>
+        <>
+          {reqs.length > 0 ? (
+            <>
+              {reqs.map((req) => {
+                return (
+                  <div
+                    key={req.id}
+                    className="block-container w-full items-center"
+                  >
+                    <AuthorPfp data={req.user} />
+                    <div className="flex gap-2 h-full ml-auto">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          acceptJoinGroup(req.id);
+                        }}
+                        className="flex justify-center transition-colors hover:bg-secondary items-center gap-2 py-2 px-4 bg-success rounded-lg"
+                      >
+                        <Check />
+                        Accept
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          rejectJoinGroup(req.id);
+                        }}
+                        className="flex justify-center transition-colors hover:bg-secondary items-center gap-2 py-2 px-4 bg-danger rounded-lg"
+                      >
+                        <Trash />
+                        Deny
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <p>Look like peace for now</p>
+          )}
+        </>
       )}
     </div>
   );

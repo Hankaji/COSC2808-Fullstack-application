@@ -19,6 +19,7 @@ import {
   useState,
   useRef,
   useContext,
+  Suspense,
 } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Posts, Comment, User, Reaction, ReactionTypes } from '../types/post';
@@ -429,9 +430,10 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
 interface AuthorPfpProps {
   data: User;
   extraInfo?: string;
+  currentUser?: boolean;
 }
 
-const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo }) => {
+const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo, currentUser }) => {
   return (
     <div className="flex gap-2">
       <img
@@ -443,16 +445,32 @@ const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo }) => {
         }
         alt="User avatar"
       />
-      <div className="flex flex-col justify-center items-start">
-        <h1 className="text-xl font-semibold">
-          {data.displayName}
-          {extraInfo && (
-            <span className="text-muted-foreground">extraInfo</span>
-          )}
-        </h1>
-        <p className="text-sm text-muted-foreground font-semibold">
-          @{data.username}
-        </p>
+      {!currentUser ? (
+        <div className="flex flex-col justify-center items-start">
+          <h1 className="text-xl font-semibold">
+            {data.displayName}
+            {extraInfo && (
+              <span className="text-muted-foreground">extraInfo</span>
+            )}
+          </h1>
+          <p className="text-sm text-muted-foreground font-semibold">
+            @{data.username}
+          </p>
+        </div>
+      ) : (
+        <p className="self-center text-lg font-bold">Current User</p>
+      )}
+    </div>
+  );
+};
+
+const FallBackPfp = () => {
+  return (
+    <div className="flex gap-2 w-full">
+      <div className="rounded-full flex-[0_0_auto] aspect-square bg-gray-500 animate-pulse size-12"></div>
+      <div className="flex flex-col w-full gap-2 justify-center items-start">
+        <div className="w-full h-4 bg-gray-500 animate-pulse rounded-full"></div>
+        <div className="w-1/2 h-4 bg-gray-500 animate-pulse rounded-full"></div>
       </div>
     </div>
   );
@@ -592,8 +610,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-        fill: color,
-      } as CSSProperties)
+      fill: color,
+    } as CSSProperties)
     : {};
 
   return (
@@ -617,7 +635,7 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   );
 };
 
-export { CommentSection, PostImages, AuthorPfp };
+export { CommentSection, PostImages, AuthorPfp, FallBackPfp };
 export type { Posts, User, Reaction, CommentComp as Comment };
 const Post = PostComponent;
 export default Post;

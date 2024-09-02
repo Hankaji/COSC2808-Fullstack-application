@@ -9,15 +9,26 @@ interface Props {
 type Tab = {
   name: string;
   element: ReactNode;
+  condition?: () => boolean;
 };
 
 const Tabs: FC<Props> = ({ tabs, defaultTab = 0 }) => {
-  const [selected, setSelected] = useState<number>(defaultTab);
+  const filteredTabs = tabs.filter((tab) => !tab.condition || tab.condition());
+
+  const getInitialTab = (): number => {
+    if (filteredTabs.length === 0) return -1; // If no tabs are available
+    const validDefault = filteredTabs[defaultTab];
+    return validDefault ? defaultTab : 0;
+  };
+
+  const [selected, setSelected] = useState<number>(getInitialTab);
+
+  if (filteredTabs.length === 0) return null; // If no tabs are available, render nothing
 
   return (
     <>
       <div className="flex w-full justify-center [&>*]:flex-grow">
-        {tabs.map((tab, idx) => {
+        {filteredTabs.map((tab, idx) => {
           return (
             <button
               key={idx}
@@ -37,7 +48,7 @@ const Tabs: FC<Props> = ({ tabs, defaultTab = 0 }) => {
           );
         })}
       </div>
-      {tabs[selected].element}
+      {filteredTabs[selected]?.element}
     </>
   );
 };
