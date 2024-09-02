@@ -10,6 +10,7 @@ type CompactedGroup = {
   name: string;
   decription: string;
   visibility: 'Public' | 'Private';
+  admins: string[];
   virtualGroupImage: string;
 };
 
@@ -32,11 +33,14 @@ const JoinedGroupList = () => {
         });
 
         const data = (await res.json()) as CompactedGroup[];
-        // const joined = data.filter((grp) => {
-        //   grp
-        // })
-        console.log(data);
-        setJoinedGroups(data);
+        const joined = data.filter((grp) => {
+          return !grp.admins.includes(auth.user!.userId);
+        });
+        const moderating = data.filter((grp) => {
+          return grp.admins.includes(auth.user!.userId);
+        });
+        setJoinedGroups(joined);
+        setModeratingGroups(moderating);
       } catch (error) { }
     };
 
@@ -46,21 +50,22 @@ const JoinedGroupList = () => {
   const tabs: Tab[] = [
     {
       name: 'Joined groups',
-      element: <JoinedGroupsTab groups={joinedGrpList} />,
+      element: <GroupsTab groups={joinedGrpList} />,
+    },
+    {
+      name: 'Moderating groups',
+      element: <GroupsTab groups={moderatingGrpList} />,
     },
   ];
 
   return (
     <div className="flex flex-col h-[calc(100vh-100px)]">
-      <h2 className="font-bold text-3xl pb-3 border-b-2 border-border mb-2">
-        All Groups
-      </h2>
       <Tabs tabs={tabs} />
     </div>
   );
 };
 
-const JoinedGroupsTab: FC<{ groups: CompactedGroup[] }> = ({ groups }) => {
+const GroupsTab: FC<{ groups: CompactedGroup[] }> = ({ groups }) => {
   return (
     <div className="flex-grow overflow-y-auto mt-6 pr-3">
       <div className="space-y-6">

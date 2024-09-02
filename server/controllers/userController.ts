@@ -223,7 +223,7 @@ export const getUserGroupsById = async (req: Request, res: Response) => {
 		const groups = await Group.find({
 			$or: [{ members: userId }, { admins: userId }],
 		})
-			.select("name description visibility")
+			.select("name description visibility admins")
 			.exec();
 
 		// Format the response to include virtual fields
@@ -232,6 +232,7 @@ export const getUserGroupsById = async (req: Request, res: Response) => {
 			name: group.name,
 			description: group.description,
 			visibility: group.visibility,
+			admins: group.admins,
 			// @ts-ignore
 			virtualGroupImage: group.virtualGroupImage,
 			// @ts-ignore
