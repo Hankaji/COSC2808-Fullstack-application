@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import Group from "../models/group";
 import User from "../models/user";
+import { GroupRequest } from "../models/request";
 
 // Get all groups
 export const getGroups = async (req: Request, res: Response) => {
@@ -191,6 +192,69 @@ export const getGroupMembers = async (req: Request, res: Response) => {
 		return res.status(200).json(members);
 	} catch (error) {
 		console.error("Error retrieving group members:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
+};
+
+// Get a group's member requests by ID
+export const getGroupMemberRequests = async (req: Request, res: Response) => {
+	try {
+		const groupId = req.params.id;
+		const currentUserId = req.session.userId;
+		const isAdmin = req.session.isAdmin;
+
+		// Validate the group ID format
+		if (!mongoose.Types.ObjectId.isValid(groupId)) {
+			return res.status(400).json({ message: "Invalid group ID" });
+		}
+
+		// Check if the group exists
+		const group = await Group.findById(groupId);
+		if (!group) {
+			return res.status(404).json({ message: "Group not found" });
+		}
+
+		// Check if the current user is an admin or the group's admin
+		const isGroupAdmin = group.admins.some((adminId) => adminId.equals(currentUserId));
+		if (!isAdmin && !isGroupAdmin) {
+			return res.status(403).json({ message: "You are not authorized to view this group's requests" });
+		}
+
+		// Find pending group member requests by group_id
+		const groupRequests = await GroupRequest.find({ group_id: groupId, status: "Pending" })
+			.select("user_id createdAt status")
+			.populate({
+				path: "user_id",
+				select: "_id username displayName profileImage contentType",
+			})
+			.exec();
+
+		// Process the user information and virtualProfileImage manually
+		const processedRequests = groupRequests.map((request) => {
+			const user = request.user_id as any;
+
+			// Manually create the virtualProfileImage
+			const virtualProfileImage =
+				user.profileImage && user.profileImage.data
+					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+					: null;
+
+			return {
+				user: {
+					_id: user._id,
+					username: user.username,
+					displayName: user.displayName,
+					virtualProfileImage,
+				},
+				createdAt: request.createdAt,
+				status: request.status,
+			};
+		});
+
+		// Return the processed pending requests
+		return res.status(200).json(processedRequests);
+	} catch (error) {
+		console.error("Error retrieving group member requests:", error);
 		return res.status(500).json({ message: "Internal server error" });
 	}
 };
