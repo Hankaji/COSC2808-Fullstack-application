@@ -5,6 +5,7 @@ import {
 	getGroupById,
 	getGroupAdmins,
 	getGroupMembers,
+	getGroupMemberRequests,
 	removeGroupMember,
 } from "../controllers/groupController";
 
@@ -14,6 +15,7 @@ groupRouter.get("/", isAuthenticated, getGroups);
 groupRouter.get("/:id", isAuthenticated, getGroupById);
 groupRouter.get("/:id/admins", isAuthenticated, getGroupAdmins);
 groupRouter.get("/:id/members", isAuthenticated, getGroupMembers);
+groupRouter.get("/:id/requests", isAuthenticated, getGroupMemberRequests);
 groupRouter.delete("/:groupId/members/:userId", isAuthenticated, removeGroupMember);
 
 export default groupRouter;
