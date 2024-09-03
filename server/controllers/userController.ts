@@ -2,11 +2,7 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import User from "../models/user";
 import Group from "../models/group";
-import {
-  FriendRequest,
-  GroupRequest,
-  GroupCreationRequest,
-} from "../models/request";
+import { FriendRequest } from "../models/request";
 
 // Get users
 export const getUsers = async (req: Request, res: Response) => {
@@ -16,7 +12,7 @@ export const getUsers = async (req: Request, res: Response) => {
     const isAdmin = req.session.isAdmin;
 
     // Extract search params from the query
-    const { name, status, page = 1, limit = 10 } = req.query;
+    const { name, status } = req.query;
 
     // Base query
     let query: any = {};
@@ -39,12 +35,9 @@ export const getUsers = async (req: Request, res: Response) => {
     }
 
     // Pagination
-    const pageNumber = parseInt(page as string);
-    const pageSize = parseInt(limit as string);
-    const skip = (pageNumber - 1) * pageSize;
 
     // Execute the query
-    const users = await User.find(query).skip(skip).limit(pageSize).exec();
+    const users = await User.find(query).exec();
 
     // Format the response
     const formattedUsers = users.map((user) => ({
@@ -100,7 +93,7 @@ export const getUserById = async (req: Request, res: Response) => {
             };base64,${user.profileImage.data.toString("base64")}`
           : undefined,
       createAt: user.createdAt,
-      updatedAt: user.updatedAt
+      updatedAt: user.updatedAt,
     };
 
     // Return the user
@@ -335,7 +328,7 @@ export const readNotification = async (req: Request, res: Response) => {
       if (notificationId === item.id) {
         item.isRead = true;
         foundNotification = true;
-		break;
+        break;
       }
     }
 
@@ -343,7 +336,7 @@ export const readNotification = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid notification ID" });
     }
 
-	await user.save();
+    await user.save();
     return res
       .status(200)
       .json({ message: "Notification marked as read successfully" });

@@ -1,15 +1,15 @@
-import { Globe, Lock } from 'lucide-react';
-import { FC, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import Tabs, { Tab } from '../../components/Tabs';
-import { URL_BASE } from '../../config';
-import useAuth from '../../hooks/useAuth';
+import { Globe, Lock } from "lucide-react";
+import { FC, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import Tabs, { Tab } from "../../components/Tabs";
+import { URL_BASE } from "../../config";
+import useAuth from "../../hooks/useAuth";
 
 type CompactedGroup = {
   id: string;
   name: string;
   decription: string;
-  visibility: 'Public' | 'Private';
+  visibility: "Public" | "Private";
   admins: string[];
   virtualGroupImage: string;
 };
@@ -19,7 +19,7 @@ const JoinedGroupList = () => {
 
   const [joinedGrpList, setJoinedGroups] = useState<CompactedGroup[]>([]);
   const [moderatingGrpList, setModeratingGroups] = useState<CompactedGroup[]>(
-    [],
+    []
   );
 
   const endpoint = `${URL_BASE}/users/${auth.user?.userId}/groups`;
@@ -28,8 +28,8 @@ const JoinedGroupList = () => {
     const getData = async () => {
       try {
         const res = await fetch(endpoint, {
-          method: 'GET',
-          credentials: 'include',
+          method: "GET",
+          credentials: "include",
         });
 
         const data = (await res.json()) as CompactedGroup[];
@@ -49,17 +49,17 @@ const JoinedGroupList = () => {
 
   const tabs: Tab[] = [
     {
-      name: 'Joined groups',
+      name: "Joined groups",
       element: <GroupsTab groups={joinedGrpList} />,
     },
     {
-      name: 'Moderating groups',
+      name: "Moderating groups",
       element: <GroupsTab groups={moderatingGrpList} />,
     },
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
+    <div className="flex flex-col h-[calc(100vh-180px)]">
       <Tabs tabs={tabs} />
     </div>
   );
@@ -98,7 +98,7 @@ const CompactedGroupComp: FC<{ data: CompactedGroup }> = ({ data }) => {
         )}
       </div>
       <p className="text-lg font-bold">{data.name}</p>
-      {data.visibility === 'Public' ? <Globe /> : <Lock />}
+      {data.visibility === "Public" ? <Globe /> : <Lock />}
     </Link>
   );
 };

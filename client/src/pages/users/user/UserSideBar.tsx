@@ -8,7 +8,6 @@ interface Props {
 }
 
 const UserSideBar: FC<Props> = ({ userData }) => {
-
   return (
     <div className="block-container flex-col overflow-hidden">
       {/* Overview cover image */}

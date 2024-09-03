@@ -1,9 +1,9 @@
-import { MessageCircle, User, Users, SmilePlus, SquarePen } from 'lucide-react';
-import { FC, useState, useEffect } from 'react';
-import { Notification } from '../../types';
-import { formatRelativeTime } from '../../utils';
-import useAuth from '../../hooks/useAuth';
-import { URL_BASE } from '../../config';
+import { MessageCircle, User, Users, SmilePlus, SquarePen } from "lucide-react";
+import { FC, useState, useEffect } from "react";
+import { Notification } from "../../types";
+import { formatRelativeTime } from "../../utils";
+import useAuth from "../../hooks/useAuth";
+import { URL_BASE } from "../../config";
 
 const NotificationList: FC = () => {
   const { auth } = useAuth();
@@ -11,7 +11,7 @@ const NotificationList: FC = () => {
   const [notificationList, setNotificationList] = useState<Notification[]>([]);
 
   const sortedList = notificationList.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
   useEffect(() => {
@@ -19,11 +19,11 @@ const NotificationList: FC = () => {
       if (!auth.user) return;
       const endpoint = `${URL_BASE}/users/${auth.user.userId}/notifications`;
       const res = await fetch(endpoint, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
       const result = await res.json();
-      console.log('result :', result);
+      console.log("result :", result);
       setNotificationList(result);
     };
 
@@ -41,10 +41,10 @@ const NotificationList: FC = () => {
       await Promise.all(
         endpoints.map((endpoint) =>
           fetch(endpoint, {
-            method: 'PATCH',
-            credentials: 'include',
-          }),
-        ),
+            method: "PATCH",
+            credentials: "include",
+          })
+        )
       );
     };
 
@@ -52,7 +52,7 @@ const NotificationList: FC = () => {
   }, [notificationList]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
+    <div className="flex flex-col h-[calc(100vh-180px)]">
       <h2 className="font-bold text-3xl pb-3 border-b-2 border-border">
         Notifications
       </h2>
@@ -77,31 +77,31 @@ const NotificationItem: FC<NotificationItemProps> = ({
 }) => {
   const Icon = (() => {
     switch (type) {
-      case 'User':
+      case "User":
         return User;
-      case 'Comment':
+      case "Comment":
         return SquarePen;
-      case 'Group':
+      case "Group":
         return Users;
-      case 'Post':
+      case "Post":
         return MessageCircle;
-      case 'Reaction':
+      case "Reaction":
         return SmilePlus;
     }
   })();
 
   const iconClassName = (() => {
     switch (type) {
-      case 'User':
-        return 'stroke-green-300';
-      case 'Comment':
-        return 'stroke-blue-300';
-      case 'Group':
-        return 'stroke-yellow-300';
-      case 'Post':
-        return 'stroke-orange-300';
-      case 'Reaction':
-        return 'stroke-rose-300';
+      case "User":
+        return "stroke-green-300";
+      case "Comment":
+        return "stroke-blue-300";
+      case "Group":
+        return "stroke-yellow-300";
+      case "Post":
+        return "stroke-orange-300";
+      case "Reaction":
+        return "stroke-rose-300";
     }
   })();
 

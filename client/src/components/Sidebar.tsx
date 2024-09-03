@@ -1,6 +1,5 @@
 import {
   Bell,
-  ChartNoAxesGantt,
   Home,
   LogOut,
   type LucideIcon,
@@ -35,43 +34,49 @@ const internalLinkItems: SidebarInternalLinkItem[] = [
     Logo: Home,
     name: 'Home',
     path: '/',
-    type: 'user'
+    type: 'user',
   },
   {
     Logo: Search,
     name: 'Search',
     path: '/search',
-    type: 'user'
+    type: 'user',
   },
   {
     Logo: Bell,
     name: 'Notifications',
     path: '/notifications',
-    type: 'user'
+    type: 'user',
   },
   {
     Logo: User,
     name: 'Friends',
     path: '/friends',
-    type: 'user'
+    type: 'user',
   },
   {
     Logo: UsersRound,
     name: 'Groups',
     path: '/groups',
-    type: 'user'
+    type: 'user',
   },
   {
     Logo: SquarePlus,
     name: 'Create group',
     path: '/groups/create',
-    type: 'user'
+    type: 'user',
   },
   {
-    Logo: ChartNoAxesGantt,
-    name: 'Admin',
-    path: '/admin',
-    type: 'admin'
+    Logo: User,
+    name: 'Users',
+    path: '/admin/users',
+    type: 'admin',
+  },
+  {
+    Logo: UsersRound,
+    name: 'Groups',
+    path: '/admin/groups',
+    type: 'admin',
   },
 ];
 
@@ -125,9 +130,9 @@ const Sidebar = () => {
       {/* Navigation items */}
       <ul className="flex flex-col gap-3 w-full">
         {internalLinkItems.map((item, idx) => {
-          if (item.type === "admin" && !auth.user?.isAdmin) return null;
-          if (item.type === "user" && auth.user?.isAdmin) return null;
-          
+          if (item.type === 'admin' && !auth.user?.isAdmin) return null;
+          if (item.type === 'user' && auth.user?.isAdmin) return null;
+
           return (
             <li key={idx}>
               <SidebarButton

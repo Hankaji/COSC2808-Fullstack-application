@@ -4,7 +4,8 @@ import RequireAuth from './components/RequireAuth';
 import { URL_BASE } from './config';
 import { AuthProvider } from './context/AuthProvider';
 import ToastProvider from './context/ToastProvider';
-import AdminPage from './pages/admin';
+import AdminUsersPage from './pages/admin/users';
+import AdminGroupsPage from './pages/admin/groups';
 import Error from './pages/error';
 import FriendsPage from './pages/friends';
 import JoinedGroups from './pages/groups';
@@ -66,7 +67,7 @@ const router = createBrowserRouter([
           const endpoint = `http://localhost:8080/users/${params.userId}`;
           const res = await fetch(endpoint, {
             method: 'GET',
-            credentials: 'include'
+            credentials: 'include',
           });
           return await res.json();
         },
@@ -108,8 +109,32 @@ const router = createBrowserRouter([
     element: <RequireAuth requireAdminAccess />,
     children: [
       {
-        path: 'admin',
-        element: <AdminPage />,
+        path: 'admin/users',
+        element: <AdminUsersPage />,
+        loader: async () => {
+          try {
+            const groupCreationRequestEndpoint = `${URL_BASE}/requests/group_creation_requests`;
+            const groupCreationReqRes = await fetch(
+              groupCreationRequestEndpoint,
+              {
+                method: 'GET',
+                credentials: 'include',
+              },
+            );
+
+            const groupCreationRequestData = await groupCreationReqRes.json();
+
+            return JSON.stringify({
+              groupCreationReqs: groupCreationRequestData,
+            });
+          } catch (error: any) {
+            console.error(error);
+          }
+        },
+      },
+      {
+        path: 'admin/groups',
+        element: <AdminGroupsPage />,
         loader: async () => {
           try {
             const groupCreationRequestEndpoint = `${URL_BASE}/requests/group_creation_requests`;

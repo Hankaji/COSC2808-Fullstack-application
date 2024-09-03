@@ -1,17 +1,22 @@
 import { FC } from 'react';
-import type { Account } from '../../types';
+import type { Account } from '../../../types';
 
 interface UserListProps {
   list: Account[];
+  actionFn: (acc: Account) => void;
 }
 
-const UserList: FC<UserListProps> = ({ list }) => {
+const UserList: FC<UserListProps> = ({ list, actionFn }) => {
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
-      <div className="flex-grow overflow-y-auto mt-6 pr-3">
+    <div className="mt-6 flex flex-col h-[calc(100vh-180px)]">
+      <div className="flex-[1] overflow-y-auto pr-3">
         <div className="space-y-6">
           {list.map((acc) => (
-            <UserListItem key={acc.id} data={acc} actionFn={() => {}} />
+            <UserListItem
+              key={acc.id}
+              data={acc}
+              actionFn={() => actionFn(acc)}
+            />
           ))}
         </div>
       </div>
