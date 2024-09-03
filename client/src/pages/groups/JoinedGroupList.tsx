@@ -6,15 +6,6 @@ import { URL_BASE } from '../../config';
 import useAuth from '../../hooks/useAuth';
 import { Group, GroupVisibility, parseGroup } from '../../types/group';
 
-type CompactedGroup = {
-  id: string;
-  name: string;
-  decription: string;
-  visibility: GroupVisibility;
-  admins: string[];
-  virtualGroupImage?: string;
-};
-
 const JoinedGroupList = () => {
   const { auth } = useAuth();
 
