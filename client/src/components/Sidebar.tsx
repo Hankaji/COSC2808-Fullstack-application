@@ -83,9 +83,10 @@ const Sidebar = () => {
       name: 'Logout',
       onClick: () => {
         const logoutRequest = async () => {
-          const endpoint = `${URL_BASE}/authentication/logout`;
+          const endpoint = `${URL_BASE}/logout`;
           const res = await fetch(endpoint, {
             method: 'POST',
+            credentials: 'include',
           });
 
           if (res.ok) {

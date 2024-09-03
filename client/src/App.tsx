@@ -4,7 +4,6 @@ import RequireAuth from './components/RequireAuth';
 import { URL_BASE } from './config';
 import { AuthProvider } from './context/AuthProvider';
 import ToastProvider from './context/ToastProvider';
-import useAuth from './hooks/useAuth';
 import AdminPage from './pages/admin';
 import Error from './pages/error';
 import FriendsPage from './pages/friends';
@@ -53,7 +52,7 @@ const router = createBrowserRouter([
             method: 'GET',
             credentials: 'include',
           });
-          return res.json();
+          return await res.json();
         },
       },
       {
@@ -68,7 +67,7 @@ const router = createBrowserRouter([
           const res = await fetch(endpoint, {
             method: 'GET',
           });
-          return res.json();
+          return await res.json();
         },
       },
       {
