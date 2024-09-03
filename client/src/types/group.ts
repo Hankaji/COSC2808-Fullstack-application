@@ -25,9 +25,9 @@ export const parseGroup = (data: any) => {
     description: data.description,
     visibility:
       GroupVisibility[
-      (
-        data.visibility as string
-      ).toUpperCase() as keyof typeof GroupVisibility
+        (
+          data.visibility as string
+        ).toUpperCase() as keyof typeof GroupVisibility
       ],
     groupImage: data.virtualGroupImage,
     coverImage: data.virtualCoverImage,

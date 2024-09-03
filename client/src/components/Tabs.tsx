@@ -27,7 +27,7 @@ const Tabs: FC<Props> = ({ tabs, defaultTab = 0 }) => {
 
   return (
     <>
-      <div className="flex w-full justify-center [&>*]:flex-grow">
+      <div className="flex w-full justify-center [&>*]:flex-1">
         {filteredTabs.map((tab, idx) => {
           return (
             <button
@@ -36,7 +36,7 @@ const Tabs: FC<Props> = ({ tabs, defaultTab = 0 }) => {
                 'text-center border-b-2 py-4 px-8 text-lg hover:bg-secondary transition-all',
                 selected !== idx
                   ? 'border-b-transparent'
-                  : 'border-b-primary text-primary font-bold truncate',
+                  : 'border-b-primary text-primary font-bold',
               )}
               onClick={(e) => {
                 e.stopPropagation();

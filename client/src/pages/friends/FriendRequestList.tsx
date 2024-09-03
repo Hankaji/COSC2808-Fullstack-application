@@ -28,19 +28,18 @@ const list: Account[] = [
 
 const FriendRequestList: FC = () => {
   return (
-    <div className="border-2 border-border rounded-xl p-4">
-      <h3 className="text-xl font-bold pb-3 border-b-2 border-border">
-        Friend Requests
-      </h3>
-      <div className="h-[300px] overflow-y-auto space-y-4 py-4 pr-2">
-        {[...list].map((acc) => (
-          <FriendRequestItem
-            key={acc.id}
-            data={acc}
-            onAccept={() => {}}
-            onReject={() => {}}
-          />
-        ))}
+    <div className="flex flex-col h-[calc(100vh-100px)]">
+      <div className="flex-grow overflow-y-auto mt-6 pr-3">
+        <div className="space-y-6">
+          {list.map((acc) => (
+            <FriendRequestItem
+              key={acc.id}
+              data={acc}
+              onAccept={() => {}}
+              onReject={() => {}}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -77,13 +76,13 @@ const FriendRequestItem: FC<FriendRequestItemProps> = ({
           onClick={onAccept}
           className="rounded-full p-1.5 bg-green-100 hover:bg-green-200"
         >
-          <Check size={12} className="stroke-green-900" />
+          <Check size={16} className="stroke-green-900" />
         </button>
         <button
           onClick={onReject}
           className="rounded-full p-1.5 bg-red-100 hover:bg-red-200"
         >
-          <X size={12} className="stroke-red-900" />
+          <X size={16} className="stroke-red-900" />
         </button>
       </div>
     </div>

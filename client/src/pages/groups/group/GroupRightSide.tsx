@@ -1,8 +1,8 @@
 import { Check, Globe, Lock, Mail, Trash, UserRound } from 'lucide-react';
 import { mergeClassNames } from '../../../utils';
 import PopupModal from '../../../components/PopupModal';
-import { FC, ReactElement, Suspense, useEffect, useState } from 'react';
-import { useLoaderData, useParams } from 'react-router';
+import { FC, useEffect, useState } from 'react';
+import { useLoaderData } from 'react-router';
 import { Group, GroupVisibility } from '../../../types/group';
 import { parseBasicUser, User } from '../../../types/post';
 import { URL_BASE } from '../../../config';
@@ -189,7 +189,7 @@ const ViewAllPeople = () => {
             members.filter((member) => member.id !== memberId),
           );
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(removeRequest, {
@@ -287,7 +287,7 @@ const ViewRequests = () => {
         if (res.ok) {
           setReqs((req) => req.filter((req) => req.id !== reqId));
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(acceptRequest, {
@@ -315,7 +315,7 @@ const ViewRequests = () => {
         if (res.ok) {
           setReqs((req) => req.filter((req) => req.id !== reqId));
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(rejectRequest, {

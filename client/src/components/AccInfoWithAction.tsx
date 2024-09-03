@@ -18,13 +18,13 @@ const AccInfoWithAction: FC<AccInfoWithActionProps> = ({
       case 'friend':
         return (
           <button className="rounded-full p-1.5 bg-green-100">
-            <UserRoundCheck size={12} className="stroke-green-900" />
+            <UserRoundCheck size={16} className="stroke-green-900" />
           </button>
         );
       case 'requestSent':
         return (
           <button className="rounded-full p-1.5 bg-gray-100 cursor-default">
-            <Check size={12} className="stroke-gray-900" />
+            <Check size={16} className="stroke-gray-900" />
           </button>
         );
       case 'none':
@@ -33,7 +33,7 @@ const AccInfoWithAction: FC<AccInfoWithActionProps> = ({
             onClick={actionFn}
             className="rounded-full p-1.5 bg-blue-100 hover:bg-blue-200"
           >
-            <Plus size={12} className="stroke-blue-900" />
+            <Plus size={16} className="stroke-blue-900" />
           </button>
         );
     }

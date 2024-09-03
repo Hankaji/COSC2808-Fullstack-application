@@ -10,7 +10,7 @@ import {
 } from '../../types/group_creation_request';
 
 const GroupRequestList: FC = () => {
-  let loaderData = JSON.parse(useLoaderData() as string)
+  const loaderData = JSON.parse(useLoaderData() as string)
     .groupCreationReqs as GroupCreationRequest[];
 
   const [groupCreationReqs, setGroupCreationReqs] = useState<
@@ -93,26 +93,23 @@ const GroupRequestList: FC = () => {
     });
   };
 
-  console.log(loaderData);
-
   return (
-    <div className="border-2 border-border rounded-xl p-4">
-      <h3 className="text-xl font-bold pb-3 border-b-2 border-border">
-        Group Requests
-      </h3>
-      <div className="h-[400px] overflow-y-auto space-y-4 py-4 pr-2">
-        {groupCreationReqs.map((req) => (
-          <GroupRequestItem
-            key={req.id}
-            data={req}
-            onAccept={() => {
-              handleAccept(req.id);
-            }}
-            onReject={() => {
-              handleReject(req.id);
-            }}
-          />
-        ))}
+    <div className="flex flex-col h-[calc(100vh-100px)]">
+      <div className="flex-grow overflow-y-auto mt-6 pr-3">
+        <div className="space-y-6">
+          {groupCreationReqs.map((req) => (
+            <GroupRequestItem
+              key={req.id}
+              data={req}
+              onAccept={() => {
+                handleAccept(req.id);
+              }}
+              onReject={() => {
+                handleReject(req.id);
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -127,12 +124,11 @@ interface GroupRequestItemProps {
 }
 
 const GroupRequestItem: FC<GroupRequestItemProps> = ({
-  data: { id, user_id, status, group },
+  data: { id, group },
   onAccept,
   onReject,
 }) => {
-  console.log('data: ' + group);
-  const { groupImage, coverImage, visibility, description, name } = group;
+  const { groupImage, visibility, name } = group;
 
   return (
     <div className="flex items-center justify-between">
@@ -140,7 +136,7 @@ const GroupRequestItem: FC<GroupRequestItemProps> = ({
         <img
           src={groupImage}
           className="rounded-full bg-gray-500 size-12"
-          alt="group image"
+          alt="group"
         />
         <div>
           <div className="flex items-center gap-1">
