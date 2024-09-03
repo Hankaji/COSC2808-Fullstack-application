@@ -241,28 +241,28 @@ export const getUserGroupsById = async (req: Request, res: Response) => {
 
 // Get a user's notifications by ID
 export const getUserNotificationsById = async (req: Request, res: Response) => {
-	try {
-		const userId = req.params.id;
+  try {
+    const userId = req.params.id;
 
-		// Validate the user ID format
-		if (!mongoose.Types.ObjectId.isValid(userId)) {
-			return res.status(400).json({ message: "Invalid user ID" });
-		}
+    // Validate the user ID format
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
 
-		// Find the user by ID and get the notifications
-		const user = await User.findById(userId).select("notifications").exec();
+    // Find the user by ID and get the notifications
+    const user = await User.findById(userId).select("notifications").exec();
 
-		// If the user is not found, return a 404 error
-		if (!user) {
-			return res.status(404).json({ message: "User not found" });
-		}
+    // If the user is not found, return a 404 error
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-		// Return the user's notifications
-		return res.status(200).json(user.notifications);
-	} catch (error) {
-		console.error("Error retrieving user notifications:", error);
-		return res.status(500).json({ message: "Internal server error" });
-	}
+    // Return the user's notifications
+    return res.status(200).json(user.notifications);
+  } catch (error) {
+    console.error("Error retrieving user notifications:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 // Get user's sent friend requests by ID

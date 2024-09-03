@@ -1,61 +1,55 @@
-import { User, Users, SquarePen } from 'lucide-react';
-import { FC } from 'react';
-import { Link } from 'react-router-dom';
-import { Notification, NotificationType } from '../../types';
+import { MessageCircle, User, Users, SmilePlus, SquarePen } from 'lucide-react';
+import { FC, useState, useEffect } from 'react';
+import { Notification } from '../../types';
 import { formatRelativeTime } from '../../utils';
-
-// generate a list of 5 Notification objects
-const list: Notification[] = [
-  {
-    id: '1',
-    type: NotificationType.FRIEND_REQUEST,
-    message: 'Alice sent you a friend request',
-    createdAt: new Date('2024-08-18T12:00:00Z'),
-    isRead: true,
-  },
-  {
-    id: '2',
-    type: NotificationType.FRIEND_REQUEST_ACCEPTED,
-    message: 'Bob accepted your friend request',
-    createdAt: new Date('2024-08-19T00:00:00Z'),
-    isRead: false,
-  },
-  {
-    id: '3',
-    type: NotificationType.POST_COMMENT,
-    message: 'Charlie commented on your post',
-    createdAt: new Date('2024-08-18T00:00:00Z'),
-    isRead: true,
-  },
-  {
-    id: '4',
-    type: NotificationType.POST_REACTION,
-    message: 'David reacted to your post',
-    createdAt: new Date('2024-08-17T12:00:00Z'),
-    isRead: true,
-  },
-  {
-    id: '5',
-    type: NotificationType.GROUP_CREATION_APPROVAL,
-    message: 'Eve approved your group creation request',
-    createdAt: new Date('2024-08-19T12:00:00Z'),
-    isRead: false,
-  },
-  {
-    id: '6',
-    type: NotificationType.GROUP_MEMBER_REQUEST_APPROVAL,
-    message: 'Frank approved your group member request',
-    createdAt: new Date('2024-08-17T00:00:00Z'),
-    isRead: true,
-  },
-];
+import useAuth from '../../hooks/useAuth';
+import { URL_BASE } from '../../config';
 
 const NotificationList: FC = () => {
-  // TODO: Mark all notifications as read when the component mounts
+  const { auth } = useAuth();
 
-  const sortedList = [...list, ...list, ...list].sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+  const [notificationList, setNotificationList] = useState<Notification[]>([]);
+
+  const sortedList = notificationList.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!auth.user) return;
+      const endpoint = `${URL_BASE}/users/${auth.user.userId}/notifications`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const result = await res.json();
+      console.log('result :', result);
+      setNotificationList(result);
+    };
+
+    fetchNotifications();
+  }, [auth.user]);
+
+  useEffect(() => {
+    if (notificationList.length === 0) return;
+
+    const markReadNotifications = async () => {
+      const endpoints = notificationList
+        .filter((item) => !item.isRead)
+        .map((item) => `${URL_BASE}/users/notifications/${item.id}`);
+
+      await Promise.all(
+        endpoints.map((endpoint) =>
+          fetch(endpoint, {
+            method: 'PATCH',
+            credentials: 'include',
+          }),
+        ),
+      );
+    };
+
+    markReadNotifications();
+  }, [notificationList]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-100px)]">
@@ -64,12 +58,7 @@ const NotificationList: FC = () => {
       </h2>
       <div className="flex-grow overflow-y-auto mt-4 pr-3">
         {sortedList.map((item) => (
-          <NotificationItem
-            key={item.id}
-            data={item}
-            href={getHrefFromNotificationType(item.type)}
-            onRead={() => {}}
-          />
+          <NotificationItem key={item.id} data={item} onRead={() => {}} />
         ))}
       </div>
     </div>
@@ -80,53 +69,52 @@ export default NotificationList;
 
 interface NotificationItemProps {
   data: Notification;
-  href: string;
   onRead: () => void;
 }
 
 const NotificationItem: FC<NotificationItemProps> = ({
   data: { message, isRead, type, createdAt },
-  href,
 }) => {
   const Icon = (() => {
     switch (type) {
-      case NotificationType.FRIEND_REQUEST:
-      case NotificationType.FRIEND_REQUEST_ACCEPTED:
+      case 'User':
         return User;
-      case NotificationType.POST_COMMENT:
-      case NotificationType.POST_REACTION:
+      case 'Comment':
         return SquarePen;
-      case NotificationType.GROUP_CREATION_APPROVAL:
-      case NotificationType.GROUP_MEMBER_REQUEST_APPROVAL:
+      case 'Group':
         return Users;
+      case 'Post':
+        return MessageCircle;
+      case 'Reaction':
+        return SmilePlus;
     }
   })();
 
   const iconClassName = (() => {
     switch (type) {
-      case NotificationType.FRIEND_REQUEST:
-      case NotificationType.FRIEND_REQUEST_ACCEPTED:
-        return 'stroke-blue-300';
-      case NotificationType.POST_COMMENT:
-      case NotificationType.POST_REACTION:
+      case 'User':
         return 'stroke-green-300';
-      case NotificationType.GROUP_CREATION_APPROVAL:
-      case NotificationType.GROUP_MEMBER_REQUEST_APPROVAL:
+      case 'Comment':
+        return 'stroke-blue-300';
+      case 'Group':
         return 'stroke-yellow-300';
+      case 'Post':
+        return 'stroke-orange-300';
+      case 'Reaction':
+        return 'stroke-rose-300';
     }
   })();
 
   return (
-    <Link
-      to={href}
-      className="px-2 flex items-center justify-between gap-4 border-b-2 border-border py-4 hover:bg-slate-900"
-    >
+    <div className="px-2 flex items-center justify-between gap-4 border-b-2 border-border py-4 hover:bg-slate-900">
       <div className="flex items-center gap-4">
-        <Icon size={28} className={iconClassName} />
+        <div>
+          <Icon size={28} className={iconClassName} />
+        </div>
         <p className="line-clamp-2">
           {message}
           <span className="text-slate-400 text-sm ml-2">
-            {formatRelativeTime(createdAt)}
+            {formatRelativeTime(new Date(createdAt))}
           </span>
         </p>
       </div>
@@ -136,22 +124,6 @@ const NotificationItem: FC<NotificationItemProps> = ({
           <span className="relative inline-flex rounded-full size-2 bg-red-400"></span>
         </span>
       )}
-    </Link>
+    </div>
   );
 };
-
-function getHrefFromNotificationType(
-  notificationType: NotificationType,
-): string {
-  switch (notificationType) {
-    case NotificationType.FRIEND_REQUEST:
-    case NotificationType.FRIEND_REQUEST_ACCEPTED:
-      return '/friends';
-    case NotificationType.POST_COMMENT:
-    case NotificationType.POST_REACTION:
-      return '/'; // TODO: change this to the actual post page
-    case NotificationType.GROUP_CREATION_APPROVAL:
-    case NotificationType.GROUP_MEMBER_REQUEST_APPROVAL:
-      return '/'; // TODO: change this to the actual group page
-  }
-}
