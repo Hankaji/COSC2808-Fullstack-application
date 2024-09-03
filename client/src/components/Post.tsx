@@ -19,23 +19,20 @@ import {
   useEffect,
   useRef,
   useState,
-  useContext
+  useContext,
 } from "react";
 import { URL_BASE } from "../config";
 import useAuth from "../hooks/useAuth";
-import { 
-  useNavigate, 
-  useLocation 
-} from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import { Posts, Comment, User, Reaction, ReactionTypes } from "../types/post";
 import { mergeClassNames, formatRelativeTime } from "../utils";
 import {
   DropDownItem,
   DropDownMenu,
   DropDownMenuContent,
-} from './ui/DropDownMenu';
-import PopupModal from './PopupModal';
-import { ToastContext } from '../context/ToastProvider';
+} from "./ui/DropDownMenu";
+import PopupModal from "./PopupModal";
+import { ToastContext } from "../context/ToastProvider";
 type Post = {
   id: string;
   author: {
@@ -57,18 +54,18 @@ type Author = {
   displayName: string;
 };
 
-type Reaction = {
-  author: Author;
-  type: string;
-};
-
-const enum ReactionTypes {
-  LIKE = "LIKE",
-  LOVE = "LOVE",
-  HAHA = "HAHA",
-  ANGRY = "ANGRY",
-  NULL = "NULL",
-}
+// type Reaction = {
+//   author: Author;
+//   type: string;
+// };
+//
+// const enum ReactionTypes {
+//   LIKE = "LIKE",
+//   LOVE = "LOVE",
+//   HAHA = "HAHA",
+//   ANGRY = "ANGRY",
+//   NULL = "NULL",
+// }
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
@@ -91,7 +88,9 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
   const [isEditPopup, setIsEditPopup] = useState<boolean>(false); // State for edit modal
   const [postContent, setPostContent] = useState<string>(data.content); // State for post content
-  const [postVisibility, setPostVisibility] = useState<'Public' | 'Friend'>(data.visibility as 'Public' | 'Friend'); // State for post visibility
+  const [postVisibility, setPostVisibility] = useState<"Public" | "Friend">(
+    data.visibility as "Public" | "Friend",
+  ); // State for post visibility
   const openModalButtonRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button
   const openModalButtonEditRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button for editing
   const toastContext = useContext(ToastContext);
@@ -100,7 +99,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
 
   // error handler for toast
   if (!toastContext) {
-    throw new Error('ToastContext must be used within a ToastProvider');
+    throw new Error("ToastContext must be used within a ToastProvider");
   }
 
   const handlePostClick = () => {
@@ -113,39 +112,39 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   const handleDelete = async () => {
     try {
       const response = await fetch(`http://localhost:8080/posts/${data._id}`, {
-        method: 'DELETE',
-        credentials: 'include',
+        method: "DELETE",
+        credentials: "include",
       });
 
       if (response.ok) {
-        console.log('Post deleted successfully');
+        console.log("Post deleted successfully");
         show({
-          title: 'Success',
-          description: 'Post deleted successfully',
-          type: 'success',
+          title: "Success",
+          description: "Post deleted successfully",
+          type: "success",
         });
 
         // Check if the current URL matches /posts/:postId
         const postIdPattern = /^\/posts\/[a-zA-Z0-9]+$/;
         if (postIdPattern.test(location.pathname)) {
-          navigate('/'); // Navigate to the home page
+          navigate("/"); // Navigate to the home page
         } else {
           window.location.reload(); // Refresh the page
         }
       } else {
-        console.error('Failed to delete the post');
+        console.error("Failed to delete the post");
         show({
-          title: 'Error',
-          description: 'Failed to delete the post',
-          type: 'error',
+          title: "Error",
+          description: "Failed to delete the post",
+          type: "error",
         });
       }
     } catch (error) {
       console.error(error);
       show({
-        title: 'Error',
-        description: 'An error occurred while deleting the post',
-        type: 'error',
+        title: "Error",
+        description: "An error occurred while deleting the post",
+        type: "error",
       });
     }
   };
@@ -154,11 +153,11 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   const handleEdit = async () => {
     try {
       const response = await fetch(`http://localhost:8080/posts/${data._id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           content: postContent,
           visibility: postVisibility,
@@ -166,27 +165,27 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       });
 
       if (response.ok) {
-        console.log('Post edited successfully');
+        console.log("Post edited successfully");
         show({
-          title: 'Success',
-          description: 'Post edited successfully',
-          type: 'success',
+          title: "Success",
+          description: "Post edited successfully",
+          type: "success",
         });
         window.location.reload(); // Refresh the page to show updated content
       } else {
-        console.error('Failed to edit the post');
+        console.error("Failed to edit the post");
         show({
-          title: 'Error',
-          description: 'Failed to edit the post',
-          type: 'error',
+          title: "Error",
+          description: "Failed to edit the post",
+          type: "error",
         });
       }
     } catch (error) {
       console.error(error);
       show({
-        title: 'Error',
-        description: 'An error occurred while editing the post',
-        type: 'error',
+        title: "Error",
+        description: "An error occurred while editing the post",
+        type: "error",
       });
     }
   };
@@ -205,13 +204,20 @@ const PostComponent: FC<Props> = ({ className, data }) => {
             <DropDownMenu
               content={
                 <DropDownMenuContent className="-translate-x-1/2">
-                  <DropDownItem onClick={() => {
-                    openModalButtonEditRef.current?.click(); // Trigger the "Open Modal" button click for editing
-                  }}>Edit post</DropDownItem>
-                  <DropDownItem onClick={() => {
-                    openModalButtonRef.current?.click(); // Trigger the "Open Modal" button click
-                  }}
-                  >Delete</DropDownItem>
+                  <DropDownItem
+                    onClick={() => {
+                      openModalButtonEditRef.current?.click(); // Trigger the "Open Modal" button click for editing
+                    }}
+                  >
+                    Edit post
+                  </DropDownItem>
+                  <DropDownItem
+                    onClick={() => {
+                      openModalButtonRef.current?.click(); // Trigger the "Open Modal" button click
+                    }}
+                  >
+                    Delete
+                  </DropDownItem>
                   <DropDownItem>History</DropDownItem>
                 </DropDownMenuContent>
               }
@@ -231,7 +237,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
           <Reactions
             reactions={data.reactions}
             context="post"
-            postId={data.id}
+            postId={data._id}
           />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
@@ -250,11 +256,13 @@ const PostComponent: FC<Props> = ({ className, data }) => {
           // Style for modal
           <div className="fixed inset-0 flex items-center justify-center bg-transparent">
             <div className="p-4 bg-white rounded shadow-lg">
-              <h2 className="text-black">Are you sure you want to delete this post?</h2>
+              <h2 className="text-black">
+                Are you sure you want to delete this post?
+              </h2>
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => {
-                    console.log('Cancel button clicked');
+                    console.log("Cancel button clicked");
                   }}
                   className="mr-2 px-4 py-2 bg-gray-300 rounded"
                 >
@@ -262,7 +270,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Delete button clicked');
+                    console.log("Delete button clicked");
                     handleDelete();
                   }}
                   className="px-4 py-2 bg-red-500 text-white rounded"
@@ -278,7 +286,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded"
           ref={openModalButtonRef}
-          style={{ display: 'none' }} // Make the button invisible
+          style={{ display: "none" }} // Make the button invisible
         >
           Open Modal
         </button>
@@ -291,9 +299,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         backdropBlur={5}
         modelRender={
           // Style for modal
-          <div
-            className="fixed inset-0 flex items-center justify-center bg-transparent"
-          >
+          <div className="fixed inset-0 flex items-center justify-center bg-transparent">
             <div className="p-4 bg-white rounded shadow-lg">
               <h2 className="text-black">Edit Post</h2>
               <textarea
@@ -306,15 +312,19 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                 className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent click propagation
-                  setPostVisibility(postVisibility === 'Public' ? 'Friend' : 'Public');
+                  setPostVisibility(
+                    postVisibility === "Public" ? "Friend" : "Public",
+                  );
                 }}
               >
-                {postVisibility === 'Public' ? 'Change to Friend' : 'Change to Public'}
+                {postVisibility === "Public"
+                  ? "Change to Friend"
+                  : "Change to Public"}
               </button>
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => {
-                    console.log('Cancel button clicked');
+                    console.log("Cancel button clicked");
                     setIsEditPopup(false);
                   }}
                   className="mr-2 px-4 py-2 bg-gray-300 rounded"
@@ -323,7 +333,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Confirm button clicked');
+                    console.log("Confirm button clicked");
                     handleEdit();
                   }}
                   className="px-4 py-2 bg-green-500 text-white rounded"
@@ -339,7 +349,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded"
           ref={openModalButtonEditRef}
-          style={{ display: 'none' }} // Make the button invisible
+          style={{ display: "none" }} // Make the button invisible
         >
           Open Modal
         </button>
@@ -458,7 +468,7 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
           <Reactions
             reactions={data.reactions}
             context="post"
-            postId={data.id}
+            postId={data._id}
           />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
@@ -467,7 +477,7 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
         </div>
         <div className="border-border border-solid border-2"></div>
         {/* Comments */}
-        <CommentSection data={data.comments} postId={data.id} />
+        <CommentSection data={data.comments} postId={data._id} />
       </div>
     </div>
   );
@@ -484,9 +494,9 @@ const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo }) => {
       <img
         className="rounded-full flex-[0_0_auto] aspect-square bg-gray-500 size-12"
         src={
-          data.virtualProfileImage
-            ? data.virtualProfileImage
-            : 'https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2'
+          data.profileImage
+            ? data.profileImage
+            : "https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2"
         }
         alt="User avatar"
       />
@@ -531,8 +541,8 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
         <img
           className="rounded-full bg-gray-500 size-12"
           src={
-            data.author_id.virtualProfileImage
-              ? data.author_id.virtualProfileImage
+            data.author_id.profileImage
+              ? data.author_id.profileImage
               : "https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2"
           }
           alt="User avatar"
@@ -625,7 +635,7 @@ const Reactions: FC<ReactionsProps> = ({
     };
 
     reactions.forEach((reaction) => {
-      const reactionType = reaction.type.toUpperCase() as ReactionTypes;
+      const reactionType = reaction.type as ReactionTypes;
       if (reactionType in newCounts) {
         newCounts[reactionType]++;
       }
