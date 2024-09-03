@@ -1,9 +1,9 @@
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { AuthorPfp } from '../../components/Post';
+import { Author, AuthorPfp } from '../../components/Post';
 import Tabs, { Tab } from '../../components/Tabs';
-import { User } from '../../types/post';
 import { URL_BASE } from '../../config';
+import { User } from '../../types/user';
 import { mergeClassNames } from '../../utils';
 
 const SearchPanel = () => {
@@ -58,20 +58,33 @@ const People: FC<{ users: User[] }> = ({ users }) => {
   return (
     <div>
       {users.map((user, _) => {
-        return <PeopleComp key={user.id} data={user} />;
+        return (
+          <PeopleComp
+            key={user.id}
+            data={{
+              username: user.username,
+              displayName: user.displayName,
+              avatar: user.virtualProfileImage,
+            }}
+            target_id={user.id}
+          />
+        );
       })}
     </div>
   );
 };
 
-const PeopleComp: FC<{ data: User }> = ({ data }) => {
+const PeopleComp: FC<{ data: Author; target_id: string }> = ({
+  data,
+  target_id,
+}) => {
   const navigate = useNavigate();
 
   return (
     <div
       onClick={(e) => {
         e.preventDefault();
-        navigate(`/users/${data.id}`);
+        navigate(`/users/${target_id}`);
       }}
       className="rounded-lg w-full flex items-center justify-start gap-2 p-4 hover:bg-secondary/50 transition-colors cursor-pointer"
     >

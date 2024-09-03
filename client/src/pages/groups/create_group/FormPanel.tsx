@@ -75,7 +75,7 @@ const GroupFormPanel = () => {
         const data = await res.json();
         console.log(data);
         return data;
-      } catch (error) { }
+      } catch (error) {}
     };
     toast.showAsync(submit, {
       loading: {
@@ -84,8 +84,8 @@ const GroupFormPanel = () => {
       success: (data) => ({
         title: `${data.message}`,
       }),
-      error: (_) => ({
-        title: 'Could not create group',
+      error: (e) => ({
+        title: `${e.message}`,
       }),
     });
   };

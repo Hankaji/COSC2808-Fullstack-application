@@ -7,8 +7,6 @@ import {
   Search,
   SquarePlus,
   User,
-  UserRound,
-  UsersRound,
 } from 'lucide-react';
 import type { FC } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -51,11 +49,6 @@ const internalLinkItems: SidebarInternalLinkItem[] = [
     Logo: User,
     name: 'Friends',
     path: '/friends',
-  },
-  {
-    Logo: UsersRound,
-    name: 'Groups',
-    path: '/groups',
   },
   {
     Logo: SquarePlus,

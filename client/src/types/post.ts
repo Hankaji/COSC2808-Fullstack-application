@@ -1,11 +1,11 @@
-export interface Posts {
+export interface Post {
   _id: string;
   user: User;
   group_id: null;
   content: string;
   images: string[];
   visibility: string;
-  reactions: Reaction[];
+  reactions: any[];
   comments: Comment[];
   editHistory: any[];
   createdAt: Date;
@@ -16,37 +16,16 @@ export interface Posts {
 export interface Comment {
   author_id: User;
   content: string;
-  reactions: Reaction[];
+  reactions: any[];
   createdAt: Date;
   editHistory: any[];
   _id: string;
 }
 
 export interface User {
-  id: string;
+  _id: string;
   username: string;
   displayName: string;
-  profileImage?: string;
+  virtualProfileImage: string;
+  id: string;
 }
-
-export interface Reaction {
-  author: User;
-  type: ReactionTypes;
-}
-
-export enum ReactionTypes {
-  NULL,
-  LIKE,
-  LOVE,
-  HAHA,
-  ANGRY,
-}
-
-export const parseBasicUser = (data: any) => {
-  return {
-    id: data._id,
-    username: data.username,
-    displayName: data.displayName,
-    profileImage: data.virtualProfileImage,
-  } as User;
-};
