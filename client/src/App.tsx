@@ -4,9 +4,11 @@ import RequireAuth from './components/RequireAuth';
 import { URL_BASE } from './config';
 import { AuthProvider } from './context/AuthProvider';
 import ToastProvider from './context/ToastProvider';
+import useAuth from './hooks/useAuth';
 import AdminPage from './pages/admin';
 import Error from './pages/error';
 import FriendsPage from './pages/friends';
+import JoinedGroups from './pages/groups';
 import CreateGroupForm from './pages/groups/create_group';
 import GroupPage from './pages/groups/group';
 import HomePage from './pages/home';
@@ -16,6 +18,7 @@ import PostPage from './pages/posts/post';
 import Search from './pages/search';
 import Unauthorized from './pages/unauthorized';
 import UserPage from './pages/users/user';
+import { parseGroup } from './types/group';
 
 const router = createBrowserRouter([
   {
@@ -48,6 +51,7 @@ const router = createBrowserRouter([
           const endpoint = `${URL_BASE}/posts/${params.postId}`;
           const res = await fetch(endpoint, {
             method: 'GET',
+            credentials: 'include',
           });
           return res.json();
         },
@@ -71,12 +75,30 @@ const router = createBrowserRouter([
         path: 'groups',
         children: [
           {
+            path: '',
+            element: <JoinedGroups />,
+          },
+          {
             path: 'create',
             element: <CreateGroupForm />,
           },
           {
             path: ':groupId',
             element: <GroupPage />,
+            loader: async ({ params }) => {
+              try {
+                const endpoint = `${URL_BASE}/groups/${params.groupId}`;
+                const res = await fetch(endpoint, {
+                  method: 'GET',
+                  credentials: 'include',
+                });
+
+                const data = await res.json();
+                const groupData = parseGroup(data);
+
+                return groupData;
+              } catch (error) {}
+            },
           },
         ],
       },

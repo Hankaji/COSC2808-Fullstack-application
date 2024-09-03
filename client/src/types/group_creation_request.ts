@@ -4,7 +4,7 @@ export interface GroupCreationRequest {
   id: string;
   user_id: string;
   status: RequestStatus;
-  group: Group;
+  group: Omit<Group, 'admins' | 'members'>;
 }
 
 export enum RequestStatus {
@@ -17,10 +17,13 @@ export const parseGroupCreationRequest = (data: any) => {
   return {
     id: data._id,
     user_id: data.user_id,
-    status:
-      RequestStatus[
-        (data.status as string).toUpperCase() as keyof typeof RequestStatus
-      ],
+    status: parseRequestStatus(data.status),
     group: parseGroup(data.group),
   } as GroupCreationRequest;
+};
+
+export const parseRequestStatus = (status: string) => {
+  return RequestStatus[
+    (status as string).toUpperCase() as keyof typeof RequestStatus
+  ];
 };

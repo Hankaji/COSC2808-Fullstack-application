@@ -1,170 +1,406 @@
-import { Check, Globe, Mail, Trash, UserRound } from 'lucide-react';
+import { Check, Globe, Lock, Mail, Trash, UserRound } from 'lucide-react';
 import { mergeClassNames } from '../../../utils';
 import PopupModal from '../../../components/PopupModal';
-import { FC, ReactElement, useState } from 'react';
+import { FC, ReactElement, Suspense, useEffect, useState } from 'react';
+import { useLoaderData, useParams } from 'react-router';
+import { Group, GroupVisibility } from '../../../types/group';
+import { parseBasicUser, User } from '../../../types/post';
+import { URL_BASE } from '../../../config';
+import { AuthorPfp, FallBackPfp } from '../../../components/Post';
+import useAuth from '../../../hooks/useAuth';
+import Loading from '../../../components/ui/Loading';
+import useToast from '../../../hooks/useToast';
+import {
+  GroupJoinRequest,
+  parseGroupJoinReq,
+} from '../../../types/group_join_request';
+import Tabs, { Tab } from '../../../components/Tabs';
 
 const GroupRightSide = () => {
+  const groupData = useLoaderData() as Group;
+  const { auth } = useAuth();
+
+  const [admins, setAdmins] = useState<User[]>([]);
+
+  const isGroupAdmin = (): boolean => {
+    for (let admin of admins) {
+      if (admin.id === auth.user!.userId) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      const endpoint = `${URL_BASE}/groups/${groupData.id}/admins`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const data: any[] = await res.json();
+      const adminsData = data.map((user) => {
+        return parseBasicUser(user);
+      });
+      setAdmins(adminsData);
+    };
+
+    fetchAdmins();
+  }, []);
+
+  const showPopup = (tab: number) => {
+    return <Popup initialTab={tab} isGroupAdmin={isGroupAdmin()} />;
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className={mergeClassNames('block-container flex-col')}>
         {/* Group Description */}
         <div className="flex flex-col">
-          <h1 className="font-bold text-lg">
-            g/Punixorn - the home for cunny NIXXER!
-          </h1>
+          <h1 className="font-bold text-lg">{groupData.name}</h1>
           <p>
-            Submit screenshots of all your *NIX desktops, themes, and nifty
-            configurations, or submit anything else that will make ricers happy.
-            Maybe a server running on an Amiga, or a Thinkpad signed by Bjarne
-            Stroustrup? Show the world how pretty your computer can be!
+            {groupData.description
+              ? groupData.description
+              : 'No description was provided'}
           </p>
         </div>
         {/* Visibility */}
         <p className="flex gap-2 items-center justify-center font-semibold rounded-lg bg-secondary py-2">
-          <Globe size={24} /> Public group
+          {groupData.visibility === GroupVisibility.PUBLIC ? (
+            <>
+              <Globe size={24} /> Public group
+            </>
+          ) : (
+            <>
+              <Lock size={24} /> Private
+            </>
+          )}
         </p>
         {/* Members */}
         <div className="flex gap-2">
           <div className="flex flex-col w-full">
-            <h2 className="font-bold">487K</h2>
+            <h2 className="font-bold">{groupData.members.length}</h2>
             <p className="text-muted">Members</p>
           </div>
           <div className="flex flex-col w-full">
-            <h2 className="font-bold">911</h2>
-            <p className="text-muted flex gap-2 items-center">
-              <div className="size-2 bg-success rounded-full"></div> Online
-            </p>
+            <h2 className="font-bold">{groupData.admins.length}</h2>
+            <p className="text-muted flex gap-2 items-center">Moderators</p>
           </div>
         </div>
       </div>
       {/* Current role */}
-      <div className="block-container">
-        <img
-          className="rounded-full bg-gray-500 size-12"
-          src="https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6"
-          alt="User avatar"
-        />
-        <div className="flex flex-col justify-center items-start">
-          <h1 className="text-xl font-semibold">Admin</h1>
-        </div>
+      <div className="block-container flex-col">
+        <h1 className="text-2xl font-bold">Moderators</h1>
+        {/* Display only 3 moderators max */}
+        {admins.length > 0 ? (
+          <>
+            {admins.slice(0, 3).map((admin) => (
+              <AuthorPfp
+                currentUser={auth.user!.userId == admin.id}
+                key={admin.id}
+                data={admin}
+              />
+            ))}
+          </>
+        ) : (
+          <FallBackPfp />
+        )}
       </div>
       {/* Actions */}
       <div className="block-container flex-col">
         <PopupModal
           heightPercent={0.8}
           className="w-full"
-          modelRender={<Popup />}
+          modelRender={showPopup(0)}
         >
           <button className="flex gap-2 w-full items-center justify-center font-semibold rounded-lg bg-primary text-foreground py-2">
             <UserRound size={24} /> People
           </button>
         </PopupModal>
-        <PopupModal
-          heightPercent={0.8}
-          className="w-full"
-          modelRender={<Popup initialTab={1} />}
-        >
-          <button className="flex gap-2 w-full items-center justify-center font-semibold rounded-lg bg-primary text-foreground py-2">
-            <Mail size={24} /> Requests
-          </button>
-        </PopupModal>
+        {isGroupAdmin() && (
+          <PopupModal
+            heightPercent={0.8}
+            className="w-full"
+            modelRender={showPopup(1)}
+          >
+            <button className="flex gap-2 w-full items-center justify-center font-semibold rounded-lg bg-primary text-foreground py-2">
+              <Mail size={24} /> Requests
+            </button>
+          </PopupModal>
+        )}
       </div>
     </div>
   );
 };
 
-const Popup: FC<{ initialTab?: number }> = ({ initialTab = 0 }) => {
+const Popup: FC<{ initialTab?: number; isGroupAdmin?: boolean }> = ({
+  initialTab = 0,
+  isGroupAdmin = false,
+}) => {
   const [selectedTab, setSelectedTab] = useState<number>(initialTab);
 
-  const tabs: string[] = ['People', 'Requests'];
-  const tabNodes: ReactElement[] = [<ViewAllPeople />, <ViewRequests />];
+  const requireAdminAccess: boolean[] = [false, true];
+
+  const tabs: Tab[] = [
+    {
+      name: 'People',
+      element: <ViewAllPeople />,
+    },
+    {
+      name: 'Join requests',
+      element: <ViewRequests />,
+    },
+  ];
+
+  if (requireAdminAccess[selectedTab] && !isGroupAdmin) {
+    setSelectedTab(0);
+  }
 
   return (
     <div className="block-container flex-col size-full">
-      {/* Tab selection */}
-      <div className="flex">
-        {tabs.map((name, idx) => {
-          return (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedTab(idx);
-              }}
-              className={mergeClassNames(
-                'flex p-4 justify-center items-center w-full',
-                'hover:bg-secondary transition-colors rounded-tl-lg rounded-tr-lg border-border',
-                selectedTab == idx && 'border-b-2 border-solid',
-              )}
-              key={idx}
-            >
-              {name}
-            </button>
-          );
-        })}
-      </div>
-      {/* Content */}
-      {tabNodes[selectedTab]}
+      <Tabs defaultTab={initialTab} tabs={tabs} />
     </div>
   );
 };
 
 const ViewAllPeople = () => {
-  const data: string[] = ['as', 'asa', 'asasasasasa'];
+  const groupData = useLoaderData() as Group;
+  const toast = useToast();
 
-  console.log(data.length);
+  const [members, setMembers] = useState<User[]>([]);
+  const [isLoading, setIsloading] = useState<boolean>(true);
+
+  const adminIds: string[] = groupData.admins.map(
+    (admin) => parseBasicUser(admin).id,
+  );
+
+  const removeMember = async (memberId: string) => {
+    const removeRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/groups/${groupData.id}/members/${memberId}`;
+        const res = await fetch(endpoint, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+
+        if (res.ok) {
+          setMembers((members) =>
+            members.filter((member) => member.id !== memberId),
+          );
+        }
+      } catch (error) { }
+    };
+
+    toast.showAsync(removeRequest, {
+      loading: {
+        title: 'Removing...',
+      },
+      success: (_) => ({
+        title: 'Member removed successfully',
+      }),
+      error: (_) => ({
+        title: 'Couldnt remove member, please try again',
+      }),
+    });
+  };
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      const endpoint = `${URL_BASE}/groups/${groupData.id}/members`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const data: any[] = await res.json();
+      const membersData = data.map((user) => {
+        return parseBasicUser(user);
+      });
+      setMembers(membersData);
+      setIsloading(false);
+    };
+
+    fetchMembers();
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 justify-start items-center size-full">
-      {data.length > 0 ? (
+      {isLoading && <Loading />}
+      {!isLoading && (
         <>
-          {data.map((item, idx) => {
-            return (
-              <div key={idx} className="block-container w-full">
-                {item}
-              </div>
-            );
-          })}
+          {members.length > 0 ? (
+            <>
+              {members.map((member) => {
+                return (
+                  <div
+                    key={member.id}
+                    className="block-container w-full items-center"
+                  >
+                    <AuthorPfp data={member} />
+                    {adminIds.includes(member.id) && (
+                      <p className="text-xl ml-auto font-bold">Moderator</p>
+                    )}
+                    {!adminIds.includes(member.id) && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeMember(member.id);
+                        }}
+                        className="flex ml-auto items-center justify-center font-semibold rounded-lg bg-danger hover:bg-secondary transition-colors text-foreground py-2 px-4"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <div className="flex justify-center items-center size-full">
+              No members here
+            </div>
+          )}
         </>
-      ) : (
-        <div className="flex justify-center items-center size-full">
-          No members here
-        </div>
       )}
     </div>
   );
 };
 
 const ViewRequests = () => {
-  const data: string[] = ['Guria', 'Menege', 'Kaguya'];
+  const groupData = useLoaderData() as Group;
+  const toast = useToast();
 
-  console.log(data.length);
+  const [reqs, setReqs] = useState<GroupJoinRequest[]>([]);
+  const [isLoading, setLoading] = useState<boolean>(true);
+
+  const acceptJoinGroup = async (reqId: string) => {
+    const acceptRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/requests/group_requests/accept/${reqId}`;
+        const res = await fetch(endpoint, {
+          method: 'PATCH',
+          credentials: 'include',
+        });
+
+        if (res.ok) {
+          setReqs((req) => req.filter((req) => req.id !== reqId));
+        }
+      } catch (error) { }
+    };
+
+    toast.showAsync(acceptRequest, {
+      loading: {
+        title: 'Accepting...',
+      },
+      success: (_) => ({
+        title: 'Congratulation! your group is now more popular',
+      }),
+      error: (_) => ({
+        title: 'Couldnt accept member, please try again',
+      }),
+    });
+  };
+
+  const rejectJoinGroup = async (reqId: string) => {
+    const rejectRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/requests/group_requests/reject/${reqId}`;
+        const res = await fetch(endpoint, {
+          method: 'PATCH',
+          credentials: 'include',
+        });
+
+        if (res.ok) {
+          setReqs((req) => req.filter((req) => req.id !== reqId));
+        }
+      } catch (error) { }
+    };
+
+    toast.showAsync(rejectRequest, {
+      loading: {
+        title: 'Rejecting...',
+      },
+      success: (_) => ({
+        title: 'Member is no longer in this group',
+      }),
+      error: (_) => ({
+        title: 'Couldnt reject member, please try again',
+      }),
+    });
+  };
+
+  useEffect(() => {
+    const fetchReqs = async () => {
+      const endpoint = `${URL_BASE}/groups/${groupData.id}/requests`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const data: any[] = await res.json();
+      const reqs = data.map((req) => {
+        return parseGroupJoinReq(req);
+      });
+
+      console.log(reqs);
+      if (res.ok) {
+        setReqs(reqs);
+        setLoading(false);
+      }
+    };
+
+    fetchReqs();
+  }, []);
 
   return (
     <div className="flex flex-col gap-4 justify-start items-center size-full">
-      {data.length > 0 ? (
-        <>
-          {data.map((item, idx) => {
-            return (
-              <div key={idx} className="block-container w-full items-center">
-                Request from @{item}
-                <div className="flex gap-2 h-full ml-auto">
-                  <button className="flex justify-center items-center gap-2 py-2 px-4 bg-success rounded-lg">
-                    <Check />
-                    Accept
-                  </button>
-                  <button className="flex justify-center items-center gap-2 py-2 px-4 bg-danger rounded-lg">
-                    <Trash />
-                    Deny
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </>
+      {isLoading ? (
+        <Loading />
       ) : (
-        <div className="flex justify-center items-center size-full">
-          No members here
-        </div>
+        <>
+          {reqs.length > 0 ? (
+            <>
+              {reqs.map((req) => {
+                return (
+                  <div
+                    key={req.id}
+                    className="block-container w-full items-center"
+                  >
+                    <AuthorPfp data={req.user} />
+                    <div className="flex gap-2 h-full ml-auto">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          acceptJoinGroup(req.id);
+                        }}
+                        className="flex justify-center transition-colors hover:bg-secondary items-center gap-2 py-2 px-4 bg-success rounded-lg"
+                      >
+                        <Check />
+                        Accept
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          rejectJoinGroup(req.id);
+                        }}
+                        className="flex justify-center transition-colors hover:bg-secondary items-center gap-2 py-2 px-4 bg-danger rounded-lg"
+                      >
+                        <Trash />
+                        Deny
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          ) : (
+            <p>Look like peace for now</p>
+          )}
+        </>
       )}
     </div>
   );
