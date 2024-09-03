@@ -66,6 +66,7 @@ const router = createBrowserRouter([
           const endpoint = `http://localhost:8080/users/${params.userId}`;
           const res = await fetch(endpoint, {
             method: 'GET',
+            credentials: 'include'
           });
           return await res.json();
         },

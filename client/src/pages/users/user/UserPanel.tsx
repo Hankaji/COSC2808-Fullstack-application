@@ -1,11 +1,9 @@
 import { BadgeCheck, CircleSlash } from 'lucide-react';
-import { FC, ReactNode, useEffect, useState } from 'react';
-import { useLoaderData } from 'react-router';
+import { FC } from 'react';
 import { Posts } from '../../../types/post';
 import PostsView from '../../../components/PostsView';
 import Tabs, { Tab } from '../../../components/Tabs';
 import { User } from '../../../types/user';
-import { mergeClassNames } from '../../../utils';
 
 const mockData: Posts[] = [
   {

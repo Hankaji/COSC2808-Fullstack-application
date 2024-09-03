@@ -86,8 +86,7 @@ export const getUserById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Add virtualProfileImage to the user
-    const userWithProfileImage = {
+    const userFullDetails = {
       _id: user._id,
       username: user.username,
       displayName: user.displayName,
@@ -100,10 +99,12 @@ export const getUserById = async (req: Request, res: Response) => {
               user.profileImage.contentType
             };base64,${user.profileImage.data.toString("base64")}`
           : undefined,
+      createAt: user.createdAt,
+      updatedAt: user.updatedAt
     };
 
     // Return the user
-    return res.status(200).json(userWithProfileImage);
+    return res.status(200).json(userFullDetails);
   } catch (error) {
     console.error("Error retrieving user:", error);
     return res.status(500).json({ message: "Internal server error" });
