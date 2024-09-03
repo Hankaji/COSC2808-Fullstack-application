@@ -41,7 +41,7 @@ const JoinedGroupList = () => {
         });
         setJoinedGroups(joined);
         setModeratingGroups(moderating);
-      } catch (error) {}
+      } catch (error) { }
     };
 
     getData();
@@ -87,7 +87,7 @@ const CompactedGroupComp: FC<{ data: CompactedGroup }> = ({ data }) => {
       to={`/groups/${data.id}`}
       className="flex gap-4 items-center justify-start hover:bg-secondary/50 rounded-lg py-2 px-4 cursor-pointer transition-colors"
     >
-      <div className="size-16 rounded-full bg-gray-500">
+      <div className="size-16 overflow-hidden rounded-full bg-gray-500">
         {data.virtualGroupImage && (
           <img
             className="object-cover"

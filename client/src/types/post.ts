@@ -1,5 +1,5 @@
 export interface Posts {
-  _id: string;
+  id: string;
   user: User;
   group_id: null;
   content: string;
@@ -19,7 +19,7 @@ export interface Comment {
   reactions: Reaction[];
   createdAt: Date;
   editHistory: any[];
-  _id: string;
+  id: string;
 }
 
 export interface User {
@@ -41,6 +41,43 @@ export enum ReactionTypes {
   HAHA,
   ANGRY,
 }
+
+export const parsePost = (data: any) => {
+  return {
+    id: data._id,
+    user: parseBasicUser(data.user),
+    group_id: data.group_id,
+    content: data.content,
+    images: data.images,
+    visibility: data.visibility,
+    reactions: (data.reactions as string[]).map((react) =>
+      parseReaction(react),
+    ),
+    comments: (data.comments as any[]).map((cmt) => parseComment(cmt)),
+    editHistory: data.editHistory,
+    createdAt: new Date(data.createdAt),
+  } as Posts;
+};
+
+export const parseComment = (data: any) => {
+  return {
+    author_id: parseBasicUser(data.author_id),
+    content: data.content,
+    reactions: (data.reactions as string[]).map((react) =>
+      parseReaction(react),
+    ),
+    createdAt: new Date(data.createdAt),
+    editHistory: data.editHistory,
+    id: data._id,
+  } as Comment;
+};
+
+export const parseReaction = (data: any) => {
+  return {
+    author: parseBasicUser(data.author),
+    type: ReactionTypes[data.type.toUpperCase() as keyof typeof ReactionTypes],
+  } as Reaction;
+};
 
 export const parseBasicUser = (data: any) => {
   return {

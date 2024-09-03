@@ -2,11 +2,13 @@ import { useLoaderData, useParams } from 'react-router';
 import PostCreationPanel from '../../../components/PostCreationPanel';
 import { mergeClassNames } from '../../../utils';
 import PostsView from '../../../components/PostsView';
-import { Group, parseGroup } from '../../../types/group';
-import { FC } from 'react';
+import { Group, GroupVisibility, parseGroup } from '../../../types/group';
+import { FC, useEffect, useState } from 'react';
 import useAuth from '../../../hooks/useAuth';
 import { URL_BASE } from '../../../config';
 import useToast from '../../../hooks/useToast';
+import { parsePost, Posts } from '../../../types/post';
+import Loading from '../../../components/ui/Loading';
 
 const GroupPanel = () => {
   const groupData = useLoaderData() as Group;
@@ -14,6 +16,21 @@ const GroupPanel = () => {
 
   const params = useParams();
   const groupId = params.groupId;
+
+  const [posts, setPosts] = useState<Posts[] | undefined>(undefined);
+
+  const canView = (): boolean => {
+    if (groupData.visibility === GroupVisibility.PRIVATE) {
+      // Find if current user has joined the group
+      const thisUserInGroup = groupData.members.filter(
+        (mem) => mem.id === auth.user?.userId,
+      );
+
+      // Length = 0 means user is not in group
+      if (thisUserInGroup.length === 0) return false;
+    }
+    return true;
+  };
 
   const joinGroup = async () => {
     try {
@@ -32,8 +49,33 @@ const GroupPanel = () => {
       const data = await res.json();
       console.log(data);
       return data;
-    } catch (error) {}
+    } catch (error) { }
   };
+
+  const fetchPosts = async () => {
+    try {
+      const endpoint = `${URL_BASE}/posts/group/${groupData.id}`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      const data: any[] = await res.json();
+      console.log(data);
+
+      // Parse data as Posts
+      const posts = data.map((post) => parsePost(post));
+      console.log(posts);
+
+      if (res.ok) {
+        setPosts(posts);
+      }
+    } catch (_) { }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   return (
     <div className="flex flex-col gap-4">
@@ -47,8 +89,31 @@ const GroupPanel = () => {
             .length > 0
         }
       />
-      <PostCreationPanel />
-      {/* <PostsView posts={null} /> */}
+      {canView() ? (
+        <>
+          <PostCreationPanel />
+          {posts ? (
+            <PostsView posts={posts} />
+          ) : (
+            <div className="w-full p-12 flex justify-center items-center">
+              <Loading /> Loading posts
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="size-full flex flex-col gap-6 items-center justify-center">
+          <h1 className="text-9xl font-bold">Oops</h1>
+          <p className="text-xl flex flex-col items-center gap-2">
+            <span>
+              It would seem the knowledge of this group surpasseth thy wisdom.
+            </span>
+            <span>
+              If thou desirest to learn more of the group, then join and be one
+              with us.
+            </span>
+          </p>
+        </div>
+      )}
     </div>
   );
 };
