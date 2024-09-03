@@ -20,6 +20,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { URL_BASE } from "../config";
+import useAuth from "../hooks/useAuth";
 import { Comment } from "../types/post";
 import { mergeClassNames, formatRelativeTime } from "../utils";
 import {
@@ -65,6 +67,13 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Post;
 }
 
+interface ReactionsProps {
+  reactions: Reaction[];
+  context: "post" | "comment";
+  postId: string;
+  commentId?: string; // Optional, only needed for comments
+}
+
 const Post: FC<Props> = ({ className, data }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
 
@@ -103,7 +112,11 @@ const Post: FC<Props> = ({ className, data }) => {
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
-          <Reactions reactions={data.reactions} />
+          <Reactions
+            reactions={data.reactions}
+            context="post"
+            postId={data.id}
+          />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
             {data.comments.length}
@@ -222,7 +235,11 @@ const PostPopup: FC<{ closePopup: any; data: Post }> = ({
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
-          <Reactions reactions={data.reactions} />
+          <Reactions
+            reactions={data.reactions}
+            context="post"
+            postId={data.id}
+          />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
             {data.comments.length}
@@ -230,7 +247,7 @@ const PostPopup: FC<{ closePopup: any; data: Post }> = ({
         </div>
         <div className="border-border border-solid border-2"></div>
         {/* Comments */}
-        <CommentSection data={data.comments} />
+        <CommentSection data={data.comments} postId={data.id} />
       </div>
     </div>
   );
@@ -268,17 +285,25 @@ const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo }) => {
   );
 };
 
-const CommentSection: FC<{ data: Comment[] }> = ({ data }) => {
+const CommentSection: FC<{ data: Comment[]; postId: string }> = ({
+  data,
+  postId,
+}) => {
   return (
     <div className="overflow-y-scroll h-full w-full">
       {data.map((cmt) => {
-        return <CommentComp key={cmt._id} data={cmt} />;
+        return <CommentComp key={cmt._id} data={cmt} postId={postId} />;
       })}
     </div>
   );
 };
 
-const CommentComp: FC<{ data: Comment }> = ({ data }) => {
+interface CommentProp {
+  data: Comment;
+  postId: string;
+}
+
+const CommentComp: FC<CommentProp> = ({ data, postId }) => {
   return (
     <div className="flex flex-col justify-start items-start gap-2">
       <div className="flex gap-2">
@@ -309,14 +334,26 @@ const CommentComp: FC<{ data: Comment }> = ({ data }) => {
       {/* Comment actions */}
       <div className="flex gap-4">
         <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
-          <Reactions reactions={data.reactions} />
+          <Reactions
+            reactions={data.reactions}
+            context="comment"
+            postId={postId}
+            commentId={data._id}
+          />
         </button>
       </div>
     </div>
   );
 };
 
-const Reactions: FC<{ reactions: Reaction[] }> = ({ reactions }) => {
+const Reactions: FC<ReactionsProps> = ({
+  reactions,
+  context,
+  postId,
+  commentId,
+}) => {
+  const { auth } = useAuth();
+  const user = auth.user;
   const [reactedReaction, setReactedReaction] = useState<ReactionTypes>(
     ReactionTypes.NULL,
   );
@@ -332,6 +369,12 @@ const Reactions: FC<{ reactions: Reaction[] }> = ({ reactions }) => {
   });
 
   const changeReaction = (to: ReactionTypes) => {
+    let endpoint = "";
+    if (context === "post") {
+      endpoint = `${URL_BASE}/posts/${postId}/reactions`;
+    } else if (context === "comment") {
+      endpoint = `${URL_BASE}/posts/${postId}/comment/${commentId}/reactions`;
+    }
     if (to === reactedReaction) {
       setReactionCounts((prev) => ({
         ...prev,
@@ -443,8 +486,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-        fill: color,
-      } as CSSProperties)
+      fill: color,
+    } as CSSProperties)
     : {};
 
   return (
