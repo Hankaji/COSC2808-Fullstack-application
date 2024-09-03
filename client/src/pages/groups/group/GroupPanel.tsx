@@ -54,6 +54,7 @@ const GroupPanel = () => {
 
   const fetchPosts = async () => {
     try {
+      setPosts(undefined);
       const endpoint = `${URL_BASE}/posts/group/${groupData.id}`;
       const res = await fetch(endpoint, {
         method: 'GET',
@@ -91,7 +92,11 @@ const GroupPanel = () => {
       />
       {canView() ? (
         <>
-          <PostCreationPanel />
+          <PostCreationPanel
+            onPostUpload={() => {
+              fetchPosts();
+            }}
+          />
           {posts ? (
             <PostsView posts={posts} />
           ) : (
