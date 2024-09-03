@@ -9,21 +9,34 @@ interface Props {
 type Tab = {
   name: string;
   element: ReactNode;
+  condition?: () => boolean;
 };
 
 const Tabs: FC<Props> = ({ tabs, defaultTab = 0 }) => {
-  const [selected, setSelected] = useState<number>(defaultTab);
+  const filteredTabs = tabs.filter((tab) => !tab.condition || tab.condition());
+
+  const getInitialTab = (): number => {
+    if (filteredTabs.length === 0) return -1; // If no tabs are available
+    const validDefault = filteredTabs[defaultTab];
+    return validDefault ? defaultTab : 0;
+  };
+
+  const [selected, setSelected] = useState<number>(getInitialTab);
+
+  if (filteredTabs.length === 0) return null; // If no tabs are available, render nothing
 
   return (
     <>
       <div className="flex w-full justify-center [&>*]:flex-grow">
-        {tabs.map((tab, idx) => {
+        {filteredTabs.map((tab, idx) => {
           return (
             <button
               key={idx}
               className={mergeClassNames(
-                'text-center py-4 px-8 hover:bg-secondary',
-                selected == idx && 'border-b-border border-b-2',
+                'text-center border-b-2 py-4 px-8 text-lg hover:bg-secondary transition-all',
+                selected !== idx
+                  ? 'border-b-transparent'
+                  : 'border-b-primary text-primary font-bold truncate',
               )}
               onClick={(e) => {
                 e.stopPropagation();
@@ -35,7 +48,7 @@ const Tabs: FC<Props> = ({ tabs, defaultTab = 0 }) => {
           );
         })}
       </div>
-      {tabs[selected].element}
+      {filteredTabs[selected]?.element}
     </>
   );
 };

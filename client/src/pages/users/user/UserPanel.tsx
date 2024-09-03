@@ -1,30 +1,34 @@
 import { BadgeCheck, CircleSlash } from 'lucide-react';
 import { FC, ReactNode, useEffect, useState } from 'react';
 import { useLoaderData } from 'react-router';
-import Post, { Author, AuthorPfp } from '../../../components/Post';
+import { Posts } from '../../../types/post';
 import PostsView from '../../../components/PostsView';
 import Tabs, { Tab } from '../../../components/Tabs';
 import { User } from '../../../types/user';
 import { mergeClassNames } from '../../../utils';
 
-const mockData: Post[] = [
+const mockData: Posts[] = [
   {
-    id: '1',
-    author: {
-      avatar:
+    _id: '1',
+    user: {
+      profileImage:
         'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
       username: 'UngaBunga',
       displayName: 'Anonymous',
+      id: '',
     },
     content: 'Check out my new artwork',
     images: [
       'https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small',
-      'https://preview.redd.it/i3-finally-satisfied-with-setup-v0-5fouwyfh6nkd1.png?width=1080&crop=smart&auto=webp&s=b83b79be87bc34ddf1936d057d9efd58bfad8a91',
-      'https://i.redd.it/dklk2v9wktkd1.png',
     ],
     reactions: [],
     comments: [],
-    editHistories: [],
+    editHistory: [],
+    group_id: null,
+    visibility: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    __v: 0,
   },
 ];
 
