@@ -9,11 +9,11 @@ const mockData: Posts[] = [
   {
     _id: '1',
     user: {
-      virtualProfileImage: 'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
+      profileImage:
+        'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
       username: 'UngaBunga',
       displayName: 'Anonymous',
-      _id: '',
-      id: ''
+      id: '',
     },
     content: 'Check out my new artwork',
     images: [
@@ -26,7 +26,7 @@ const mockData: Posts[] = [
     visibility: '',
     createdAt: new Date(),
     updatedAt: new Date(),
-    __v: 0
+    __v: 0,
   },
 ];
 

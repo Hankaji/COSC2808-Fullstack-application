@@ -18,12 +18,10 @@ import {
   HTMLAttributes,
   useState,
   useRef,
-  useContext
+  useContext,
+  Suspense,
 } from 'react';
-import { 
-  useNavigate, 
-  useLocation 
-} from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Posts, Comment, User, Reaction, ReactionTypes } from '../types/post';
 import { mergeClassNames } from '../utils';
 import {
@@ -42,7 +40,9 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
   const [isEditPopup, setIsEditPopup] = useState<boolean>(false); // State for edit modal
   const [postContent, setPostContent] = useState<string>(data.content); // State for post content
-  const [postVisibility, setPostVisibility] = useState<'Public' | 'Friend'>(data.visibility as 'Public' | 'Friend'); // State for post visibility
+  const [postVisibility, setPostVisibility] = useState<'Public' | 'Friend'>(
+    data.visibility as 'Public' | 'Friend',
+  ); // State for post visibility
   const openModalButtonRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button
   const openModalButtonEditRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button for editing
   const toastContext = useContext(ToastContext);
@@ -156,13 +156,20 @@ const PostComponent: FC<Props> = ({ className, data }) => {
             <DropDownMenu
               content={
                 <DropDownMenuContent className="-translate-x-1/2">
-                  <DropDownItem onClick={() => {
-                    openModalButtonEditRef.current?.click(); // Trigger the "Open Modal" button click for editing
-                  }}>Edit post</DropDownItem>
-                  <DropDownItem onClick={() => {
-                    openModalButtonRef.current?.click(); // Trigger the "Open Modal" button click
-                  }}
-                  >Delete</DropDownItem>
+                  <DropDownItem
+                    onClick={() => {
+                      openModalButtonEditRef.current?.click(); // Trigger the "Open Modal" button click for editing
+                    }}
+                  >
+                    Edit post
+                  </DropDownItem>
+                  <DropDownItem
+                    onClick={() => {
+                      openModalButtonRef.current?.click(); // Trigger the "Open Modal" button click
+                    }}
+                  >
+                    Delete
+                  </DropDownItem>
                   <DropDownItem>History</DropDownItem>
                 </DropDownMenuContent>
               }
@@ -197,7 +204,9 @@ const PostComponent: FC<Props> = ({ className, data }) => {
           // Style for modal
           <div className="fixed inset-0 flex items-center justify-center bg-transparent">
             <div className="p-4 bg-white rounded shadow-lg">
-              <h2 className="text-black">Are you sure you want to delete this post?</h2>
+              <h2 className="text-black">
+                Are you sure you want to delete this post?
+              </h2>
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => {
@@ -238,9 +247,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         backdropBlur={5}
         modelRender={
           // Style for modal
-          <div
-            className="fixed inset-0 flex items-center justify-center bg-transparent"
-          >
+          <div className="fixed inset-0 flex items-center justify-center bg-transparent">
             <div className="p-4 bg-white rounded shadow-lg">
               <h2 className="text-black">Edit Post</h2>
               <textarea
@@ -253,10 +260,14 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                 className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent click propagation
-                  setPostVisibility(postVisibility === 'Public' ? 'Friend' : 'Public');
+                  setPostVisibility(
+                    postVisibility === 'Public' ? 'Friend' : 'Public',
+                  );
                 }}
               >
-                {postVisibility === 'Public' ? 'Change to Friend' : 'Change to Public'}
+                {postVisibility === 'Public'
+                  ? 'Change to Friend'
+                  : 'Change to Public'}
               </button>
               <div className="flex justify-end mt-4">
                 <button
@@ -419,30 +430,47 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
 interface AuthorPfpProps {
   data: User;
   extraInfo?: string;
+  currentUser?: boolean;
 }
 
-const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo }) => {
+const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo, currentUser }) => {
   return (
     <div className="flex gap-2">
       <img
         className="rounded-full flex-[0_0_auto] aspect-square bg-gray-500 size-12"
         src={
-          data.virtualProfileImage
-            ? data.virtualProfileImage
+          data.profileImage
+            ? data.profileImage
             : 'https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2'
         }
         alt="User avatar"
       />
-      <div className="flex flex-col justify-center items-start">
-        <h1 className="text-xl font-semibold">
-          {data.displayName}
-          {extraInfo && (
-            <span className="text-muted-foreground">extraInfo</span>
-          )}
-        </h1>
-        <p className="text-sm text-muted-foreground font-semibold">
-          @{data.username}
-        </p>
+      {!currentUser ? (
+        <div className="flex flex-col justify-center items-start">
+          <h1 className="text-xl font-semibold">
+            {data.displayName}
+            {extraInfo && (
+              <span className="text-muted-foreground">extraInfo</span>
+            )}
+          </h1>
+          <p className="text-sm text-muted-foreground font-semibold">
+            @{data.username}
+          </p>
+        </div>
+      ) : (
+        <p className="self-center text-lg font-bold">Current User</p>
+      )}
+    </div>
+  );
+};
+
+const FallBackPfp = () => {
+  return (
+    <div className="flex gap-2 w-full">
+      <div className="rounded-full flex-[0_0_auto] aspect-square bg-gray-500 animate-pulse size-12"></div>
+      <div className="flex flex-col w-full gap-2 justify-center items-start">
+        <div className="w-full h-4 bg-gray-500 animate-pulse rounded-full"></div>
+        <div className="w-1/2 h-4 bg-gray-500 animate-pulse rounded-full"></div>
       </div>
     </div>
   );
@@ -582,8 +610,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-        fill: color,
-      } as CSSProperties)
+      fill: color,
+    } as CSSProperties)
     : {};
 
   return (
@@ -607,7 +635,7 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   );
 };
 
-export { CommentSection, PostImages, AuthorPfp };
+export { CommentSection, PostImages, AuthorPfp, FallBackPfp };
 export type { Posts, User, Reaction, CommentComp as Comment };
 const Post = PostComponent;
 export default Post;
