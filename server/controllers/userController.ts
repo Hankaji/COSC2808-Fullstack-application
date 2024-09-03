@@ -2,11 +2,7 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import User from "../models/user";
 import Group from "../models/group";
-import {
-	FriendRequest,
-	GroupRequest,
-	GroupCreationRequest,
-} from "../models/request";
+import { FriendRequest, GroupRequest, GroupCreationRequest } from "../models/request";
 
 // Get users
 export const getUsers = async (req: Request, res: Response) => {
@@ -54,7 +50,7 @@ export const getUsers = async (req: Request, res: Response) => {
 			email: user.email,
 			// @ts-ignore
 			virtualProfileImage: user.virtualProfileImage,
-			status: user.status
+			status: user.status,
 		}));
 
 		// Return the users
@@ -77,9 +73,7 @@ export const getUserById = async (req: Request, res: Response) => {
 		}
 
 		// Find the user by ID
-		const user = await User.findById(id)
-			.select("_id username displayName email profileImage")
-			.lean();
+		const user = await User.findById(id).select("_id username displayName email profileImage").lean();
 
 		// Check if the user exists
 		if (!user) {
@@ -93,9 +87,7 @@ export const getUserById = async (req: Request, res: Response) => {
 			displayName: user.displayName,
 			email: user.email,
 			virtualProfileImage:
-				user.profileImage &&
-				user.profileImage.contentType &&
-				user.profileImage.data
+				user.profileImage && user.profileImage.contentType && user.profileImage.data
 					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
 					: undefined,
 		};
@@ -120,9 +112,7 @@ export const getUserFriendsById = async (req: Request, res: Response) => {
 		}
 
 		// Find the user by ID and populate the friends array
-		const user = await User.findById(id)
-			.populate("friends", "_id username displayName email profileImage")
-			.lean();
+		const user = await User.findById(id).populate("friends", "_id username displayName email profileImage").lean();
 
 		// Check if the user exists
 		if (!user) {
@@ -136,9 +126,7 @@ export const getUserFriendsById = async (req: Request, res: Response) => {
 			displayName: friend.displayName,
 			email: friend.email,
 			virtualProfileImage:
-				friend.profileImage &&
-				friend.profileImage.contentType &&
-				friend.profileImage.data
+				friend.profileImage && friend.profileImage.contentType && friend.profileImage.data
 					? `data:${friend.profileImage.contentType};base64,${friend.profileImage.data.toString("base64")}`
 					: undefined,
 		}));
@@ -152,10 +140,7 @@ export const getUserFriendsById = async (req: Request, res: Response) => {
 };
 
 // Get a user's friends recommendations by ID
-export const getFriendRecommendationsById = async (
-	req: Request,
-	res: Response,
-) => {
+export const getFriendRecommendationsById = async (req: Request, res: Response) => {
 	try {
 		const userId = req.params.id;
 
@@ -173,9 +158,7 @@ export const getFriendRecommendationsById = async (
 		}
 
 		// Find users that the current user has sent friend requests to
-		const sentRequests = await FriendRequest.find({ sender_id: userId })
-			.select("receiver_id")
-			.exec();
+		const sentRequests = await FriendRequest.find({ sender_id: userId }).select("receiver_id").exec();
 		const sentRequestIds = sentRequests.map((request) => request.receiver_id);
 
 		// Find users who are not friends with the current user and haven't received a friend request from them
@@ -189,9 +172,7 @@ export const getFriendRecommendationsById = async (
 			.exec();
 
 		// Shuffle the array and select 10 random users
-		recommendations = recommendations
-			.sort(() => 0.5 - Math.random())
-			.slice(0, 10);
+		recommendations = recommendations.sort(() => 0.5 - Math.random()).slice(0, 10);
 
 		// Return the list of recommended friends, including virtualProfileImage
 		return res.status(200).json(
@@ -202,7 +183,7 @@ export const getFriendRecommendationsById = async (
 				email: user.email,
 				// @ts-ignore
 				virtualProfileImage: user.virtualProfileImage,
-			})),
+			}))
 		);
 	} catch (error) {
 		console.error("Error retrieving friend recommendations:", error);
@@ -224,21 +205,31 @@ export const getUserGroupsById = async (req: Request, res: Response) => {
 		const groups = await Group.find({
 			$or: [{ members: userId }, { admins: userId }],
 		})
-			.select("name description visibility admins")
+			.select("name description visibility admins groupImage coverImage")
 			.exec();
 
-		// Format the response to include virtual fields
-		const formattedGroups = groups.map((group) => ({
-			id: group._id,
-			name: group.name,
-			description: group.description,
-			visibility: group.visibility,
-			admins: group.admins,
-			// @ts-ignore
-			virtualGroupImage: group.virtualGroupImage,
-			// @ts-ignore
-			virtualCoverImage: group.virtualCoverImage,
-		}));
+		// Format the response to include manually processed virtual fields
+		const formattedGroups = groups.map((group) => {
+			const virtualGroupImage =
+				group.groupImage && group.groupImage.data
+					? `data:${group.groupImage.contentType};base64,${group.groupImage.data.toString("base64")}`
+					: null;
+
+			const virtualCoverImage =
+				group.coverImage && group.coverImage.data
+					? `data:${group.coverImage.contentType};base64,${group.coverImage.data.toString("base64")}`
+					: null;
+
+			return {
+				id: group._id,
+				name: group.name,
+				description: group.description,
+				visibility: group.visibility,
+				admins: group.admins,
+				virtualGroupImage,
+				virtualCoverImage,
+			};
+		});
 
 		// Return the list of groups
 		return res.status(200).json(formattedGroups);
@@ -275,10 +266,7 @@ export const getUserNotificationsById = async (req: Request, res: Response) => {
 };
 
 // Get user's sent friend requests by ID
-export const getUserSentFriendRequestsById = async (
-	req: Request,
-	res: Response,
-) => {
+export const getUserSentFriendRequestsById = async (req: Request, res: Response) => {
 	try {
 		const userId = req.params.id;
 		const { status } = req.query;
@@ -325,10 +313,7 @@ export const readNotification = async (req: Request, res: Response) => {
 		}
 
 		// Check if the notification index is valid
-		if (
-			notificationIndex < 0 ||
-			notificationIndex >= user.notifications.length
-		) {
+		if (notificationIndex < 0 || notificationIndex >= user.notifications.length) {
 			return res.status(400).json({ message: "Invalid notification index" });
 		}
 
@@ -337,9 +322,7 @@ export const readNotification = async (req: Request, res: Response) => {
 		await user.save();
 
 		// Return success response
-		return res
-			.status(200)
-			.json({ message: "Notification marked as read successfully" });
+		return res.status(200).json({ message: "Notification marked as read successfully" });
 	} catch (error) {
 		console.error("Error marking notification as read:", error);
 		return res.status(500).json({ message: "Internal server error" });
@@ -354,10 +337,7 @@ export const unfriendById = async (req: Request, res: Response) => {
 		const friendId = req.params.id;
 
 		// Validate both user IDs
-		if (
-			!mongoose.Types.ObjectId.isValid(userId!) ||
-			!mongoose.Types.ObjectId.isValid(friendId)
-		) {
+		if (!mongoose.Types.ObjectId.isValid(userId!) || !mongoose.Types.ObjectId.isValid(friendId)) {
 			return res.status(400).json({ message: "Invalid user ID" });
 		}
 
@@ -368,13 +348,9 @@ export const unfriendById = async (req: Request, res: Response) => {
 		}
 
 		// Check if the friend is in the current user's friend list
-		const friendIndex = user.friends.indexOf(
-			new mongoose.Types.ObjectId(friendId),
-		);
+		const friendIndex = user.friends.indexOf(new mongoose.Types.ObjectId(friendId));
 		if (friendIndex === -1) {
-			return res
-				.status(404)
-				.json({ message: "Friend not found in your friend list" });
+			return res.status(404).json({ message: "Friend not found in your friend list" });
 		}
 
 		// Remove the friend from the current user's friend list
@@ -421,9 +397,7 @@ export const suspendUser = async (req: Request, res: Response) => {
 		await user.save();
 
 		// Return success response
-		return res
-			.status(200)
-			.json({ message: "User account suspended successfully" });
+		return res.status(200).json({ message: "User account suspended successfully" });
 	} catch (error) {
 		console.error("Error suspending user account:", error);
 		return res.status(500).json({ message: "Internal server error" });
@@ -449,9 +423,7 @@ export const resumeUser = async (req: Request, res: Response) => {
 
 		// Check if the user is already active
 		if (user.status === "Active") {
-			return res
-				.status(400)
-				.json({ message: "User account is already active" });
+			return res.status(400).json({ message: "User account is already active" });
 		}
 
 		// Reactivate the user account
@@ -459,9 +431,7 @@ export const resumeUser = async (req: Request, res: Response) => {
 		await user.save();
 
 		// Return success response
-		return res
-			.status(200)
-			.json({ message: "User account reactivated successfully" });
+		return res.status(200).json({ message: "User account reactivated successfully" });
 	} catch (error) {
 		console.error("Error reactivating user account:", error);
 		return res.status(500).json({ message: "Internal server error" });
