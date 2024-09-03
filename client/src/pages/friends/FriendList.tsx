@@ -69,9 +69,6 @@ const FriendList: FC = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-100px)]">
-      <h2 className="font-bold text-3xl pb-3 border-b-2 border-border mb-2">
-        All Friends
-      </h2>
       <div className="flex-grow overflow-y-auto mt-6 pr-3">
         <div className="space-y-6">
           {list.map((acc) => (

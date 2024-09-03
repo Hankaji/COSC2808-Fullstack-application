@@ -54,6 +54,7 @@ export const getUsers = async (req: Request, res: Response) => {
 			email: user.email,
 			// @ts-ignore
 			virtualProfileImage: user.virtualProfileImage,
+			status: user.status
 		}));
 
 		// Return the users

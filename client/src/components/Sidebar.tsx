@@ -38,14 +38,14 @@ const internalLinkItems: SidebarInternalLinkItem[] = [
     path: '/',
   },
   {
-    Logo: Bell,
-    name: 'Notifications',
-    path: '/notifications',
-  },
-  {
     Logo: Search,
     name: 'Search',
     path: '/search',
+  },
+  {
+    Logo: Bell,
+    name: 'Notifications',
+    path: '/notifications',
   },
   {
     Logo: User,

@@ -1,5 +1,5 @@
 import { Globe, Lock } from 'lucide-react';
-import React, { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Tabs, { Tab } from '../../components/Tabs';
 import { URL_BASE } from '../../config';
@@ -41,7 +41,7 @@ const JoinedGroupList = () => {
         });
         setJoinedGroups(joined);
         setModeratingGroups(moderating);
-      } catch (error) { }
+      } catch (error) {}
     };
 
     getData();
@@ -93,12 +93,12 @@ const CompactedGroupComp: FC<{ data: CompactedGroup }> = ({ data }) => {
             className="object-cover"
             sizes="64"
             src={data.virtualGroupImage}
-            alt="Group image"
+            alt="Group"
           />
         )}
       </div>
       <p className="text-lg font-bold">{data.name}</p>
-      {data.visibility == 'Public' ? <Globe /> : <Lock />}
+      {data.visibility === 'Public' ? <Globe /> : <Lock />}
     </Link>
   );
 };

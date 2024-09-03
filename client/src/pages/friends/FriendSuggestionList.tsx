@@ -1,12 +1,12 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import AccInfoWithAction from './AccInfoWithAction';
-import { Account } from '../types';
-import { URL_BASE } from '../config';
-import useAuth from '../hooks/useAuth';
-import useToast from '../hooks/useToast';
-import { convertFetchDataToAccount } from '../types/account';
+import AccInfoWithAction from '../../components/AccInfoWithAction';
+import { Account } from '../../types';
+import { URL_BASE } from '../../config';
+import useAuth from '../../hooks/useAuth';
+import useToast from '../../hooks/useToast';
+import { convertFetchDataToAccount } from '../../types/account';
 
-const SuggestionsAccList: FC = () => {
+const FriendSuggestionList: FC = () => {
   const { auth } = useAuth();
   const toast = useToast();
 
@@ -104,15 +104,12 @@ const SuggestionsAccList: FC = () => {
   }, [fetchRequestSentList]);
 
   return (
-    <div className="border-2 border-border rounded-xl p-4">
-      <h3 className="text-xl font-bold pb-3 border-b-2 border-border">
-        Friend Suggestions
-      </h3>
-      <div className="h-[300px] overflow-y-auto space-y-4 py-4 pr-2">
-        {list}
+    <div className="flex flex-col h-[calc(100vh-100px)]">
+      <div className="flex-grow overflow-y-auto mt-6 pr-3">
+        <div className="space-y-6">{list}</div>
       </div>
     </div>
   );
 };
 
-export default SuggestionsAccList;
+export default FriendSuggestionList;

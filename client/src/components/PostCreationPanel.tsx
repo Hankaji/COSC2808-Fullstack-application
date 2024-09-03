@@ -23,7 +23,10 @@ const PostCreationPanel = () => {
     }
   };
 
-  const handleRemoveImage = (index: number, e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleRemoveImage = (
+    index: number,
+    e: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     e.preventDefault(); // Prevent the default button action
     e.stopPropagation(); // Stop the event from bubbling up to the form
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
@@ -37,7 +40,7 @@ const PostCreationPanel = () => {
       toast?.show({
         title: 'Empty Post',
         description: 'Please add some content or images before posting.',
-        type: 'warning'
+        type: 'warning',
       });
       return;
     }
@@ -58,7 +61,7 @@ const PostCreationPanel = () => {
         const response = await fetch('http://localhost:8080/posts', {
           method: 'POST',
           body: postData,
-          credentials: 'include'
+          credentials: 'include',
         });
 
         if (!response.ok) {
@@ -71,7 +74,7 @@ const PostCreationPanel = () => {
       {
         loading: {
           title: 'Creating Post',
-          description: 'Please wait while we create your post...'
+          description: 'Please wait while we create your post...',
         },
         success: (data) => {
           setContent('');
@@ -79,19 +82,22 @@ const PostCreationPanel = () => {
           setIsPosting(false);
           return {
             title: 'Post Created',
-            description: 'Your post has been created successfully!'
+            description: 'Your post has been created successfully!',
           };
         },
         error: (error) => ({
           title: 'Post Creation Failed',
-          description: error.message || 'An unknown error occurred'
-        })
-      }
+          description: error.message || 'An unknown error occurred',
+        }),
+      },
     );
   };
 
   return (
-    <form onSubmit={handlePost} className="flex flex-col justify-start items-start border-border border-2 border-solid rounded-lg p-4 gap-4 w-full bg-card">
+    <form
+      onSubmit={handlePost}
+      className="flex flex-col justify-start items-start border-border border-2 border-solid rounded-lg p-4 gap-4 w-full bg-card"
+    >
       <div className="flex gap-4 w-full">
         {/* TODO fix image */}
         <img
@@ -119,8 +125,8 @@ const PostCreationPanel = () => {
             <ChevronDown size={16} />
           </button>
         </div>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="ml-auto py-1 px-4 bg-primary rounded-lg"
           disabled={isPosting}
         >

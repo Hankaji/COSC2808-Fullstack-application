@@ -1,21 +1,29 @@
 import { FC } from 'react';
+import Tabs, { Tab } from '../../components/Tabs';
 import Layout from '../../components/Layout';
-import SearchAndAddFriend from '../../components/SearchAndAddFriend';
 import FriendList from './FriendList';
 import FriendRequestList from './FriendRequestList';
+import FriendSuggestionList from './FriendSuggestionList';
+
+const tabs: Tab[] = [
+  {
+    name: 'My friends',
+    element: <FriendList />,
+  },
+  {
+    name: 'Requests',
+    element: <FriendRequestList />,
+  },
+  {
+    name: 'Suggestions',
+    element: <FriendSuggestionList />,
+  },
+];
 
 const FriendsPage: FC = () => {
   return (
-    <Layout
-      stickyRightSideCmp={
-        <div className="space-y-4">
-          <SearchAndAddFriend />
-          <FriendRequestList />
-        </div>
-      }
-      mainClassName="overflow-y-hidden"
-    >
-      <FriendList />
+    <Layout mainClassName="overflow-y-hidden">
+      <Tabs tabs={tabs} />
     </Layout>
   );
 };
