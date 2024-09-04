@@ -2,16 +2,15 @@ import {
   FC,
   FormEvent,
   InputHTMLAttributes,
-  useContext,
   useRef,
   useState,
 } from 'react';
 import { Input } from '../../components/ui/Input';
 import { mergeClassNames } from '../../utils';
 import { URL_BASE } from '../../config';
-import { redirect, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import useAuth from '../../hooks/useAuth';
-import AuthContext from '../../context/AuthProvider';
+import useToast from '../../hooks/useToast'
 import { UserSession } from '../../types/userSession';
 import { Link } from 'react-router-dom';
 import ImageUpload from '../../components/ImageUpload';
@@ -26,7 +25,8 @@ interface loginProps {
 }
 
 const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
-  const { auth, setAuth } = useAuth();
+  const { setAuth } = useAuth();
+  const toast = useToast();
 
   const [state, setState] = useState<formState>(initialState);
 
@@ -165,7 +165,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
       return;
     }
     if (state === formState.SIGNUP) {
-      const endpoint = `http://localhost:8080/register`;
+      const endpoint = `${URL_BASE}/register`;
 
       // Append the profile picture file
       const profilePictureFile = payload.profilePicture as File;
@@ -181,7 +181,6 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
           });
 
           const data = await res.json();
-          console.log(data);
 
           // Check status
           if (res.ok) {
@@ -190,14 +189,25 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
             setErrors([data.message]);
           }
         } catch (e) {
-          console.log(e);
+          throw new Error('Failed to register');
         }
       };
 
-      register();
+      toast.showAsync(register, {
+        loading: {
+          title: 'Loading...',
+        },
+        success: (_) => ({
+          title: `Registered successfully`,
+        }),
+        error: (_) => ({
+          title: 'Failed to register',
+        }),
+      });
     }
+
     if (state === formState.LOGIN) {
-      const endpoint = `http://localhost:8080/login`;
+      const endpoint = `${URL_BASE}/login`;
       const body = {
         username: payload.username as string,
         password: payload.password as string,
@@ -216,7 +226,6 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 
           // Get data
           const data = await res.json();
-          console.log(data);
 
           // Check response status
           if (res.ok) {
@@ -225,17 +234,26 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               user: data as UserSession,
             });
 
-            // console.log(first)
             return navigate('/');
           } else if (res.status >= 400 && res.status < 500) {
             setErrors([data.message]);
           }
         } catch (e) {
-          console.log(e);
+          throw new Error("Failed to login")
         }
       };
 
-      login();
+      toast.showAsync(login, {
+        loading: {
+          title: 'Loading...',
+        },
+        success: (_) => ({
+          title: `Signed in successfully`,
+        }),
+        error: (_) => ({
+          title: 'Failed to login',
+        }),
+      });
     }
   };
 
@@ -265,7 +283,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
           <div className="flex flex-col gap-1">
             <p className="text-center">Welcome</p>
             <h1 className="text-5xl font-bold text-center">
-              {state == formState.LOGIN ? 'Sign in now' : 'Sign up now'}
+              {state === formState.LOGIN ? 'Sign in now' : 'Sign up now'}
             </h1>
           </div>
           {/* Input prompt */}
