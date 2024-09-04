@@ -29,17 +29,17 @@ export interface User {
   profileImage?: string;
 }
 
-export interface Reaction {
+export type Reaction = {
   author: User;
-  type: ReactionTypes;
-}
+  type: string;
+};
 
 export enum ReactionTypes {
-  NULL,
-  LIKE,
-  LOVE,
-  HAHA,
-  ANGRY,
+  LIKE = "LIKE",
+  LOVE = "LOVE",
+  HAHA = "HAHA",
+  ANGRY = "ANGRY",
+  NULL = "NULL",
 }
 
 export const parseBasicUser = (data: any) => {

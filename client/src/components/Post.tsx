@@ -23,7 +23,14 @@ import {
   Suspense,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Posts, Comment, User, Reaction, ReactionTypes } from "../types/post";
+import {
+  Posts,
+  Comment,
+  User,
+  Reaction,
+  ReactionTypes,
+  parseBasicUser,
+} from "../types/post";
 import { formatRelativeTime, mergeClassNames } from "../utils";
 import {
   DropDownItem,
@@ -151,7 +158,8 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       });
     }
   };
-
+  console.log("Post: ");
+  console.log(data);
   return (
     <>
       <div
@@ -397,6 +405,8 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
   closePopup,
   data,
 }) => {
+  console.log("Popup: ");
+  console.log(data);
   return (
     <div
       onClick={() => {
@@ -513,6 +523,8 @@ interface CommentProp {
 }
 
 const CommentComp: FC<CommentProp> = ({ data, postId }) => {
+  console.log("CommentComp: ");
+  console.log(parseBasicUser(data.author_id));
   return (
     <div className="flex flex-col justify-start items-start gap-2">
       <div className="flex gap-2">
@@ -520,7 +532,7 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
         <img
           className="rounded-full bg-gray-500 size-12"
           src={
-            data.author_id.profileImage
+            parseBasicUser(data.author_id).profileImage
               ? data.author_id.profileImage
               : "https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2"
           }
@@ -577,12 +589,12 @@ const Reactions: FC<ReactionsProps> = ({
     [ReactionTypes.NULL]: 0,
   });
 
+  let endpoint = "";
   const changeReaction = (to: ReactionTypes) => {
-    let endpoint = "";
     if (context === "post") {
-      endpoint = `${URL_BASE}/posts/${postId}/reactions`;
+      endpoint = `${URL_BASE}/posts/${postId}/reaction`;
     } else if (context === "comment") {
-      endpoint = `${URL_BASE}/posts/${postId}/comment/${commentId}/reactions`;
+      endpoint = `${URL_BASE}/posts/${postId}/comment/${commentId}/reaction`;
     }
     if (to === reactedReaction) {
       setReactionCounts((prev) => ({
@@ -590,6 +602,7 @@ const Reactions: FC<ReactionsProps> = ({
         [to]: prev[to] - 1,
       }));
       setReactedReaction(ReactionTypes.NULL);
+      deleteReaction();
     } else {
       if (reactedReaction !== ReactionTypes.NULL) {
         setReactionCounts((prev) => ({
@@ -602,8 +615,56 @@ const Reactions: FC<ReactionsProps> = ({
         [to]: prev[to] + 1,
       }));
       setReactedReaction(to);
+      addReaction(to);
     }
   };
+  // handle adding + editing reaction
+  const addReaction = async (reactionType: ReactionTypes) => {
+    try {
+      console.log(endpoint);
+      const formattedType =
+        reactionType.charAt(0).toUpperCase() +
+        reactionType.slice(1).toLowerCase();
+      console.log(formattedType);
+      const response = await fetch(`${endpoint}`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: formattedType,
+          // Add any other necessary data here
+        }),
+      });
+
+      if (response.ok) {
+        console.log("Reacted successfully");
+      } else {
+        console.error("Failed to react");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteReaction = async () => {
+    try {
+      const response = await fetch(`${endpoint}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        console.log("Deleted successfully");
+      } else {
+        console.error("Failed to react");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     const newCounts = {
       [ReactionTypes.LIKE]: 0,
@@ -614,7 +675,7 @@ const Reactions: FC<ReactionsProps> = ({
     };
 
     reactions.forEach((reaction) => {
-      const reactionType = reaction.type as ReactionTypes;
+      const reactionType = reaction.type.toUpperCase() as ReactionTypes;
       if (reactionType in newCounts) {
         newCounts[reactionType]++;
       }
