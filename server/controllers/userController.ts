@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import User from "../models/user";
 import Group from "../models/group";
-import { FriendRequest } from "../models/request";
+import { FriendRequest, GroupRequest, GroupCreationRequest } from "../models/request";
 
 // Get users
 export const getUsers = async (req: Request, res: Response) => {
@@ -39,16 +39,16 @@ export const getUsers = async (req: Request, res: Response) => {
     // Execute the query
     const users = await User.find(query).exec();
 
-    // Format the response
-    const formattedUsers = users.map((user) => ({
-      _id: user._id,
-      username: user.username,
-      displayName: user.displayName,
-      email: user.email,
-      // @ts-ignore
-      virtualProfileImage: user.virtualProfileImage,
-      status: user.status,
-    }));
+		// Format the response
+		const formattedUsers = users.map((user) => ({
+			_id: user._id,
+			username: user.username,
+			displayName: user.displayName,
+			email: user.email,
+			// @ts-ignore
+			virtualProfileImage: user.virtualProfileImage,
+			status: user.status,
+		}));
 
     // Return the users
     return res.status(200).json(formattedUsers);

@@ -1,51 +1,62 @@
-import { Globe, Lock } from "lucide-react";
-import { FC, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import Tabs, { Tab } from "../../components/Tabs";
-import { URL_BASE } from "../../config";
-import useAuth from "../../hooks/useAuth";
-
-type CompactedGroup = {
-  id: string;
-  name: string;
-  decription: string;
-  visibility: "Public" | "Private";
-  admins: string[];
-  virtualGroupImage: string;
-};
+import { Globe, Lock } from 'lucide-react';
+import { FC, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Tabs, { Tab } from '../../components/Tabs';
+import { URL_BASE } from '../../config';
+import useAuth from '../../hooks/useAuth';
+import { Group, GroupVisibility } from '../../types/group';
 
 const JoinedGroupList = () => {
   const { auth } = useAuth();
 
-  const [joinedGrpList, setJoinedGroups] = useState<CompactedGroup[]>([]);
-  const [moderatingGrpList, setModeratingGroups] = useState<CompactedGroup[]>(
-    []
-  );
-
-  const endpoint = `${URL_BASE}/users/${auth.user?.userId}/groups`;
+  const [joinedGrpList, setJoinedGroups] = useState<Group[]>([]);
+  const [moderatingGrpList, setModeratingGroups] = useState<Group[]>([]);
 
   useEffect(() => {
     const getData = async () => {
       try {
+        const endpoint = `${URL_BASE}/users/${auth.user?.userId}/groups`;
         const res = await fetch(endpoint, {
           method: "GET",
           credentials: "include",
         });
 
-        const data = (await res.json()) as CompactedGroup[];
-        const joined = data.filter((grp) => {
-          return !grp.admins.includes(auth.user!.userId);
+        const data: any[] = await res.json();
+        const groups = data.map((grp) => {
+          return {
+            id: grp.id,
+            name: grp.name,
+            description: grp.description,
+            visibility:
+              GroupVisibility[
+              (
+                grp.visibility as string
+              ).toUpperCase() as keyof typeof GroupVisibility
+              ],
+            admins: grp.admins,
+            groupImage: grp.virtualGroupImage,
+          } as Group;
         });
-        const moderating = data.filter((grp) => {
-          return grp.admins.includes(auth.user!.userId);
+
+        const joined = groups.filter((grp) => {
+          return !(grp.admins as unknown as string[]).includes(
+            auth.user!.userId,
+          );
+        });
+        const moderating = groups.filter((grp) => {
+          return (grp.admins as unknown as string[]).includes(
+            auth.user!.userId,
+          );
         });
         setJoinedGroups(joined);
         setModeratingGroups(moderating);
-      } catch (error) {}
+      } catch (error) {
+        console.log(error);
+      }
     };
 
     getData();
-  }, []);
+  }, [auth.user]);
 
   const tabs: Tab[] = [
     {
@@ -65,7 +76,7 @@ const JoinedGroupList = () => {
   );
 };
 
-const GroupsTab: FC<{ groups: CompactedGroup[] }> = ({ groups }) => {
+const GroupsTab: FC<{ groups: Group[] }> = ({ groups }) => {
   return (
     <div className="flex-grow overflow-y-auto mt-6 pr-3">
       <div className="space-y-6">
@@ -81,26 +92,27 @@ const GroupsTab: FC<{ groups: CompactedGroup[] }> = ({ groups }) => {
   );
 };
 
-const CompactedGroupComp: FC<{ data: CompactedGroup }> = ({ data }) => {
+const CompactedGroupComp: FC<{ data: Group }> = ({ data }) => {
   return (
     <Link
       to={`/groups/${data.id}`}
       className="flex gap-4 items-center justify-start hover:bg-secondary/50 rounded-lg py-2 px-4 cursor-pointer transition-colors"
     >
-      <div className="size-16 rounded-full bg-gray-500">
-        {data.virtualGroupImage && (
+      <div className="size-16 overflow-hidden rounded-full bg-gray-500">
+        {data.groupImage && (
           <img
             className="object-cover"
             sizes="64"
-            src={data.virtualGroupImage}
+            src={data.groupImage}
             alt="Group"
           />
         )}
       </div>
       <p className="text-lg font-bold">{data.name}</p>
-      {data.visibility === "Public" ? <Globe /> : <Lock />}
+      {data.visibility === GroupVisibility.PUBLIC ? <Globe /> : <Lock />}
     </Link>
   );
 };
 
+export { CompactedGroupComp };
 export default JoinedGroupList;

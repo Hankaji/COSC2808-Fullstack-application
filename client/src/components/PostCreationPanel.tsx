@@ -1,9 +1,13 @@
-import { FormEvent, useState, useContext } from 'react';
+import { FormEvent, useState, useContext, FC } from 'react';
 import { useParams } from 'react-router-dom';
 import { Globe, ChevronDown, Image, X } from 'lucide-react';
 import { ToastContext } from '../context/ToastProvider';
 
-const PostCreationPanel = () => {
+interface Props {
+  onPostUpload?: () => void;
+}
+
+const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
   const { groupId } = useParams<{ groupId: string }>();
   const [visibility, setVisibility] = useState('Public');
   const [images, setImages] = useState<File[]>([]);
@@ -67,6 +71,12 @@ const PostCreationPanel = () => {
         if (!response.ok) {
           const errorData = await response.text();
           throw new Error(errorData);
+        } else {
+          // Run these on post uploaded succesfully
+          setContent('');
+          setImages([]);
+          setIsPosting(false);
+          onPostUpload && onPostUpload();
         }
 
         return await response.json();
@@ -76,10 +86,7 @@ const PostCreationPanel = () => {
           title: 'Creating Post',
           description: 'Please wait while we create your post...',
         },
-        success: (data) => {
-          setContent('');
-          setImages([]);
-          setIsPosting(false);
+        success: (_) => {
           return {
             title: 'Post Created',
             description: 'Your post has been created successfully!',

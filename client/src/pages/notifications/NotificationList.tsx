@@ -23,7 +23,6 @@ const NotificationList: FC = () => {
         credentials: "include",
       });
       const result = await res.json();
-      console.log("result :", result);
       setNotificationList(result);
     };
 
@@ -77,31 +76,31 @@ const NotificationItem: FC<NotificationItemProps> = ({
 }) => {
   const Icon = (() => {
     switch (type) {
-      case "User":
+      case 'User':
         return User;
-      case "Comment":
+      case 'Comment':
         return SquarePen;
-      case "Group":
+      case 'Group':
         return Users;
-      case "Post":
+      case 'Post':
         return MessageCircle;
-      case "Reaction":
+      case 'Reaction':
         return SmilePlus;
     }
   })();
 
   const iconClassName = (() => {
     switch (type) {
-      case "User":
-        return "stroke-green-300";
-      case "Comment":
-        return "stroke-blue-300";
-      case "Group":
-        return "stroke-yellow-300";
-      case "Post":
-        return "stroke-orange-300";
-      case "Reaction":
-        return "stroke-rose-300";
+      case 'User':
+        return 'stroke-green-300';
+      case 'Comment':
+        return 'stroke-blue-300';
+      case 'Group':
+        return 'stroke-yellow-300';
+      case 'Post':
+        return 'stroke-orange-300';
+      case 'Reaction':
+        return 'stroke-rose-300';
     }
   })();
 

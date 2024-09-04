@@ -5,6 +5,8 @@ import Tabs, { Tab } from '../../components/Tabs';
 import { User } from '../../types/post';
 import { URL_BASE } from '../../config';
 import { mergeClassNames } from '../../utils';
+import { Group, parseGroup } from '../../types/group';
+import { CompactedGroupComp } from '../groups/JoinedGroupList';
 
 const SearchPanel = () => {
   return (
@@ -16,6 +18,7 @@ const SearchPanel = () => {
 
 const TabSections = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
 
   const fetchAllUsers = async () => {
     const endpoint = `${URL_BASE}/users`;
@@ -28,22 +31,32 @@ const TabSections = () => {
     console.log(data);
   };
 
+  const fetchAllGroups = async () => {
+    const endpoint = `${URL_BASE}/groups`;
+    const res = await fetch(endpoint, {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    const data: any[] = await res.json();
+    const groups = data.map((grp) => parseGroup(grp));
+    setGroups(groups);
+    console.log(groups);
+  };
+
   useEffect(() => {
     fetchAllUsers();
+    fetchAllGroups();
   }, []);
 
   const tabs: Tab[] = [
-    {
-      name: 'All',
-      element: 'All people and groups',
-    },
     {
       name: 'People',
       element: <People users={users} />,
     },
     {
       name: 'Groups',
-      element: 'Only groups here',
+      element: <AllGroups groups={groups} />,
     },
   ];
 
@@ -57,7 +70,7 @@ const TabSections = () => {
 const People: FC<{ users: User[] }> = ({ users }) => {
   return (
     <div>
-      {users.map((user, _) => {
+      {users.map((user) => {
         return <PeopleComp key={user.id} data={user} />;
       })}
     </div>
@@ -84,6 +97,16 @@ const PeopleComp: FC<{ data: User }> = ({ data }) => {
       >
         Add friend
       </button>
+    </div>
+  );
+};
+
+const AllGroups: FC<{ groups: Group[] }> = ({ groups }) => {
+  return (
+    <div>
+      {groups.map((group) => {
+        return <CompactedGroupComp data={group} />;
+      })}
     </div>
   );
 };

@@ -19,7 +19,6 @@ import {
   useState,
   useRef,
   useContext,
-  Suspense,
 } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Posts, Comment, User, Reaction, ReactionTypes } from '../types/post';
@@ -63,7 +62,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   // handle the Delete for post
   const handleDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/posts/${data._id}`, {
+      const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -104,7 +103,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   // handle the Edit for post
   const handleEdit = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/posts/${data._id}`, {
+      const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -322,16 +321,7 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-lg">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          prev();
-        }}
-        className="absolute top-1/2 z-10 -translate-y-1/2 left-2 p-1 rounded-full bg-secondary/50 hover:bg-secondary/75 transition-colors"
-      >
-        <ChevronLeft size={36} />
-      </button>
+    <div className="relative overflow-hidden rounded-lg w-full">
       <div
         style={{
           transform: `translateX(-${currentIdx * 100}%)`,
@@ -350,31 +340,44 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
           </div>
         ))}
       </div>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          next();
-        }}
-        className="absolute top-1/2 z-10 -translate-y-1/2 right-2 p-1 rounded-full bg-secondary/50 hover:bg-secondary/75 transition-colors"
-      >
-        <ChevronRight size={36} />
-      </button>
-      {/* Navigation */}
-      <div className="absolute bottom-4 right-0 left-0">
-        <div className="flex justify-center items-center gap-2">
-          {imgData.map((_, idx) => {
-            return (
-              <div
-                key={idx}
-                className={mergeClassNames(
-                  'transition-all size-3 bg-white rounded-full',
-                  currentIdx == idx ? 'p-2' : 'bg-opacity-50',
-                )}
-              ></div>
-            );
-          })}
-        </div>
-      </div>
+      {imgData.length > 1 && (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              prev();
+            }}
+            className="absolute top-1/2 z-10 -translate-y-1/2 left-2 p-1 rounded-full bg-secondary/50 hover:bg-secondary/75 transition-colors"
+          >
+            <ChevronLeft size={36} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              next();
+            }}
+            className="absolute top-1/2 z-10 -translate-y-1/2 right-2 p-1 rounded-full bg-secondary/50 hover:bg-secondary/75 transition-colors"
+          >
+            <ChevronRight size={36} />
+          </button>
+          {/* Navigation */}
+          <div className="absolute bottom-4 right-0 left-0">
+            <div className="flex justify-center items-center gap-2">
+              {imgData.map((_, idx) => {
+                return (
+                  <div
+                    key={idx}
+                    className={mergeClassNames(
+                      'transition-all size-3 bg-white rounded-full',
+                      currentIdx == idx ? 'p-2' : 'bg-opacity-50',
+                    )}
+                  ></div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
@@ -480,7 +483,7 @@ const CommentSection: FC<{ data: Comment[] }> = ({ data }) => {
   return (
     <div className="overflow-y-scroll h-full w-full">
       {data.map((cmt) => {
-        return <CommentComp key={cmt._id} data={cmt} />;
+        return <CommentComp key={cmt.id} data={cmt} />;
       })}
     </div>
   );
@@ -610,8 +613,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-        fill: color,
-      } as CSSProperties)
+      fill: color,
+    } as CSSProperties)
     : {};
 
   return (
