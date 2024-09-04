@@ -37,6 +37,13 @@ const AccInfoWithIconButtons: FC<AccInfoWithIconButtonsProps> = ({
 export default AccInfoWithIconButtons;
 
 const getIconBtn = (type: AccIconBtnType, onClick?: () => void) => {
+  const handleOnClick = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    e.preventDefault();
+    onClick?.();
+  };
+
   switch (type) {
     case 'alreadyFriend':
       return (
@@ -47,7 +54,7 @@ const getIconBtn = (type: AccIconBtnType, onClick?: () => void) => {
     case 'accept':
       return (
         <button
-          onClick={onClick}
+          onClick={handleOnClick}
           className="rounded-full p-1.5 bg-green-100 hover:bg-green-200"
         >
           <Check size={16} className="stroke-green-900" />
@@ -62,7 +69,7 @@ const getIconBtn = (type: AccIconBtnType, onClick?: () => void) => {
     case 'add':
       return (
         <button
-          onClick={onClick}
+          onClick={handleOnClick}
           className="rounded-full p-1.5 bg-blue-100 hover:bg-blue-200"
         >
           <Plus size={16} className="stroke-blue-900" />
@@ -71,7 +78,7 @@ const getIconBtn = (type: AccIconBtnType, onClick?: () => void) => {
     case 'reject':
       return (
         <button
-          onClick={onClick}
+          onClick={handleOnClick}
           className="rounded-full p-1.5 bg-red-100 hover:bg-red-200"
         >
           <X size={16} className="stroke-red-900" />
