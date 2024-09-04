@@ -8,7 +8,7 @@ const PostPanel = () => {
   return (
     <Post
       data={{
-        _id: postData._id,
+        id: postData.id,
         user: {
           profileImage: '',
           username: postData.user.username,
