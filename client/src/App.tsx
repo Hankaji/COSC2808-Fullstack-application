@@ -12,7 +12,7 @@ import JoinedGroups from './pages/groups';
 import CreateGroupForm from './pages/groups/create_group';
 import GroupPage from './pages/groups/group';
 import HomePage from './pages/home';
-import LoginRegisterForm, { formState } from './pages/login_register';
+import LoginRegisterForm, { formState } from './pages/auth';
 import NotificationsPage from './pages/notifications';
 import PostPage from './pages/posts/post';
 import Search from './pages/search';
