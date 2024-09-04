@@ -1,10 +1,10 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import AccInfoWithAction from '../../components/AccInfoWithAction';
-import { Account } from '../../types';
-import { URL_BASE } from '../../config';
-import useAuth from '../../hooks/useAuth';
-import useToast from '../../hooks/useToast';
-import { parseAccount } from '../../types/account';
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { Account } from "../../types";
+import { URL_BASE } from "../../config";
+import useAuth from "../../hooks/useAuth";
+import useToast from "../../hooks/useToast";
+import { parseAccount } from "../../types/account";
+import AccInfoWithIconButtons from "../../components/AccInfoWithIconButtons";
 
 const FriendSuggestionList: FC = () => {
   const { auth } = useAuth();
@@ -17,8 +17,8 @@ const FriendSuggestionList: FC = () => {
     if (!auth.user) return;
     const endpoint = `${URL_BASE}/users/${auth.user.userId}/friends/recommend`;
     const res = await fetch(endpoint, {
-      method: 'GET',
-      credentials: 'include',
+      method: "GET",
+      credentials: "include",
     });
     const result = await res.json();
     setSuggestionList(result.map((acc: any) => parseAccount(acc)));
@@ -28,8 +28,8 @@ const FriendSuggestionList: FC = () => {
     if (!auth.user) return;
     const endpoint = `${URL_BASE}/users/${auth.user.userId}/friend-requests`;
     const res = await fetch(endpoint, {
-      method: 'GET',
-      credentials: 'include',
+      method: "GET",
+      credentials: "include",
     });
     const result = await res.json();
     setRequestReceiverList(result.map((req: any) => req.receiver_id));
@@ -42,17 +42,17 @@ const FriendSuggestionList: FC = () => {
         const endpoint = `${URL_BASE}/requests/friend_requests`;
         try {
           const res = await fetch(endpoint, {
-            credentials: 'include',
+            credentials: "include",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-            method: 'POST',
+            method: "POST",
             body: JSON.stringify({ receiver_id: user.id }),
           });
           if (res.ok) {
             await fetchRequestSentList();
           } else {
-            throw Error('Failed to send friend request');
+            throw Error("Failed to send friend request");
           }
         } catch (error: any) {
           console.error(error);
@@ -61,38 +61,39 @@ const FriendSuggestionList: FC = () => {
 
       toast.showAsync(sendFriendRequest, {
         loading: {
-          title: 'Loading...',
+          title: "Loading...",
         },
         success: (_: any) => ({
           title: `Friend request sent to ${user.displayName}`,
         }),
         error: (_: any) => ({
-          title: 'Something wrong happened',
+          title: "Something wrong happened",
         }),
       });
     },
-    [auth.user, fetchRequestSentList, toast],
+    [auth.user, fetchRequestSentList, toast]
   );
 
   const list = useMemo(
     () =>
       suggestionList.map((acc) => {
         const alreadySentRequest = requestReceiverList.includes(acc.id);
-        const status = alreadySentRequest ? 'requestSent' : 'none';
         return (
-          <AccInfoWithAction
+          <AccInfoWithIconButtons
             key={acc.id}
             data={acc}
-            status={status}
-            actionFn={
-              alreadySentRequest
-                ? undefined
-                : () => handleSendFriendRequest(acc)
-            }
+            buttons={[
+              {
+                type: alreadySentRequest ? "requestSent" : "add",
+                onClick: alreadySentRequest
+                  ? undefined
+                  : () => handleSendFriendRequest(acc),
+              },
+            ]}
           />
         );
       }),
-    [requestReceiverList, handleSendFriendRequest, suggestionList],
+    [requestReceiverList, handleSendFriendRequest, suggestionList]
   );
 
   useEffect(() => {
@@ -105,9 +106,7 @@ const FriendSuggestionList: FC = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-180px)]">
-      <div className="flex-grow overflow-y-auto mt-6 pr-3">
-        <div className="space-y-6">{list}</div>
-      </div>
+      <div className="flex-grow overflow-y-auto mt-2 pr-3">{list}</div>
     </div>
   );
 };
