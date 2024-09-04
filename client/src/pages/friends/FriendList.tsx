@@ -1,9 +1,9 @@
-import { FC, useCallback, useEffect, useState } from "react";
-import useAuth from "../../hooks/useAuth";
-import useToast from "../../hooks/useToast";
-import type { Account } from "../../types";
-import { URL_BASE } from "../../config";
-import AccInfoWithTextBtn from "../../components/AccInfoWithTextBtn";
+import { FC, useCallback, useEffect, useState } from 'react';
+import useAuth from '../../hooks/useAuth';
+import useToast from '../../hooks/useToast';
+import type { Account } from '../../types';
+import { URL_BASE } from '../../config';
+import AccInfoWithTextBtn from '../../components/AccInfoWithTextBtn';
 
 const FriendList: FC = () => {
   const { auth } = useAuth();
@@ -15,8 +15,8 @@ const FriendList: FC = () => {
     if (!auth.user) return;
     const endpoint = `${URL_BASE}/users/${auth.user.userId}/friends`;
     const res = await fetch(endpoint, {
-      method: "GET",
-      credentials: "include",
+      method: 'GET',
+      credentials: 'include',
     });
     const result = await res.json();
     setList(
@@ -26,9 +26,9 @@ const FriendList: FC = () => {
             id: acc._id,
             username: acc.username,
             displayName: acc.displayName,
-            imgUrl: acc.virtualProfileImage ?? "",
-          } satisfies Account)
-      )
+            imgUrl: acc.virtualProfileImage ?? '',
+          }) satisfies Account,
+      ),
     );
   }, [auth.user]);
 
@@ -39,29 +39,29 @@ const FriendList: FC = () => {
         const endpoint = `${URL_BASE}/users/unfriend/${user.id}`;
 
         const res = await fetch(endpoint, {
-          method: "DELETE",
-          credentials: "include",
+          method: 'DELETE',
+          credentials: 'include',
         });
         if (res.ok) {
           await fetchFriendList();
         } else {
-          throw Error("Failed to remove friend");
+          throw Error('Failed to remove friend');
         }
       };
 
       toast.showAsync(removeFriend, {
         loading: {
-          title: "Loading...",
+          title: 'Loading...',
         },
         success: (_) => ({
           title: `Removed ${user.displayName} from your friend list`,
         }),
         error: (_) => ({
-          title: "Something wrong happened",
+          title: 'Something wrong happened',
         }),
       });
     },
-    [auth.user, fetchFriendList, toast]
+    [auth.user, fetchFriendList, toast],
   );
 
   useEffect(() => {
@@ -75,7 +75,7 @@ const FriendList: FC = () => {
           <AccInfoWithTextBtn
             data={acc}
             button={{
-              text: "Remove",
+              text: 'Remove',
               actionFn: () => handleRemoveFriend(acc),
             }}
           />

@@ -1,6 +1,6 @@
-import { FC } from "react";
-import type { Account } from "../types";
-import AccInfo from "./AccInfo";
+import { FC } from 'react';
+import type { Account } from '../types';
+import AccInfo from './AccInfo';
 
 interface AccInfoWithTextBtnProps {
   data: Account;

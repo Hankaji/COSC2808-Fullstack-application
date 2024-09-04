@@ -1,6 +1,6 @@
-import { FC } from "react";
-import type { Account } from "../types";
-import { Link } from "react-router-dom";
+import { FC } from 'react';
+import type { Account } from '../types';
+import { Link } from 'react-router-dom';
 
 interface AccInfoProps {
   data: Account;

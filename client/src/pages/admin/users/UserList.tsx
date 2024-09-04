@@ -1,6 +1,6 @@
-import { FC } from "react";
-import type { Account } from "../../../types";
-import AccInfoWithTextBtn from "../../../components/AccInfoWithTextBtn";
+import { FC } from 'react';
+import type { Account } from '../../../types';
+import AccInfoWithTextBtn from '../../../components/AccInfoWithTextBtn';
 
 interface UserListProps {
   list: Account[];
@@ -16,7 +16,7 @@ const UserList: FC<UserListProps> = ({ list, actionFn }) => {
             key={acc.id}
             data={acc}
             button={{
-              text: acc.isSuspended ? "Resume" : "Suspend",
+              text: acc.isSuspended ? 'Resume' : 'Suspend',
               actionFn: () => actionFn(acc),
             }}
           />

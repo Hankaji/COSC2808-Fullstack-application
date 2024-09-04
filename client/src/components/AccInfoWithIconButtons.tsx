@@ -1,14 +1,14 @@
-import { FC } from "react";
-import { Check, Plus, UserRoundCheck, X } from "lucide-react";
-import type { Account } from "../types";
-import AccInfo from "./AccInfo";
+import { FC } from 'react';
+import { Check, Plus, UserRoundCheck, X } from 'lucide-react';
+import type { Account } from '../types';
+import AccInfo from './AccInfo';
 
 type AccIconBtnType =
-  | "alreadyFriend"
-  | "add"
-  | "accept"
-  | "reject"
-  | "requestSent";
+  | 'alreadyFriend'
+  | 'add'
+  | 'accept'
+  | 'reject'
+  | 'requestSent';
 
 interface AccInfoWithIconButtonsProps {
   data: Account;
@@ -38,13 +38,13 @@ export default AccInfoWithIconButtons;
 
 const getIconBtn = (type: AccIconBtnType, onClick?: () => void) => {
   switch (type) {
-    case "alreadyFriend":
+    case 'alreadyFriend':
       return (
         <button className="rounded-full p-1.5 bg-green-100">
           <UserRoundCheck size={16} className="stroke-green-900" />
         </button>
       );
-    case "accept":
+    case 'accept':
       return (
         <button
           onClick={onClick}
@@ -53,13 +53,13 @@ const getIconBtn = (type: AccIconBtnType, onClick?: () => void) => {
           <Check size={16} className="stroke-green-900" />
         </button>
       );
-    case "requestSent":
+    case 'requestSent':
       return (
         <button className="rounded-full p-1.5 bg-gray-100 cursor-default">
           <Check size={16} className="stroke-gray-900" />
         </button>
       );
-    case "add":
+    case 'add':
       return (
         <button
           onClick={onClick}
@@ -68,7 +68,7 @@ const getIconBtn = (type: AccIconBtnType, onClick?: () => void) => {
           <Plus size={16} className="stroke-blue-900" />
         </button>
       );
-    case "reject":
+    case 'reject':
       return (
         <button
           onClick={onClick}

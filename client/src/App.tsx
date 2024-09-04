@@ -111,50 +111,10 @@ const router = createBrowserRouter([
       {
         path: 'admin/users',
         element: <AdminUsersPage />,
-        loader: async () => {
-          try {
-            const groupCreationRequestEndpoint = `${URL_BASE}/requests/group_creation_requests`;
-            const groupCreationReqRes = await fetch(
-              groupCreationRequestEndpoint,
-              {
-                method: 'GET',
-                credentials: 'include',
-              },
-            );
-
-            const groupCreationRequestData = await groupCreationReqRes.json();
-
-            return JSON.stringify({
-              groupCreationReqs: groupCreationRequestData,
-            });
-          } catch (error: any) {
-            console.error(error);
-          }
-        },
       },
       {
         path: 'admin/groups',
         element: <AdminGroupsPage />,
-        loader: async () => {
-          try {
-            const groupCreationRequestEndpoint = `${URL_BASE}/requests/group_creation_requests`;
-            const groupCreationReqRes = await fetch(
-              groupCreationRequestEndpoint,
-              {
-                method: 'GET',
-                credentials: 'include',
-              },
-            );
-
-            const groupCreationRequestData = await groupCreationReqRes.json();
-
-            return JSON.stringify({
-              groupCreationReqs: groupCreationRequestData,
-            });
-          } catch (error: any) {
-            console.error(error);
-          }
-        },
       },
     ],
   },
