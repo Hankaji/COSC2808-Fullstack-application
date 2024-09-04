@@ -1,9 +1,9 @@
-import { MessageCircle, User, Users, SmilePlus, SquarePen } from "lucide-react";
-import { FC, useState, useEffect } from "react";
-import { Notification } from "../../types";
-import { formatRelativeTime } from "../../utils";
-import useAuth from "../../hooks/useAuth";
-import { URL_BASE } from "../../config";
+import { MessageCircle, User, Users, SmilePlus, SquarePen } from 'lucide-react';
+import { FC, useState, useEffect } from 'react';
+import { Notification } from '../../types';
+import { formatRelativeTime } from '../../utils';
+import useAuth from '../../hooks/useAuth';
+import { URL_BASE } from '../../config';
 
 const NotificationList: FC = () => {
   const { auth } = useAuth();
@@ -11,7 +11,7 @@ const NotificationList: FC = () => {
   const [notificationList, setNotificationList] = useState<Notification[]>([]);
 
   const sortedList = notificationList.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
   useEffect(() => {
@@ -19,8 +19,8 @@ const NotificationList: FC = () => {
       if (!auth.user) return;
       const endpoint = `${URL_BASE}/users/${auth.user.userId}/notifications`;
       const res = await fetch(endpoint, {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       });
       const result = await res.json();
       setNotificationList(result);
@@ -40,10 +40,10 @@ const NotificationList: FC = () => {
       await Promise.all(
         endpoints.map((endpoint) =>
           fetch(endpoint, {
-            method: "PATCH",
-            credentials: "include",
-          })
-        )
+            method: 'PATCH',
+            credentials: 'include',
+          }),
+        ),
       );
     };
 

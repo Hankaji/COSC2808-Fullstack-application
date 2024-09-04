@@ -1,13 +1,13 @@
-import { Check, Globe, Lock, X } from "lucide-react";
-import { FC, useState } from "react";
-import { useLoaderData } from "react-router";
-import { URL_BASE } from "../../../config";
-import useToast from "../../../hooks/useToast";
-import { GroupVisibility } from "../../../types/group";
+import { Check, Globe, Lock, X } from 'lucide-react';
+import { FC, useState } from 'react';
+import { useLoaderData } from 'react-router';
+import { URL_BASE } from '../../config';
+import useToast from '../../hooks/useToast';
+import { GroupVisibility } from '../../types/group';
 import {
   GroupCreationRequest,
   parseGroupCreationRequest,
-} from "../../../types/group_creation_request";
+} from '../../types/group_creation_request';
 
 const GroupRequestList: FC = () => {
   const loaderData = JSON.parse(useLoaderData() as string)
@@ -18,7 +18,7 @@ const GroupRequestList: FC = () => {
   >(
     loaderData.map((req) => {
       return parseGroupCreationRequest(req);
-    })
+    }),
   );
 
   const toast = useToast();
@@ -28,8 +28,8 @@ const GroupRequestList: FC = () => {
       try {
         const endpoint = `${URL_BASE}/requests/group_creation_requests/accept/${id}`;
         const res = await fetch(endpoint, {
-          method: "PATCH",
-          credentials: "include",
+          method: 'PATCH',
+          credentials: 'include',
         });
 
         const data = await res.json();
@@ -46,13 +46,13 @@ const GroupRequestList: FC = () => {
 
     toast.showAsync(acceptRequest, {
       loading: {
-        title: "Loading...",
+        title: 'Loading...',
       },
       success: (_) => ({
-        title: "Group request accepted",
+        title: 'Group request accepted',
       }),
       error: (_) => ({
-        title: "Something wrong happened",
+        title: 'Something wrong happened',
       }),
     });
   };
@@ -62,8 +62,8 @@ const GroupRequestList: FC = () => {
       try {
         const endpoint = `${URL_BASE}/requests/group_creation_requests/reject/${id}`;
         const res = await fetch(endpoint, {
-          method: "PATCH",
-          credentials: "include",
+          method: 'PATCH',
+          credentials: 'include',
         });
 
         const data = await res.json();
@@ -82,13 +82,13 @@ const GroupRequestList: FC = () => {
 
     toast.showAsync(rejectRequest, {
       loading: {
-        title: "Loading...",
+        title: 'Loading...',
       },
       success: (_) => ({
-        title: "Group request rejected successfully",
+        title: 'Group request rejected successfully',
       }),
       error: (_) => ({
-        title: "Something wrong happened",
+        title: 'Something wrong happened',
       }),
     });
   };
