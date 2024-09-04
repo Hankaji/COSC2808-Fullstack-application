@@ -1,16 +1,10 @@
-import {
-  FC,
-  FormEvent,
-  InputHTMLAttributes,
-  useRef,
-  useState,
-} from 'react';
+import { FC, FormEvent, InputHTMLAttributes, useRef, useState } from 'react';
 import { Input } from '../../components/ui/Input';
 import { mergeClassNames } from '../../utils';
 import { URL_BASE } from '../../config';
 import { useNavigate } from 'react-router';
 import useAuth from '../../hooks/useAuth';
-import useToast from '../../hooks/useToast'
+import useToast from '../../hooks/useToast';
 import { UserSession } from '../../types/userSession';
 import { Link } from 'react-router-dom';
 import ImageUpload from '../../components/ImageUpload';
@@ -239,7 +233,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
             setErrors([data.message]);
           }
         } catch (e) {
-          throw new Error("Failed to login")
+          throw new Error('Failed to login');
         }
       };
 
