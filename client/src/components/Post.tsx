@@ -20,7 +20,6 @@ import {
   useRef,
   useContext,
   useEffect,
-  Suspense,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -39,7 +38,6 @@ import {
 } from "./ui/DropDownMenu";
 import PopupModal from "./PopupModal";
 import { ToastContext } from "../context/ToastProvider";
-import useAuth from "../hooks/useAuth";
 import { URL_BASE } from "../config";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
@@ -207,7 +205,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
           <Reactions
             reactions={data.reactions}
             context="post"
-            postId={data._id}
+            postId={data.id}
           />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
@@ -294,7 +292,6 @@ const PostComponent: FC<Props> = ({ className, data }) => {
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => {
-                    console.log("Cancel button clicked");
                     setIsEditPopup(false);
                   }}
                   className="mr-2 px-4 py-2 bg-gray-300 rounded"
@@ -303,7 +300,6 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                 </button>
                 <button
                   onClick={() => {
-                    console.log("Confirm button clicked");
                     handleEdit();
                   }}
                   className="px-4 py-2 bg-green-500 text-white rounded"
@@ -331,16 +327,16 @@ const PostComponent: FC<Props> = ({ className, data }) => {
 const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
   const [currentIdx, setCurrentIdx] = useState<number>(0);
 
-  if (imgData == undefined) {
+  if (imgData === undefined) {
     return <></>;
   }
 
   const prev = () => {
-    setCurrentIdx((curr) => (curr == 0 ? imgData.length - 1 : curr - 1));
+    setCurrentIdx((curr) => (curr === 0 ? imgData.length - 1 : curr - 1));
   };
 
   const next = () => {
-    setCurrentIdx((curr) => (curr == imgData.length - 1 ? 0 : curr + 1));
+    setCurrentIdx((curr) => (curr === imgData.length - 1 ? 0 : curr + 1));
   };
 
   return (
@@ -359,6 +355,7 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
             <img
               className="min-w-full aspect-auto object-cover bg-center rounded-lg"
               src={img}
+              alt={img}
             />
           </div>
         ))}
@@ -392,7 +389,7 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
                     key={idx}
                     className={mergeClassNames(
                       'transition-all size-3 bg-white rounded-full',
-                      currentIdx == idx ? 'p-2' : 'bg-opacity-50',
+                      currentIdx === idx ? 'p-2' : 'bg-opacity-50',
                     )}
                   ></div>
                 );
@@ -409,8 +406,6 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
   closePopup,
   data,
 }) => {
-  console.log("Popup: ");
-  console.log(data);
   return (
     <div
       onClick={() => {
@@ -422,6 +417,7 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
         <img
           className="object-cover w-full h-full"
           src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
+          alt=""
         />
       </div>
       <div
@@ -444,7 +440,7 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
           <Reactions
             reactions={data.reactions}
             context="post"
-            postId={data._id}
+            postId={data.id}
           />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
@@ -453,7 +449,7 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
         </div>
         <div className="border-border border-solid border-2"></div>
         {/* Comments */}
-        <CommentSection data={data.comments} postId={data._id} />
+        <CommentSection data={data.comments} postId={data.id} />
       </div>
     </div>
   );
@@ -508,27 +504,7 @@ const FallBackPfp = () => {
   );
 };
 
-const CommentSection: FC<{ data: Comment[]; postId: string }> = ({
-  data,
-  postId,
-}) => {
-  return (
-    <div className="overflow-y-scroll h-full w-full">
-      {data.map((cmt) => {
-        return <CommentComp key={cmt._id} data={cmt} postId={postId} />;
-      })}
-    </div>
-  );
-};
-
-interface CommentProp {
-  data: Comment;
-  postId: string;
-}
-
 const CommentComp: FC<CommentProp> = ({ data, postId }) => {
-  console.log("CommentComp: ");
-  console.log(parseBasicUser(data.author_id));
   return (
     <div className="flex flex-col justify-start items-start gap-2">
       <div className="flex gap-2">
@@ -563,7 +539,7 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
             reactions={data.reactions}
             context="comment"
             postId={postId}
-            commentId={data._id}
+            commentId={data.id}
           />
         </button>
       </div>
@@ -571,14 +547,30 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
   );
 };
 
+const CommentSection: FC<{ data: Comment[]; postId: string }> = ({
+  data,
+  postId,
+}) => {
+  return (
+    <div className="overflow-y-scroll h-full w-full">
+      {data.map((cmt) => {
+        return <CommentComp key={cmt.id} data={cmt} postId={postId} />;
+      })}
+    </div>
+  );
+};
+
+interface CommentProp {
+  data: Comment;
+  postId: string;
+}
+
 const Reactions: FC<ReactionsProps> = ({
   reactions,
   context,
   postId,
   commentId,
 }) => {
-  const { auth } = useAuth();
-  const user = auth.user;
   const [reactedReaction, setReactedReaction] = useState<ReactionTypes>(
     ReactionTypes.NULL,
   );
@@ -625,11 +617,9 @@ const Reactions: FC<ReactionsProps> = ({
   // handle adding + editing reaction
   const addReaction = async (reactionType: ReactionTypes) => {
     try {
-      console.log(endpoint);
       const formattedType =
         reactionType.charAt(0).toUpperCase() +
         reactionType.slice(1).toLowerCase();
-      console.log(formattedType);
       const response = await fetch(`${endpoint}`, {
         method: "POST",
         credentials: "include",
@@ -788,7 +778,7 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   );
 };
 
-export { CommentSection, PostImages, AuthorPfp, FallBackPfp };
-export type { Posts, User, Reaction, CommentComp as Comment };
+export { CommentSection, PostImages, AuthorPfp, FallBackPfp, CommentComp as Comment };
+export type { Posts, User, Reaction };
 const Post = PostComponent;
 export default Post;
