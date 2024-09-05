@@ -6,16 +6,17 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'react';
-import { Input } from '../../components/ui/Input';
-import { mergeClassNames } from '../../utils';
-import { URL_BASE } from '../../config';
-import { useNavigate } from 'react-router';
-import useAuth from '../../hooks/useAuth';
-import useToast from '../../hooks/useToast';
-import { UserSession } from '../../types/userSession';
-import { Link } from 'react-router-dom';
-import ImageUpload from '../../components/ImageUpload';
+  useEffect,
+} from "react";
+import { Input } from "../../components/ui/Input";
+import { mergeClassNames } from "../../utils";
+import { URL_BASE } from "../../config";
+import { useNavigate, useLocation } from "react-router";
+import useAuth from "../../hooks/useAuth";
+import useToast from "../../hooks/useToast";
+import { UserSession } from "../../types/userSession";
+import { Link } from "react-router-dom";
+import ImageUpload from "../../components/ImageUpload";
 
 enum formState {
   LOGIN,
@@ -30,89 +31,91 @@ type formInputType = {
   id: number;
   label: string;
   renderCondition: formState[];
-  inputProps?: Omit<InputHTMLAttributes<HTMLInputElement>, 'className'>;
+  inputProps?: Omit<InputHTMLAttributes<HTMLInputElement>, "className">;
 };
 
 const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
   const { setAuth } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const [state, setState] = useState<formState>(initialState);
   const [errors, setErrors] = useState<string[]>([]);
+  const [formKey, setFormKey] = useState(0);
 
   const formInputs: formInputType[] = useMemo(
     () => [
       {
         id: 1,
         inputProps: {
-          name: 'username',
-          type: 'text',
-          placeholder: 'Username',
+          name: "username",
+          type: "text",
+          placeholder: "Username",
           required: true,
-          pattern: '[A-Za-z0-9_]+',
-          title: 'Only letters, numbers, underscores, and hyphens are allowed.',
+          pattern: "[A-Za-z0-9_]+",
+          title: "Only letters, numbers, underscores, and hyphens are allowed.",
         },
-        label: 'Username',
+        label: "Username",
         renderCondition: [formState.LOGIN, formState.SIGNUP],
       },
       {
         id: 2,
         inputProps: {
-          name: 'displayName',
-          type: 'text',
-          placeholder: 'Display Name',
+          name: "displayName",
+          type: "text",
+          placeholder: "Display Name",
           required: true,
         },
-        label: 'Display Name',
+        label: "Display Name",
         renderCondition: [formState.SIGNUP],
       },
       {
         id: 3,
         inputProps: {
-          name: 'password',
-          type: 'password',
-          placeholder: 'Password',
+          name: "password",
+          type: "password",
+          placeholder: "Password",
           required: true,
         },
-        label: 'Password',
+        label: "Password",
         renderCondition: [formState.LOGIN, formState.SIGNUP],
       },
       {
         id: 4,
         inputProps: {
-          name: 'repassword',
-          type: 'password',
-          placeholder: 'Retype password',
+          name: "repassword",
+          type: "password",
+          placeholder: "Retype password",
           required: true,
         },
-        label: 'Retype password',
+        label: "Retype password",
         renderCondition: [formState.SIGNUP],
       },
       {
         id: 5,
         inputProps: {
-          name: 'email',
-          type: 'email',
-          placeholder: 'email',
+          name: "email",
+          type: "email",
+          placeholder: "email",
           required: true,
         },
-        label: 'email',
+        label: "email",
         renderCondition: [formState.SIGNUP],
       },
       {
         id: 6,
         inputProps: {
-          name: 'profileImage',
-          type: 'file',
-          placeholder: 'Profile Picture',
-          accept: 'image/*',
+          name: "profileImage",
+          type: "file",
+          placeholder: "Profile Picture",
+          accept: "image/*",
         },
-        label: 'Profile Picture',
+        label: "Profile Picture",
         renderCondition: [formState.SIGNUP],
       },
     ],
-    [],
+    []
   );
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -123,29 +126,29 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 
       switch (state) {
         case formState.LOGIN: {
-          if (!payload.username) errors.push('Username can not be empty');
-          if (!payload.password) errors.push('Password can not be empty');
+          if (!payload.username) errors.push("Username can not be empty");
+          if (!payload.password) errors.push("Password can not be empty");
           break;
         }
         case formState.SIGNUP: {
-          if (!payload.username) errors.push('Username can not be empty');
-          if (!payload.password) errors.push('Password can not be empty');
+          if (!payload.username) errors.push("Username can not be empty");
+          if (!payload.password) errors.push("Password can not be empty");
           if (!payload.repassword)
-            errors.push('Retype password can not be empty');
-          if (!payload.email) errors.push('Email can not be empty');
+            errors.push("Retype password can not be empty");
+          if (!payload.email) errors.push("Email can not be empty");
 
           const username = payload.username as string;
           if (username.length < 4 || username.length > 16)
             errors.push(
-              'Username must contains at least 4 and maximum 16 characters',
+              "Username must contains at least 4 and maximum 16 characters"
             );
 
           const password = payload.password as string;
           const repassword = payload.repassword as string;
           if (password.localeCompare(repassword))
-            errors.push('Retyped password and password are not the same');
+            errors.push("Retyped password and password are not the same");
           if (password.length < 8)
-            errors.push('Password must be at least 8 characters');
+            errors.push("Password must be at least 8 characters");
           break;
         }
       }
@@ -157,8 +160,16 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
         return true;
       }
     },
-    [state],
+    [state]
   );
+
+  const resetForm = useCallback(() => {
+    if (formRef.current) {
+      formRef.current.reset();
+    }
+    setErrors([]);
+    setFormKey(prevKey => prevKey + 1);
+  }, []);
 
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
@@ -173,41 +184,40 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
       if (state === formState.SIGNUP) {
         const endpoint = `${URL_BASE}/register`;
 
-        // Append the profile picture file
         const profilePictureFile = payload.profilePicture as File;
         if (profilePictureFile) {
-          formData.append('profilePicture', profilePictureFile);
+          formData.append("profilePicture", profilePictureFile);
         }
 
         const register = async () => {
           try {
             const res = await fetch(endpoint, {
-              method: 'POST',
+              method: "POST",
               body: formData,
             });
 
             const data = await res.json();
 
-            // Check status
             if (res.ok) {
-              navigate('/login');
+              resetForm();
+              navigate("/login");
             } else if (res.status >= 400 && res.status < 500) {
               setErrors([data.message]);
             }
           } catch (e) {
-            throw new Error('Failed to register');
+            throw new Error("Failed to register");
           }
         };
 
         toast.showAsync(register, {
           loading: {
-            title: 'Loading...',
+            title: "Loading...",
           },
           success: (_) => ({
             title: `Registered successfully`,
           }),
           error: (_) => ({
-            title: 'Failed to register',
+            title: "Failed to register",
           }),
         });
       }
@@ -220,59 +230,63 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
         };
         const login = async () => {
           try {
-            // Fetch data
             const res = await fetch(endpoint, {
-              method: 'POST',
+              method: "POST",
               body: JSON.stringify(body),
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
-              credentials: 'include',
+              credentials: "include",
             });
 
-            // Get data
             const data = await res.json();
 
-            // Check response status
             if (res.ok) {
-              // Save user session
               setAuth({
                 user: data as UserSession,
               });
-
-              return navigate('/');
+              resetForm();
+              return navigate("/");
             } else if (res.status >= 400 && res.status < 500) {
               setErrors([data.message]);
             }
           } catch (e) {
-            throw new Error('Failed to login');
+            throw new Error("Failed to login");
           }
         };
 
         toast.showAsync(login, {
           loading: {
-            title: 'Loading...',
+            title: "Loading...",
           },
           success: (_) => ({
             title: `Signed in successfully`,
           }),
           error: (_) => ({
-            title: 'Failed to login',
+            title: "Failed to login",
           }),
         });
       }
     },
-    [navigate, setAuth, state, toast, validateForm],
+    [navigate, setAuth, state, toast, validateForm, resetForm]
   );
+
+  useEffect(() => {
+    if (pathname === "/login") {
+      setState(formState.LOGIN);
+    }
+    if (pathname === "/register") {
+      setState(formState.SIGNUP);
+    }
+  }, [pathname]);
 
   return (
     <section className="relative flex w-svw min-h-dvh items-center justify-center bg-background p-24">
-      {/* Random blob */}
       <div className="fixed top-0 left-0 h-svh w-svw overflow-hidden">
         <div className="absolute top-[65%] left-[60%] -translate-x-1/2 -translate-y-1/2 size-[80vw] blur-3xl z-10 bg-primary opacity-5 rounded-full"></div>
       </div>
-      {/* Form */}
       <form
+        key={formKey}
         ref={formRef}
         onSubmit={handleSubmit}
         encType="multipart/form-data"
@@ -282,7 +296,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
           <div className="flex flex-col gap-2">
             <img
               className="size-12 object-cover mx-auto"
-              style={{ maskSize: 'cover', WebkitMaskSize: 'cover' }}
+              style={{ maskSize: "cover", WebkitMaskSize: "cover" }}
               src="/logo.svg"
               alt="SnapMate logo"
             />
@@ -291,10 +305,9 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
           <div className="flex flex-col gap-1">
             <p className="text-center">Welcome</p>
             <h1 className="text-5xl font-bold text-center">
-              {state === formState.LOGIN ? 'Sign in now' : 'Sign up now'}
+              {state === formState.LOGIN ? "Sign in now" : "Sign up now"}
             </h1>
           </div>
-          {/* Input prompt */}
           <div className="flex flex-col gap-8">
             {formInputs.map((input) => {
               if (!input.renderCondition.includes(state)) return null;
@@ -307,7 +320,6 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               );
             })}
           </div>
-          {/* Errors */}
           {errors.length > 0 && (
             <div className="flex flex-col gap-2 max-h-24 overflow-y-scroll">
               {errors.map((err, idx) => {
@@ -321,7 +333,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
           )}
           {state === formState.LOGIN ? (
             <p className="py-4">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <Link
                 to="/register"
                 onClick={() => {
@@ -335,7 +347,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
             </p>
           ) : (
             <p className="py-4">
-              Already had an account?{' '}
+              Already had an account?{" "}
               <Link
                 to="/login"
                 onClick={() => {
@@ -349,7 +361,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
             </p>
           )}
           <button type="submit" className="bg-primary py-4 px-20 rounded-full">
-            {state === formState.LOGIN ? 'Sign in' : 'Sign up'}
+            {state === formState.LOGIN ? "Sign in" : "Sign up"}
           </button>
         </div>
       </form>
@@ -358,7 +370,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 };
 
 interface FormInputProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'className'> {
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "className"> {
   label: string;
   className?: string;
 }
@@ -366,10 +378,10 @@ interface FormInputProps
 const FormInput: FC<FormInputProps> = ({ label, className, ...inputProps }) => {
   return (
     <div
-      className={mergeClassNames('flex flex-col gap-2 items-start', className)}
+      className={mergeClassNames("flex flex-col gap-2 items-start", className)}
     >
       <label htmlFor="email">{label}</label>
-      {inputProps.type !== 'file' ? (
+      {inputProps.type !== "file" ? (
         <Input
           {...inputProps}
           className="p-4 py-6 rounded-lg min-w-[25vw]"
