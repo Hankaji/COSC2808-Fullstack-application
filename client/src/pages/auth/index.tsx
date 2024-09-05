@@ -42,6 +42,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 
   const [state, setState] = useState<formState>(initialState);
   const [errors, setErrors] = useState<string[]>([]);
+  const [formKey, setFormKey] = useState(0);
 
   const formInputs: formInputType[] = useMemo(
     () => [
@@ -162,6 +163,14 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
     [state]
   );
 
+  const resetForm = useCallback(() => {
+    if (formRef.current) {
+      formRef.current.reset();
+    }
+    setErrors([]);
+    setFormKey(prevKey => prevKey + 1);
+  }, []);
+
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -175,7 +184,6 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
       if (state === formState.SIGNUP) {
         const endpoint = `${URL_BASE}/register`;
 
-        // Append the profile picture file
         const profilePictureFile = payload.profilePicture as File;
         if (profilePictureFile) {
           formData.append("profilePicture", profilePictureFile);
@@ -190,8 +198,8 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 
             const data = await res.json();
 
-            // Check status
             if (res.ok) {
+              resetForm();
               navigate("/login");
             } else if (res.status >= 400 && res.status < 500) {
               setErrors([data.message]);
@@ -222,7 +230,6 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
         };
         const login = async () => {
           try {
-            // Fetch data
             const res = await fetch(endpoint, {
               method: "POST",
               body: JSON.stringify(body),
@@ -232,16 +239,13 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               credentials: "include",
             });
 
-            // Get data
             const data = await res.json();
 
-            // Check response status
             if (res.ok) {
-              // Save user session
               setAuth({
                 user: data as UserSession,
               });
-
+              resetForm();
               return navigate("/");
             } else if (res.status >= 400 && res.status < 500) {
               setErrors([data.message]);
@@ -264,7 +268,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
         });
       }
     },
-    [navigate, setAuth, state, toast, validateForm]
+    [navigate, setAuth, state, toast, validateForm, resetForm]
   );
 
   useEffect(() => {
@@ -278,12 +282,11 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
 
   return (
     <section className="relative flex w-svw min-h-dvh items-center justify-center bg-background p-24">
-      {/* Random blob */}
       <div className="fixed top-0 left-0 h-svh w-svw overflow-hidden">
         <div className="absolute top-[65%] left-[60%] -translate-x-1/2 -translate-y-1/2 size-[80vw] blur-3xl z-10 bg-primary opacity-5 rounded-full"></div>
       </div>
-      {/* Form */}
       <form
+        key={formKey}
         ref={formRef}
         onSubmit={handleSubmit}
         encType="multipart/form-data"
@@ -305,7 +308,6 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               {state === formState.LOGIN ? "Sign in now" : "Sign up now"}
             </h1>
           </div>
-          {/* Input prompt */}
           <div className="flex flex-col gap-8">
             {formInputs.map((input) => {
               if (!input.renderCondition.includes(state)) return null;
@@ -318,7 +320,6 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               );
             })}
           </div>
-          {/* Errors */}
           {errors.length > 0 && (
             <div className="flex flex-col gap-2 max-h-24 overflow-y-scroll">
               {errors.map((err, idx) => {
