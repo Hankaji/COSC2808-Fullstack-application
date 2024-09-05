@@ -18,6 +18,7 @@ const FriendList: FC = () => {
       credentials: 'include',
     });
     const result = await res.json();
+    console.log(result);
     setList(
       result.map(
         (acc: any) =>

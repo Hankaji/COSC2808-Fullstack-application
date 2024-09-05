@@ -32,7 +32,9 @@ export const getPosts = async (req: Request, res: Response) => {
 			// Get user's friends and groups
 			const friendIds = user.friends.map((friend) => friend._id);
 
-			const userGroups = await Group.find({ members: userId }).select("_id").exec();
+			const userGroups = await Group.find({ members: userId })
+				.select("_id")
+				.exec();
 			const groupIds = userGroups.map((group) => group._id);
 
 			// Find posts from friends and groups
@@ -46,10 +48,20 @@ export const getPosts = async (req: Request, res: Response) => {
 			.sort({ createdAt: -1 })
 			.skip(skip)
 			.limit(pageSize)
-			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.select(
+				"_id user_id group_id content images visibility reactions comments createdAt",
+			)
 			.populate({
 				path: "user_id",
 				select: "_id username displayName profileImage contentType",
+			})
+			.populate({
+				path: "comments.author_id", // Populates the author of each comment
+				select: "_id username displayName profileImage",
+			})
+			.populate({
+				path: "comments.reactions.author_id", // Populates the author of each reaction in comments
+				select: "_id username displayName profileImage",
 			})
 			.exec();
 
@@ -114,9 +126,13 @@ export const getUserPosts = async (req: Request, res: Response) => {
 			postsQuery = Post.find({ user_id: userId });
 		} else {
 			// Current User: Check if the current user is a friend of the user whose posts are being requested
-			const currentUser = await User.findById(currentUserId).select("friends").exec();
+			const currentUser = await User.findById(currentUserId)
+				.select("friends")
+				.exec();
 
-			const isFriend = currentUser?.friends.some((friendId) => friendId.equals(userId));
+			const isFriend = currentUser?.friends.some((friendId) =>
+				friendId.equals(userId),
+			);
 
 			if (isFriend) {
 				// If they are friends, return all posts
@@ -130,7 +146,9 @@ export const getUserPosts = async (req: Request, res: Response) => {
 		// Execute the query and process the results
 		const posts = await postsQuery
 			.sort({ createdAt: -1 })
-			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.select(
+				"_id user_id group_id content images visibility reactions comments createdAt",
+			)
 			.populate({
 				path: "user_id",
 				select: "_id username displayName profileImage contentType",
@@ -199,10 +217,14 @@ export const getGroupPosts = async (req: Request, res: Response) => {
 		} else {
 			if (group.visibility === "Private") {
 				// Current User: If the group is private, check if the user is a member
-				const isMember = group.members.some((memberId) => memberId.equals(currentUserId));
+				const isMember = group.members.some((memberId) =>
+					memberId.equals(currentUserId),
+				);
 
 				if (!isMember) {
-					return res.status(403).json({ message: "You are not authorized to view posts in this group" });
+					return res.status(403).json({
+						message: "You are not authorized to view posts in this group",
+					});
 				}
 			}
 			// Get all posts of the specified group (for public groups or if the user is a member of the private group)
@@ -212,7 +234,9 @@ export const getGroupPosts = async (req: Request, res: Response) => {
 		// Execute the query and sort by createdAt in descending order
 		const posts = await postsQuery
 			.sort({ createdAt: -1 }) // Order by createdAt desc
-			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.select(
+				"_id user_id group_id content images visibility reactions comments createdAt",
+			)
 			.populate({
 				path: "user_id",
 				select: "_id username displayName profileImage contentType",
@@ -267,7 +291,9 @@ export const getPostById = async (req: Request, res: Response) => {
 
 		// Find the post by ID
 		const post = await Post.findById(postId)
-			.select("_id user_id group_id content images visibility reactions comments createdAt")
+			.select(
+				"_id user_id group_id content images visibility reactions comments createdAt",
+			)
 			.populate({
 				path: "user_id",
 				select: "_id username displayName profileImage contentType",
@@ -338,7 +364,9 @@ export const getPostHistoryById = async (req: Request, res: Response) => {
 
 		// Iterate through the edit history in reverse order to fill in missing values
 		let lastContent = post.content;
-		let lastImages = post.images.map((img) => `data:${img.contentType};base64,${img.data!.toString("base64")}`);
+		let lastImages = post.images.map(
+			(img) => `data:${img.contentType};base64,${img.data!.toString("base64")}`,
+		);
 		let lastVisibility = post.visibility;
 
 		for (let i = editHistory.length - 1; i >= 0; i--) {
@@ -348,7 +376,10 @@ export const getPostHistoryById = async (req: Request, res: Response) => {
 			const content = historyEntry.content || lastContent;
 			const images =
 				historyEntry.images.length > 0
-					? historyEntry.images.map((img) => `data:${img.contentType};base64,${img.data!.toString("base64")}`)
+					? historyEntry.images.map(
+							(img) =>
+								`data:${img.contentType};base64,${img.data!.toString("base64")}`,
+						)
 					: lastImages;
 			const visibility = historyEntry.visibility || lastVisibility;
 
@@ -417,7 +448,9 @@ export const createPost = async (req: Request, res: Response) => {
 		await newPost.save();
 
 		// Find the user who created the post
-		const user = await User.findById(userId).select("displayName friends").exec();
+		const user = await User.findById(userId)
+			.select("displayName friends")
+			.exec();
 
 		if (groupId) {
 			// Notify all group members
@@ -438,7 +471,7 @@ export const createPost = async (req: Request, res: Response) => {
 								createdAt: new Date(),
 							},
 						},
-					}
+					},
 				);
 			}
 		} else {
@@ -457,7 +490,7 @@ export const createPost = async (req: Request, res: Response) => {
 							createdAt: new Date(),
 						},
 					},
-				}
+				},
 			);
 		}
 
@@ -490,7 +523,9 @@ export const editPost = async (req: Request, res: Response) => {
 
 		// Check if the current user is the owner of the post
 		if (post.user_id != userId) {
-			return res.status(403).json({ message: "You are not authorized to edit this post" });
+			return res
+				.status(403)
+				.json({ message: "You are not authorized to edit this post" });
 		}
 
 		// Prepare the edit history record
@@ -563,7 +598,9 @@ export const deletePost = async (req: Request, res: Response) => {
 
 		// Check if the current user is the owner of the post or an admin
 		if (post.user_id != userId && !isAdmin) {
-			return res.status(403).json({ message: "You are not authorized to delete this post" });
+			return res
+				.status(403)
+				.json({ message: "You are not authorized to delete this post" });
 		}
 
 		// Delete the post
@@ -619,7 +656,8 @@ export const addCommentToPost = async (req: Request, res: Response) => {
 		if (post.user_id != author_id) {
 			// Ensure the user is not notifying themselves
 			// Find the comment author to get the displayName
-			const commentAuthor = await User.findById(author_id).select("displayName");
+			const commentAuthor =
+				await User.findById(author_id).select("displayName");
 			if (commentAuthor) {
 				const postAuthor = await User.findById(post.user_id);
 				if (postAuthor) {
@@ -675,7 +713,9 @@ export const editCommentOnPost = async (req: Request, res: Response) => {
 
 		// Check if the current user is the author of the comment
 		if (comment.author_id != userId) {
-			return res.status(403).json({ message: "You are not authorized to edit this comment" });
+			return res
+				.status(403)
+				.json({ message: "You are not authorized to edit this comment" });
 		}
 
 		// Add the current comment content to the edit history before editing
@@ -730,7 +770,9 @@ export const deleteCommentFromPost = async (req: Request, res: Response) => {
 
 		// Check if the current user is the author of the comment, the owner of the post, or an admin
 		if (comment.author_id != userId && post.user_id != userId && !isAdmin) {
-			return res.status(403).json({ message: "You are not authorized to delete this comment" });
+			return res
+				.status(403)
+				.json({ message: "You are not authorized to delete this comment" });
 		}
 
 		// Remove the comment from the post's comments array using pull
@@ -772,7 +814,9 @@ export const addReactionToPost = async (req: Request, res: Response) => {
 		}
 
 		// Check if the user has already reacted
-		const existingReaction = post.reactions.find((reaction) => reaction.author_id == userId);
+		const existingReaction = post.reactions.find(
+			(reaction) => reaction.author_id == userId,
+		);
 
 		if (existingReaction) {
 			// If the user has already reacted, update the reaction type
@@ -856,7 +900,9 @@ export const editReactionOnPost = async (req: Request, res: Response) => {
 
 		// Check if the current user is the author of the reaction
 		if (reaction.author_id != userId) {
-			return res.status(403).json({ message: "You are not authorized to edit this reaction" });
+			return res
+				.status(403)
+				.json({ message: "You are not authorized to edit this reaction" });
 		}
 
 		// Update the reaction's type
@@ -866,7 +912,9 @@ export const editReactionOnPost = async (req: Request, res: Response) => {
 		await post.save();
 
 		// Return success response with the updated reaction
-		return res.status(200).json({ message: "Reaction edited successfully", reaction });
+		return res
+			.status(200)
+			.json({ message: "Reaction edited successfully", reaction });
 	} catch (error) {
 		console.error("Error editing reaction:", error);
 		return res.status(500).json({ message: "Internal server error" });
@@ -905,7 +953,9 @@ export const deleteReactionFromPost = async (req: Request, res: Response) => {
 
 		// Check if the current user is the author of the reaction or an admin
 		if (reaction.author_id != userId && !isAdmin) {
-			return res.status(403).json({ message: "You are not authorized to delete this reaction" });
+			return res
+				.status(403)
+				.json({ message: "You are not authorized to delete this reaction" });
 		}
 
 		// Remove the reaction from the post's reactions array using pull
@@ -959,7 +1009,9 @@ export const addReactionToComment = async (req: Request, res: Response) => {
 		}
 
 		// Check if the user has already reacted to the comment
-		const existingReaction = comment.reactions.find((reaction) => reaction.author_id == userId);
+		const existingReaction = comment.reactions.find(
+			(reaction) => reaction.author_id == userId,
+		);
 
 		if (existingReaction) {
 			// If the user has already reacted, update the reaction type
@@ -1053,7 +1105,9 @@ export const editReactionOnComment = async (req: Request, res: Response) => {
 
 		// Check if the current user is the author of the reaction
 		if (reaction.author_id != userId) {
-			return res.status(403).json({ message: "You are not authorized to edit this reaction" });
+			return res
+				.status(403)
+				.json({ message: "You are not authorized to edit this reaction" });
 		}
 
 		// Update the reaction's type
@@ -1071,7 +1125,10 @@ export const editReactionOnComment = async (req: Request, res: Response) => {
 };
 
 // Delete a reaction from a comment
-export const deleteReactionFromComment = async (req: Request, res: Response) => {
+export const deleteReactionFromComment = async (
+	req: Request,
+	res: Response,
+) => {
 	try {
 		const postId = req.params.id;
 		const commentId = req.params.comment_id;
@@ -1114,7 +1171,9 @@ export const deleteReactionFromComment = async (req: Request, res: Response) => 
 
 		// Check if the current user is the author of the reaction or an admin
 		if (reaction.author_id != userId && !isAdmin) {
-			return res.status(403).json({ message: "You are not authorized to delete this reaction" });
+			return res
+				.status(403)
+				.json({ message: "You are not authorized to delete this reaction" });
 		}
 
 		// Remove the reaction from the comment's reactions array using pull

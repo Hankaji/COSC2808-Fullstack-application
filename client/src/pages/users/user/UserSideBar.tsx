@@ -29,7 +29,7 @@ const UserSideBar: FC<Props> = ({ userData }) => {
         method: 'POST',
         body: JSON.stringify(body),
       });
-    } catch (e) {}
+    } catch (e) { }
   };
 
   return (

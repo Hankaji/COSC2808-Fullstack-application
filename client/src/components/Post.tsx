@@ -21,7 +21,14 @@ import {
   useContext,
 } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Posts, Comment, User, Reaction, ReactionTypes } from '../types/post';
+import {
+  Posts,
+  Comment,
+  User,
+  Reaction,
+  ReactionTypes,
+  parseBasicUser,
+} from '../types/post';
 import { mergeClassNames } from '../utils';
 import {
   DropDownItem,
@@ -30,6 +37,7 @@ import {
 } from './ui/DropDownMenu';
 import PopupModal from './PopupModal';
 import { ToastContext } from '../context/ToastProvider';
+import { URL_BASE } from '../config';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
@@ -57,7 +65,42 @@ const PostComponent: FC<Props> = ({ className, data }) => {
     setIsPopup(true);
   };
 
-  const { show } = toastContext;
+  const { show, showAsync } = toastContext;
+
+  const addComment = async (content: string) => {
+    const addRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/posts/${data.id}/comment`;
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          credentials: 'include',
+          body: JSON.stringify({
+            content: content,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log(res);
+      } catch (error) { }
+    };
+
+    showAsync(addRequest, {
+      loading: {
+        title: 'Posting comment...',
+      },
+      success: (_) => ({
+        title: 'Comment posted',
+      }),
+      error: (_) => ({
+        title: 'Couldnt post comment',
+        description: 'Please try again later',
+      }),
+    });
+
+    setTimeout(() => window.location.reload(), 1000);
+  };
 
   // handle the Delete for post
   const handleDelete = async () => {
@@ -178,7 +221,6 @@ const PostComponent: FC<Props> = ({ className, data }) => {
           </div>
         </div>
         {/* Content */}
-        {/* TODO: Change placeholder */}
         <div className="flex flex-col justify-start items-start gap-2">
           <p>{data.content}</p>
           <PostImages imgData={data.images} />
@@ -192,7 +234,13 @@ const PostComponent: FC<Props> = ({ className, data }) => {
           </button>
         </div>
       </div>
-      {isPopup && <PostPopup closePopup={setIsPopup} data={data} />}
+      {isPopup && (
+        <PostPopup
+          onCommentPost={addComment}
+          closePopup={setIsPopup}
+          data={data}
+        />
+      )}
       {/* popup for delete confirmation */}
       <PopupModal
         widthPercent={0.5}
@@ -202,16 +250,14 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         modelRender={
           // Style for modal
           <div className="fixed inset-0 flex items-center justify-center bg-transparent">
-            <div className="p-4 bg-white rounded shadow-lg">
-              <h2 className="text-black">
-                Are you sure you want to delete this post?
-              </h2>
+            <div className="p-6 block-container flex-col text-foreground bg-background border-solid border-border border-2 rounded-lg shadow-lg">
+              <h2>Are you sure you want to delete this post?</h2>
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => {
                     console.log('Cancel button clicked');
                   }}
-                  className="mr-2 px-4 py-2 bg-gray-300 rounded"
+                  className="mr-2 px-4 py-2 bg-info hover:bg-secondary transition-colors rounded"
                 >
                   Cancel
                 </button>
@@ -220,7 +266,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                     console.log('Delete button clicked');
                     handleDelete();
                   }}
-                  className="px-4 py-2 bg-red-500 text-white rounded"
+                  className="px-4 py-2 bg-danger hover:bg-secondary transition-colors rounded"
                 >
                   Delete
                 </button>
@@ -247,16 +293,16 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         modelRender={
           // Style for modal
           <div className="fixed inset-0 flex items-center justify-center bg-transparent">
-            <div className="p-4 bg-white rounded shadow-lg">
-              <h2 className="text-black">Edit Post</h2>
+            <div className="p-6 block-container flex-col w-[500px] bg-background border-border border-2 border-solid text-foreground rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold">Edit Post</h2>
               <textarea
-                className="w-full p-2 mt-2 border border-gray-300 rounded text-black"
+                className="w-full p-2 h-40 mt-2 border-solid border-border border-2 bg-background resize-none rounded"
                 value={postContent}
                 onChange={(e) => setPostContent(e.target.value)}
                 onClick={(e) => e.stopPropagation()} // Prevent click propagation
               />
               <button
-                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"
+                className="mt-2 px-4 py-2 bg-primary hover:bg-secondary transition-colors text-white rounded"
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent click propagation
                   setPostVisibility(
@@ -274,7 +320,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                     console.log('Cancel button clicked');
                     setIsEditPopup(false);
                   }}
-                  className="mr-2 px-4 py-2 bg-gray-300 rounded"
+                  className="mr-2 px-4 py-2 bg-info hover:bg-secondary transition-colors rounded"
                 >
                   Cancel
                 </button>
@@ -283,7 +329,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                     console.log('Confirm button clicked');
                     handleEdit();
                   }}
-                  className="px-4 py-2 bg-green-500 text-white rounded"
+                  className="px-4 py-2 bg-success hover:bg-secondary transition-colors text-white rounded"
                 >
                   Confirm
                 </button>
@@ -382,10 +428,13 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
   );
 };
 
-const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
-  closePopup,
-  data,
-}) => {
+const PostPopup: FC<{
+  onCommentPost: (content: string) => Promise<any>;
+  closePopup: any;
+  data: Posts;
+}> = ({ onCommentPost, closePopup, data }) => {
+  const userCommentRef = useRef<HTMLDivElement>(null);
+
   return (
     <div
       onClick={() => {
@@ -393,14 +442,18 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
       }}
       className="fixed top-0 left-0 w-svw h-svh backdrop-blur-[2px] flex justify-center items-center px-[15%]"
     >
-      <div className="overflow-hidden z-[100] h-[80%] w-[60%] aspect-auto rounded-lg rounded-tr-none rounded-br-none">
+      <div className="overflow-hidden z-[100] h-[80%] w-[60%] bg-background aspect-auto rounded-lg rounded-tr-none rounded-br-none">
         <img
           className="object-cover w-full h-full"
           src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
         />
       </div>
       <div
-        className={`flex flex-col gap-4 w-full h-[80%] rounded-tl-none rounded-bl-none p-4 my-4 border-border border-solid border-2 rounded-lg bg-card`}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+        }}
+        className={`flex flex-col z-[100] gap-4 w-full h-[80%] rounded-tl-none rounded-bl-none p-4 my-4 border-border border-solid border-2 rounded-lg bg-card`}
       >
         {/* Author */}
         <div className="flex gap-2">
@@ -423,6 +476,29 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
           </button>
         </div>
         <div className="border-border border-solid border-2"></div>
+        <div className="flex items-center max-h-[999px] transition-all duration-500 justify-start gap-1 text-lg bg-background py-2 px-4 border-b-border border-b-2 border-solid focus-within:border-primary">
+          <div
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            ref={userCommentRef}
+            contentEditable
+            className="w-full h-max p-0 text-wrap break-words break-all transition-all duration-500 resize-none bg-background text-lg rounded-lg outline-none"
+          >
+            {/* <span className="cursor-none text-muted"> */}
+            {/*   {comment.trim() === '' && 'Post a comments'} */}
+            {/* </span> */}
+          </div>
+          <button
+            onClick={() =>
+              onCommentPost(userCommentRef.current?.textContent || 'err')
+            }
+            className="py-1 px-4 rounded-lg bg-primary"
+          >
+            Post
+          </button>
+        </div>
         {/* Comments */}
         <CommentSection data={data.comments} />
       </div>
@@ -493,23 +569,16 @@ const CommentComp: FC<{ data: Comment }> = ({ data }) => {
   return (
     <div className="flex flex-col justify-start items-start gap-2">
       <div className="flex gap-2">
-        {/* TODO fix image */}
-        <img
-          className="rounded-full bg-gray-500 size-12"
-          src="https://pbs.twimg.com/profile_images/1581014308397502464/NPogKMyk_400x400.jpg"
-          alt="User avatar"
+        <AuthorPfp
+          data={
+            {
+              ...parseBasicUser(data.author_id),
+              profileImage: (data.author_id as any).profileImage,
+            } as User
+          }
         />
-        <div className="flex flex-col justify-center items-start">
-          <h1 className="text-xl font-semibold">
-            Greg
-            <span className="text-muted-foreground"> • 23m</span>
-          </h1>
-          <p className="text-sm text-muted-foreground font-semibold">
-            @TheRealGreg
-          </p>
-        </div>
       </div>
-      <p>Love the art, such a masterpiece!</p>
+      <p>{data.content}</p>
       {/* Comment actions */}
       <div className="flex gap-4">
         <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">

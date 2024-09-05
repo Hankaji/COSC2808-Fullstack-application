@@ -6,48 +6,26 @@ import PostsView from '../../../components/PostsView';
 import Tabs, { Tab } from '../../../components/Tabs';
 import { User } from '../../../types/user';
 import { mergeClassNames } from '../../../utils';
-
-const mockData: Posts[] = [
-  {
-    id: '1',
-    user: {
-      profileImage:
-        'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
-      username: 'UngaBunga',
-      displayName: 'Anonymous',
-      id: '',
-    },
-    content: 'Check out my new artwork',
-    images: [
-      'https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small',
-    ],
-    reactions: [],
-    comments: [],
-    editHistory: [],
-    group_id: null,
-    visibility: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    __v: 0,
-  },
-];
+import { URL_BASE } from '../../../config';
 
 interface Props {
   userData: User;
 }
 
-const tabs: Tab[] = [
-  {
-    name: 'Posts',
-    element: <PostsView posts={mockData} />,
-  },
-  {
-    name: 'Friends',
-    element: 'No friend haha',
-  },
-];
-
 const UserPanel: FC<Props> = ({ userData }) => {
+  const tabs: Tab[] = [
+    {
+      name: 'Posts',
+      element: (
+        <PostsView fetchEndpoint={`${URL_BASE}/posts/user/${userData.id}`} />
+      ),
+    },
+    {
+      name: 'Friends',
+      element: 'No friend haha',
+    },
+  ];
+
   return (
     <div className="flex flex-col w-full gap-4">
       <div className="flex gap-6">
