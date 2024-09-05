@@ -1,5 +1,3 @@
-import { log } from 'console';
-import { CloudCog } from 'lucide-react';
 import { parseBasicUser, User } from './post';
 
 export interface Group {
@@ -18,7 +16,9 @@ export enum GroupVisibility {
   PRIVATE,
 }
 
-export const parseGroup = (data: any) => {
+export type RequestStatus = 'Pending' | 'Accepted' | 'Rejected';
+
+export const parseGroup = (data: any): Group => {
   return {
     id: data._id,
     name: data.name,
@@ -33,5 +33,5 @@ export const parseGroup = (data: any) => {
     coverImage: data.virtualCoverImage,
     admins: data.admins,
     members: (data.members as any[]).map((mem) => parseBasicUser(mem)),
-  } as Group;
+  };
 };

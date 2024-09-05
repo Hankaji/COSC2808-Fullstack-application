@@ -13,7 +13,7 @@ import useToast from '../../../hooks/useToast';
 import {
   GroupJoinRequest,
   parseGroupJoinReq,
-} from '../../../types/group_join_request';
+} from '../../../types/groupJoinRequest';
 import Tabs, { Tab } from '../../../components/Tabs';
 
 const GroupRightSide = () => {

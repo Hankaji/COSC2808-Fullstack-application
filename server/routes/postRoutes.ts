@@ -2,23 +2,23 @@ import express from "express";
 import { isAuthenticated } from "../middleware/authentication";
 import fileUpload from "../middleware/fileUpload";
 import {
-	getPosts,
-	getUserPosts,
-	getGroupPosts,
-	getPostById,
-	getPostHistoryById,
-	createPost,
-	editPost,
-	deletePost,
-	addCommentToPost,
-	editCommentOnPost,
-	deleteCommentFromPost,
-	addReactionToPost,
-	editReactionOnPost,
-	deleteReactionFromPost,
-	addReactionToComment,
-	editReactionOnComment,
-	deleteReactionFromComment,
+  getPosts,
+  getUserPosts,
+  getGroupPosts,
+  getPostById,
+  getPostHistoryById,
+  createPost,
+  editPost,
+  deletePost,
+  addCommentToPost,
+  editCommentOnPost,
+  deleteCommentFromPost,
+  addReactionToPost,
+  editReactionOnPost,
+  deleteReactionFromPost,
+  addReactionToComment,
+  editReactionOnComment,
+  deleteReactionFromComment,
 } from "../controllers/postController";
 
 const postRouter = express.Router();
@@ -35,15 +35,35 @@ postRouter.delete("/:id", isAuthenticated, deletePost);
 
 // Comment routes
 postRouter.post("/:id/comment", isAuthenticated, addCommentToPost);
-postRouter.patch("/:id/comment/:comment_id", isAuthenticated, editCommentOnPost);
-postRouter.delete("/:id/comment/:comment_id", isAuthenticated, deleteCommentFromPost);
+postRouter.patch(
+  "/:id/comment/:comment_id",
+  isAuthenticated,
+  editCommentOnPost,
+);
+postRouter.delete(
+  "/:id/comment/:comment_id",
+  isAuthenticated,
+  deleteCommentFromPost,
+);
 
 // Reaction routes
 postRouter.post("/:id/reaction", isAuthenticated, addReactionToPost);
-postRouter.patch("/:id/reaction/:reaction_id", isAuthenticated, editReactionOnPost);
-postRouter.delete("/:id/reaction/:reaction_id", isAuthenticated, deleteReactionFromPost);
-postRouter.post("/:id/comment/:comment_id/reaction", isAuthenticated, addReactionToComment);
-postRouter.patch("/:id/comment/:comment_id/reaction/:reaction_id", isAuthenticated, editReactionOnComment);
-postRouter.delete("/:id/comment/:comment_id/reaction/:reaction_id", isAuthenticated, deleteReactionFromComment);
+postRouter.patch("/:id/reaction/", isAuthenticated, editReactionOnPost);
+postRouter.delete("/:id/reaction", isAuthenticated, deleteReactionFromPost);
+postRouter.post(
+  "/:id/comment/:comment_id/reaction",
+  isAuthenticated,
+  addReactionToComment,
+);
+postRouter.patch(
+  "/:id/comment/:comment_id/reaction",
+  isAuthenticated,
+  editReactionOnComment,
+);
+postRouter.delete(
+  "/:id/comment/:comment_id/reaction",
+  isAuthenticated,
+  deleteReactionFromComment,
+);
 
 export default postRouter;

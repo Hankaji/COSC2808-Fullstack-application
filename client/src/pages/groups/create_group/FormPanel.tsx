@@ -12,14 +12,28 @@ import { URL_BASE } from '../../../config';
 import useToast from '../../../hooks/useToast';
 
 const GroupFormPanel = () => {
-  const [visibility, setVisibility] = useState<'Public' | 'Private'>('Public');
-
   const toast = useToast();
 
+  const [visibility, setVisibility] = useState<'Public' | 'Private'>('Public');
+  const [name, setName] = useState('');
+  const [imageKey, setImageKey] = useState(0);
   const descriptionRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const resetForm = () => {
+    setVisibility('Public');
+    setName('');
+    setImageKey(prevKey => prevKey + 1); // Increment the key to force re-render of ImageUpload components
+    if (descriptionRef.current) {
+      descriptionRef.current.innerText = '';
+    }
+    if (formRef.current) {
+      formRef.current.reset();
+    }
+  };
 
   const getVisibilityNode = (visibility: 'Public' | 'Private') => {
-    if (visibility == 'Public') {
+    if (visibility === 'Public') {
       return (
         <VisibilitySpan
           Icon={Globe}
@@ -57,33 +71,34 @@ const GroupFormPanel = () => {
     formData.append('visibility', visibility);
     const payload = Object.fromEntries(formData.entries());
 
-    console.log(payload);
-
-    validateForm(payload);
+    if (!validateForm(payload)) return;
 
     const endpoint = `${URL_BASE}/requests/group_creation_requests`;
     const submit = async () => {
       try {
-        // Send request
         const res = await fetch(endpoint, {
           credentials: 'include',
           method: 'POST',
           body: formData,
         });
 
-        // Check request
         const data = await res.json();
-        console.log(data);
         return data;
-      } catch (error) { }
+      } catch (error) {
+        throw error;
+      }
     };
+
     toast.showAsync(submit, {
       loading: {
         title: 'Loading...',
       },
-      success: (data) => ({
-        title: `${data.message}`,
-      }),
+      success: (data) => {
+        resetForm();
+        return {
+          title: `${data.message}`,
+        };
+      },
       error: (_) => ({
         title: 'Could not create group',
       }),
@@ -92,37 +107,36 @@ const GroupFormPanel = () => {
 
   return (
     <form
+      ref={formRef}
       encType="multipart/form-data"
       onSubmit={handleSubmit}
       className="flex flex-col gap-4"
     >
       <h1 className="text-3xl font-semibold">Create a group</h1>
       <Divider alignment="horizontal" />
-      {/* Category */}
       <h2 className="flex flex-col text-xl font-semibold">
         Name
-        <span className="text-sm text-muted font-normal">
+        <span className="text-sm text-gray-500 font-normal">
           Group name should contain only alphabetical character and cannot be
           changed upon creation.
         </span>
       </h2>
-      {/* Input form */}
       <div className="flex items-center justify-start gap-1 text-lg bg-background rounded-sm py-2 px-4 border-border border-2 border-solid focus-within:border-primary transition-colors">
-        <span className="text-muted">g/</span>
+        <span className="text-gray-500">g/</span>
         <Input
           name="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="p-0 focus:ring-0 focus:ring-offset-0 border-0 text-lg bg-transparent"
           placeholder="groupname"
         />
       </div>
-      {/* Category */}
       <h2 className="flex flex-col text-xl font-semibold">
         Description
-        <span className="text-sm text-muted font-normal">
+        <span className="text-sm text-gray-500 font-normal">
           Tell people more about your group.
         </span>
       </h2>
-      {/* Input form */}
       <div className="flex items-center max-h-[999px] transition-all duration-500 justify-start gap-1 text-lg bg-background rounded-sm py-2 px-4 border-border border-2 border-solid focus-within:border-primary">
         <div
           ref={descriptionRef}
@@ -130,9 +144,7 @@ const GroupFormPanel = () => {
           className="w-full h-max p-0 text-wrap break-words break-all transition-all duration-500 resize-none bg-background text-lg rounded-lg outline-none"
         ></div>
       </div>
-      {/* Category */}
       <h2 className="flex flex-col text-xl font-semibold">Visibility</h2>
-      {/* Input form */}
       <div className="flex items-center justify-start gap-1 text-lg bg-background rounded-sm border-border border-2 border-solid focus-within:border-primary transition-colors">
         <DropDownMenu
           className="w-full group rounded-sm py-2 px-4"
@@ -159,30 +171,25 @@ const GroupFormPanel = () => {
           <ChevronDown className="ml-auto" />
         </DropDownMenu>
       </div>
-      {/* Category */}
       <h2 className="flex flex-col text-xl font-semibold">
         Cover image
-        <span className="text-sm text-muted font-normal">
+        <span className="text-sm text-gray-500 font-normal">
           The cover image for your group when fully viewed.
         </span>
       </h2>
-      {/* Input form */}
-      <ImageUpload name="coverImage" className="rounded-sm py-2 px-4" />
-      {/* Category */}
+      <ImageUpload key={`cover-${imageKey}`} name="coverImage" className="rounded-sm py-2 px-4" />
       <h2 className="flex flex-col text-xl font-semibold">
         Group avatar
-        <span className="text-sm text-muted font-normal">
+        <span className="text-sm text-gray-500 font-normal">
           The image people see when they search for your group.
         </span>
       </h2>
-      {/* Input form */}
-      <ImageUpload name="groupImage" className="rounded-sm py-2 px-4" />
-      {/* Action */}
+      <ImageUpload key={`avatar-${imageKey}`} name="groupImage" className="rounded-sm py-2 px-4" />
       <Divider alignment="horizontal" />
       <div className="flex items-center justify-end w-full">
         <button
           type="submit"
-          className="rounded-lg font-bold py-2 px-4 bg-primary text-foreground hover:bg-secondary transition-colors"
+          className="rounded-full bg-white hover:bg-slate-300 text-black px-4 py-2 text-sm font-bold"
         >
           Create group
         </button>
@@ -203,7 +210,7 @@ const VisibilitySpan: FC<{ Icon: LucideIcon; name: string; des?: string }> = ({
         {name}
       </span>
       {des && (
-        <p className="text-sm text-muted group-hover:text-white transition-colors">
+        <p className="text-sm text-gray-500 group-hover:text-white transition-colors">
           {des}
         </p>
       )}

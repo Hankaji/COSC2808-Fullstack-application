@@ -1,7 +1,5 @@
 import { UserRoundPlus } from 'lucide-react';
 import { FC } from 'react';
-import { useLoaderData, useParams } from 'react-router';
-import { URL_BASE } from '../../../config';
 import { User } from '../../../types/user';
 import { mergeClassNames } from '../../../utils';
 
@@ -39,6 +37,7 @@ const UserSideBar: FC<Props> = ({ userData }) => {
         <img
           className="size-full overflow-hidden object-cover bg-gradient-to-b from-transparent to-background"
           src="https://static.vecteezy.com/system/resources/thumbnails/028/126/729/small_2x/dark-theme-wood-black-background-texture-high-quality-closeup-may-be-used-for-design-as-background-copy-space-generative-ai-photo.jpeg"
+          alt={userData.displayName}
         />
         <div className="absolute top-0 z-10 w-full h-full bg-gradient-to-b from-transparent from-50% to-background"></div>
       </div>
@@ -56,7 +55,8 @@ const UserSideBar: FC<Props> = ({ userData }) => {
       </div>
       <Achievement topLine="N/a" category="Posts" />
       <Achievement topLine="N/a" category="Comments" />
-      <Achievement topLine={joinedDateStr} category="Joined" />
+      {/* TODO: add createdAt */}
+      {/* <Achievement topLine={joinedDateStr} category="Joined" /> */}
     </div>
   );
 };

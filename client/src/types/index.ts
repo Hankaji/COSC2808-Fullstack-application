@@ -6,6 +6,11 @@ export type Account = {
   isSuspended?: boolean;
 };
 
+export type FriendRequest = {
+  id: string;
+  acc: Account;
+};
+
 export type NotificationType =
   | 'User'
   | 'Group'

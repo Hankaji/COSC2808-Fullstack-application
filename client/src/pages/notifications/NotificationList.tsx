@@ -23,7 +23,6 @@ const NotificationList: FC = () => {
         credentials: 'include',
       });
       const result = await res.json();
-      console.log('result :', result);
       setNotificationList(result);
     };
 
@@ -52,7 +51,7 @@ const NotificationList: FC = () => {
   }, [notificationList]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
+    <div className="flex flex-col h-[calc(100vh-180px)]">
       <h2 className="font-bold text-3xl pb-3 border-b-2 border-border">
         Notifications
       </h2>

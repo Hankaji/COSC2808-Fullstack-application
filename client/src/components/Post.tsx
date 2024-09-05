@@ -10,7 +10,7 @@ import {
   MessageCircle,
   SmilePlus,
   ThumbsUp,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   ButtonHTMLAttributes,
   CSSProperties,
@@ -43,12 +43,19 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
 }
 
+interface ReactionsProps {
+  reactions: Reaction[];
+  context: "post" | "comment";
+  postId: string;
+  commentId?: string; // Optional, only needed for comments
+}
+
 const PostComponent: FC<Props> = ({ className, data }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
   const [isEditPopup, setIsEditPopup] = useState<boolean>(false); // State for edit modal
   const [postContent, setPostContent] = useState<string>(data.content); // State for post content
-  const [postVisibility, setPostVisibility] = useState<'Public' | 'Friend'>(
-    data.visibility as 'Public' | 'Friend',
+  const [postVisibility, setPostVisibility] = useState<"Public" | "Friend">(
+    data.visibility as "Public" | "Friend",
   ); // State for post visibility
   const openModalButtonRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button
   const openModalButtonEditRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button for editing
@@ -58,7 +65,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
 
   // error handler for toast
   if (!toastContext) {
-    throw new Error('ToastContext must be used within a ToastProvider');
+    throw new Error("ToastContext must be used within a ToastProvider");
   }
 
   const handlePostClick = () => {
@@ -111,34 +118,34 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       });
 
       if (response.ok) {
-        console.log('Post deleted successfully');
+        console.log("Post deleted successfully");
         show({
-          title: 'Success',
-          description: 'Post deleted successfully',
-          type: 'success',
+          title: "Success",
+          description: "Post deleted successfully",
+          type: "success",
         });
 
         // Check if the current URL matches /posts/:postId
         const postIdPattern = /^\/posts\/[a-zA-Z0-9]+$/;
         if (postIdPattern.test(location.pathname)) {
-          navigate('/'); // Navigate to the home page
+          navigate("/"); // Navigate to the home page
         } else {
           window.location.reload(); // Refresh the page
         }
       } else {
-        console.error('Failed to delete the post');
+        console.error("Failed to delete the post");
         show({
-          title: 'Error',
-          description: 'Failed to delete the post',
-          type: 'error',
+          title: "Error",
+          description: "Failed to delete the post",
+          type: "error",
         });
       }
     } catch (error) {
       console.error(error);
       show({
-        title: 'Error',
-        description: 'An error occurred while deleting the post',
-        type: 'error',
+        title: "Error",
+        description: "An error occurred while deleting the post",
+        type: "error",
       });
     }
   };
@@ -149,9 +156,9 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           content: postContent,
           visibility: postVisibility,
@@ -159,31 +166,32 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       });
 
       if (response.ok) {
-        console.log('Post edited successfully');
+        console.log("Post edited successfully");
         show({
-          title: 'Success',
-          description: 'Post edited successfully',
-          type: 'success',
+          title: "Success",
+          description: "Post edited successfully",
+          type: "success",
         });
         window.location.reload(); // Refresh the page to show updated content
       } else {
-        console.error('Failed to edit the post');
+        console.error("Failed to edit the post");
         show({
-          title: 'Error',
-          description: 'Failed to edit the post',
-          type: 'error',
+          title: "Error",
+          description: "Failed to edit the post",
+          type: "error",
         });
       }
     } catch (error) {
       console.error(error);
       show({
-        title: 'Error',
-        description: 'An error occurred while editing the post',
-        type: 'error',
+        title: "Error",
+        description: "An error occurred while editing the post",
+        type: "error",
       });
     }
   };
-
+  console.log("Post: ");
+  console.log(data);
   return (
     <>
       <div
@@ -227,7 +235,11 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
-          <Reactions reactions={data.reactions} />
+          <Reactions
+            reactions={data.reactions}
+            context="post"
+            postId={data.id}
+          />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
             {data.comments.length}
@@ -255,7 +267,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => {
-                    console.log('Cancel button clicked');
+                    console.log("Cancel button clicked");
                   }}
                   className="mr-2 px-4 py-2 bg-info hover:bg-secondary transition-colors rounded"
                 >
@@ -263,7 +275,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Delete button clicked');
+                    console.log("Delete button clicked");
                     handleDelete();
                   }}
                   className="px-4 py-2 bg-danger hover:bg-secondary transition-colors rounded"
@@ -279,7 +291,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded"
           ref={openModalButtonRef}
-          style={{ display: 'none' }} // Make the button invisible
+          style={{ display: "none" }} // Make the button invisible
         >
           Open Modal
         </button>
@@ -306,18 +318,17 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent click propagation
                   setPostVisibility(
-                    postVisibility === 'Public' ? 'Friend' : 'Public',
+                    postVisibility === "Public" ? "Friend" : "Public",
                   );
                 }}
               >
-                {postVisibility === 'Public'
-                  ? 'Change to Friend'
-                  : 'Change to Public'}
+                {postVisibility === "Public"
+                  ? "Change to Friend"
+                  : "Change to Public"}
               </button>
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => {
-                    console.log('Cancel button clicked');
                     setIsEditPopup(false);
                   }}
                   className="mr-2 px-4 py-2 bg-info hover:bg-secondary transition-colors rounded"
@@ -326,7 +337,6 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Confirm button clicked');
                     handleEdit();
                   }}
                   className="px-4 py-2 bg-success hover:bg-secondary transition-colors text-white rounded"
@@ -342,7 +352,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded"
           ref={openModalButtonEditRef}
-          style={{ display: 'none' }} // Make the button invisible
+          style={{ display: "none" }} // Make the button invisible
         >
           Open Modal
         </button>
@@ -354,16 +364,16 @@ const PostComponent: FC<Props> = ({ className, data }) => {
 const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
   const [currentIdx, setCurrentIdx] = useState<number>(0);
 
-  if (imgData == undefined) {
+  if (imgData === undefined) {
     return <></>;
   }
 
   const prev = () => {
-    setCurrentIdx((curr) => (curr == 0 ? imgData.length - 1 : curr - 1));
+    setCurrentIdx((curr) => (curr === 0 ? imgData.length - 1 : curr - 1));
   };
 
   const next = () => {
-    setCurrentIdx((curr) => (curr == imgData.length - 1 ? 0 : curr + 1));
+    setCurrentIdx((curr) => (curr === imgData.length - 1 ? 0 : curr + 1));
   };
 
   return (
@@ -382,6 +392,7 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
             <img
               className="min-w-full aspect-auto object-cover bg-center rounded-lg"
               src={img}
+              alt={img}
             />
           </div>
         ))}
@@ -415,7 +426,7 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
                     key={idx}
                     className={mergeClassNames(
                       'transition-all size-3 bg-white rounded-full',
-                      currentIdx == idx ? 'p-2' : 'bg-opacity-50',
+                      currentIdx === idx ? 'p-2' : 'bg-opacity-50',
                     )}
                   ></div>
                 );
@@ -446,6 +457,7 @@ const PostPopup: FC<{
         <img
           className="object-cover w-full h-full"
           src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
+          alt=""
         />
       </div>
       <div
@@ -469,10 +481,14 @@ const PostPopup: FC<{
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
-          <Reactions reactions={data.reactions} />
+          <Reactions
+            reactions={data.reactions}
+            context="post"
+            postId={data.id}
+          />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
-            817
+            {data.comments.length}
           </button>
         </div>
         <div className="border-border border-solid border-2"></div>
@@ -500,7 +516,7 @@ const PostPopup: FC<{
           </button>
         </div>
         {/* Comments */}
-        <CommentSection data={data.comments} />
+        <CommentSection data={data.comments} postId={data.id} />
       </div>
     </div>
   );
@@ -520,7 +536,7 @@ const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo, currentUser }) => {
         src={
           data.profileImage
             ? data.profileImage
-            : 'https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2'
+            : "https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2"
         }
         alt="User avatar"
       />
@@ -555,17 +571,7 @@ const FallBackPfp = () => {
   );
 };
 
-const CommentSection: FC<{ data: Comment[] }> = ({ data }) => {
-  return (
-    <div className="overflow-y-scroll h-full w-full">
-      {data.map((cmt) => {
-        return <CommentComp key={cmt.id} data={cmt} />;
-      })}
-    </div>
-  );
-};
-
-const CommentComp: FC<{ data: Comment }> = ({ data }) => {
+const CommentComp: FC<CommentProp> = ({ data, postId }) => {
   return (
     <div className="flex flex-col justify-start items-start gap-2">
       <div className="flex gap-2">
@@ -582,24 +588,148 @@ const CommentComp: FC<{ data: Comment }> = ({ data }) => {
       {/* Comment actions */}
       <div className="flex gap-4">
         <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
-          <Heart className="" />
-          87
+          <Reactions
+            reactions={data.reactions}
+            context="comment"
+            postId={postId}
+            commentId={data.id}
+          />
         </button>
       </div>
     </div>
   );
 };
 
-const Reactions: FC<{ reactions: Reaction[] }> = ({ reactions }) => {
+const CommentSection: FC<{ data: Comment[]; postId: string }> = ({
+  data,
+  postId,
+}) => {
+  return (
+    <div className="overflow-y-scroll h-full w-full">
+      {data.map((cmt) => {
+        return <CommentComp key={cmt.id} data={cmt} postId={postId} />;
+      })}
+    </div>
+  );
+};
+
+interface CommentProp {
+  data: Comment;
+  postId: string;
+}
+
+const Reactions: FC<ReactionsProps> = ({
+  reactions,
+  context,
+  postId,
+  commentId,
+}) => {
   const [reactedReaction, setReactedReaction] = useState<ReactionTypes>(
     ReactionTypes.NULL,
   );
 
+  const [reactionCounts, setReactionCounts] = useState<
+    Record<ReactionTypes, number>
+  >({
+    [ReactionTypes.LIKE]: 0,
+    [ReactionTypes.LOVE]: 0,
+    [ReactionTypes.HAHA]: 0,
+    [ReactionTypes.ANGRY]: 0,
+    [ReactionTypes.NULL]: 0,
+  });
+
+  let endpoint = "";
   const changeReaction = (to: ReactionTypes) => {
-    if (to === reactedReaction) setReactedReaction(ReactionTypes.NULL);
-    else setReactedReaction(to);
+    if (context === "post") {
+      endpoint = `${URL_BASE}/posts/${postId}/reaction`;
+    } else if (context === "comment") {
+      endpoint = `${URL_BASE}/posts/${postId}/comment/${commentId}/reaction`;
+    }
+    if (to === reactedReaction) {
+      setReactionCounts((prev) => ({
+        ...prev,
+        [to]: prev[to] - 1,
+      }));
+      setReactedReaction(ReactionTypes.NULL);
+      deleteReaction();
+    } else {
+      if (reactedReaction !== ReactionTypes.NULL) {
+        setReactionCounts((prev) => ({
+          ...prev,
+          [reactedReaction]: prev[reactedReaction] - 1,
+        }));
+      }
+      setReactionCounts((prev) => ({
+        ...prev,
+        [to]: prev[to] + 1,
+      }));
+      setReactedReaction(to);
+      addReaction(to);
+    }
+  };
+  // handle adding + editing reaction
+  const addReaction = async (reactionType: ReactionTypes) => {
+    try {
+      const formattedType =
+        reactionType.charAt(0).toUpperCase() +
+        reactionType.slice(1).toLowerCase();
+      const response = await fetch(`${endpoint}`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type: formattedType,
+          // Add any other necessary data here
+        }),
+      });
+
+      if (response.ok) {
+        console.log("Reacted successfully");
+      } else {
+        console.error("Failed to react");
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
+  const deleteReaction = async () => {
+    try {
+      const response = await fetch(`${endpoint}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        console.log("Deleted successfully");
+      } else {
+        console.error("Failed to react");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    const newCounts = {
+      [ReactionTypes.LIKE]: 0,
+      [ReactionTypes.LOVE]: 0,
+      [ReactionTypes.HAHA]: 0,
+      [ReactionTypes.ANGRY]: 0,
+      [ReactionTypes.NULL]: 0,
+    };
+
+    reactions.forEach((reaction) => {
+      const reactionType = reaction.type.toUpperCase() as ReactionTypes;
+      if (reactionType in newCounts) {
+        newCounts[reactionType]++;
+      }
+    });
+
+    setReactionCounts(newCounts);
+  }, [reactions]);
   return (
     <DropDownMenu
       hoverable
@@ -608,51 +738,42 @@ const Reactions: FC<{ reactions: Reaction[] }> = ({ reactions }) => {
           <DropDownItem asChild>
             <ReactionButton
               isSelected={reactedReaction === ReactionTypes.LIKE}
-              onClick={() => {
-                changeReaction(ReactionTypes.LIKE);
-              }}
+              onClick={() => changeReaction(ReactionTypes.LIKE)}
               color="#7aa2f7"
-              amount={2496}
+              amount={reactionCounts[ReactionTypes.LIKE]}
               Icon={ThumbsUp}
             />
           </DropDownItem>
           <DropDownItem asChild>
             <ReactionButton
               isSelected={reactedReaction === ReactionTypes.LOVE}
-              onClick={() => {
-                changeReaction(ReactionTypes.LOVE);
-              }}
+              onClick={() => changeReaction(ReactionTypes.LOVE)}
               color="#f7768e"
-              amount={5070}
+              amount={reactionCounts[ReactionTypes.LOVE]}
               Icon={Heart}
             />
           </DropDownItem>
           <DropDownItem asChild>
             <ReactionButton
               isSelected={reactedReaction === ReactionTypes.HAHA}
-              onClick={() => {
-                changeReaction(ReactionTypes.HAHA);
-              }}
+              onClick={() => changeReaction(ReactionTypes.HAHA)}
               color="#e0af68"
-              amount={156}
+              amount={reactionCounts[ReactionTypes.HAHA]}
               Icon={Laugh}
             />
           </DropDownItem>
           <DropDownItem asChild>
             <ReactionButton
               isSelected={reactedReaction === ReactionTypes.ANGRY}
-              onClick={() => {
-                changeReaction(ReactionTypes.ANGRY);
-              }}
+              onClick={() => changeReaction(ReactionTypes.ANGRY)}
               color="#f7768e"
-              amount={78}
+              amount={reactionCounts[ReactionTypes.ANGRY]}
               Icon={Angry}
             />
           </DropDownItem>
         </DropDownMenuContent>
       }
     >
-      {/* <ReactionButton color="#7aa2f7" amount={27} Icon={ThumbsUp} /> */}
       <SmilePlus />
       {reactions.length}
     </DropDownMenu>
@@ -676,8 +797,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   ...props
 }) => {
   let baseStyle = {
-    fill: 'transparent',
-    color: 'white',
+    fill: "transparent",
+    color: "white",
   } as CSSProperties;
 
   let activeStyle = isSelected
@@ -693,7 +814,10 @@ const ReactionButton: FC<ReactionBtnProps> = ({
         onClick && onClick(e);
       }}
       {...props}
-      className={`flex justify-center items-center group gap-2 p-2 rounded-lg hover:bg-secondary ${className}`}
+      className={mergeClassNames(
+        `flex justify-center items-center group gap-2 p-2 rounded-lg hover:bg-secondary`,
+        className,
+      )}
     >
       <Icon
         style={{
@@ -707,7 +831,7 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   );
 };
 
-export { CommentSection, PostImages, AuthorPfp, FallBackPfp };
-export type { Posts, User, Reaction, CommentComp as Comment };
+export { CommentSection, PostImages, AuthorPfp, FallBackPfp, CommentComp as Comment };
+export type { Posts, User, Reaction };
 const Post = PostComponent;
 export default Post;

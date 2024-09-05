@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useLoaderData } from 'react-router';
 import Layout from '../../../components/Layout';
 import { parseUser, User } from '../../../types/user';
@@ -10,8 +9,8 @@ const UserPage = () => {
   const [userData, setUserData] = useState<User>(parseUser(loaderData));
 
   return (
-    <Layout stickyRightSideCmp={<UserSideBar userData={userData} />}>
-      <UserPanel userData={userData} />
+    <Layout stickyRightSideCmp={<UserSideBar userData={loaderData} />}>
+      <UserPanel userData={loaderData} />
     </Layout>
   );
 };

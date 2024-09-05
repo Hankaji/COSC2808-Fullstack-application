@@ -1,10 +1,12 @@
-import { Check, CircleAlert, Info, TriangleAlert, X } from 'lucide-react';
+import { Check, CircleAlert, Info, TriangleAlert } from 'lucide-react';
 import {
   createContext,
   FC,
   PropsWithChildren,
   ReactNode,
   useState,
+  useEffect,
+  useRef,
 } from 'react';
 import Loading from '../components/ui/Loading';
 import { mergeClassNames } from '../utils';
@@ -44,6 +46,13 @@ interface Toast {
 
 const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const toastContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (toastContainerRef.current) {
+      toastContainerRef.current.scrollTop = toastContainerRef.current.scrollHeight;
+    }
+  }, [toasts]);
 
   const displayToast = (
     toast: ToastDetail,
@@ -73,24 +82,20 @@ const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   ) => {
     const id = Date.now();
 
-    // Show loading toast
     displayToast(toastOptions.loading, id, true);
 
     promise()
       .then((data) => {
-        // Show success toast
         let toast = toastOptions.success(data) as ToastDetail;
         toast.type = 'success';
         show(toast);
       })
       .catch((error) => {
-        // Show error toast
         let toast = toastOptions.error(error) as ToastDetail;
         toast.type = 'error';
         show(toast);
       })
       .finally(() => {
-        // Close loading toast
         closeToast(id);
       });
   };
@@ -101,7 +106,10 @@ const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   return (
     <ToastContext.Provider value={{ show, showAsync }}>
       {children}
-      <div className="space-y-2 absolute bottom-4 right-4">
+      <div 
+        ref={toastContainerRef}
+        className="space-y-2 fixed bottom-4 right-4 z-50 max-h-[calc(100vh-2rem)] overflow-y-auto"
+      >
         {toasts.map((toast, idx) => {
           return (
             <div key={toast.id} className="relative">
@@ -135,7 +143,6 @@ const ToastComp: FC<ToastCompProps> = ({ detail, useLoading }) => {
     }
   };
 
-  // TODO: update styling for each case
   return (
     <div
       className={mergeClassNames(
@@ -143,10 +150,8 @@ const ToastComp: FC<ToastCompProps> = ({ detail, useLoading }) => {
         'border-border border-2 border-solid',
       )}
     >
-      {/* Icon */}
       {type && type !== 'default' && toastIcon(type)}
       {useLoading && <Loading />}
-      {/* Info */}
       <div>
         <h1 className="truncate text-lg">{title}</h1>
         <p className="truncate text-muted-foreground text-sm font-semibold">
@@ -154,7 +159,6 @@ const ToastComp: FC<ToastCompProps> = ({ detail, useLoading }) => {
         </p>
       </div>
 
-      {/* Action */}
       {action && (
         <button
           onClick={action.onClick}
