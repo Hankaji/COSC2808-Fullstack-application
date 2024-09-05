@@ -10,7 +10,7 @@ import {
   MessageCircle,
   SmilePlus,
   ThumbsUp,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   ButtonHTMLAttributes,
   CSSProperties,
@@ -19,6 +19,7 @@ import {
   useState,
   useRef,
   useContext,
+  useEffect,
 } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -45,7 +46,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 
 interface ReactionsProps {
   reactions: Reaction[];
-  context: "post" | "comment";
+  context: 'post' | 'comment';
   postId: string;
   commentId?: string; // Optional, only needed for comments
 }
@@ -54,8 +55,8 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
   const [isEditPopup, setIsEditPopup] = useState<boolean>(false); // State for edit modal
   const [postContent, setPostContent] = useState<string>(data.content); // State for post content
-  const [postVisibility, setPostVisibility] = useState<"Public" | "Friend">(
-    data.visibility as "Public" | "Friend",
+  const [postVisibility, setPostVisibility] = useState<'Public' | 'Friend'>(
+    data.visibility as 'Public' | 'Friend',
   ); // State for post visibility
   const openModalButtonRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button
   const openModalButtonEditRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button for editing
@@ -65,7 +66,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
 
   // error handler for toast
   if (!toastContext) {
-    throw new Error("ToastContext must be used within a ToastProvider");
+    throw new Error('ToastContext must be used within a ToastProvider');
   }
 
   const handlePostClick = () => {
@@ -118,34 +119,34 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       });
 
       if (response.ok) {
-        console.log("Post deleted successfully");
+        console.log('Post deleted successfully');
         show({
-          title: "Success",
-          description: "Post deleted successfully",
-          type: "success",
+          title: 'Success',
+          description: 'Post deleted successfully',
+          type: 'success',
         });
 
         // Check if the current URL matches /posts/:postId
         const postIdPattern = /^\/posts\/[a-zA-Z0-9]+$/;
         if (postIdPattern.test(location.pathname)) {
-          navigate("/"); // Navigate to the home page
+          navigate('/'); // Navigate to the home page
         } else {
           window.location.reload(); // Refresh the page
         }
       } else {
-        console.error("Failed to delete the post");
+        console.error('Failed to delete the post');
         show({
-          title: "Error",
-          description: "Failed to delete the post",
-          type: "error",
+          title: 'Error',
+          description: 'Failed to delete the post',
+          type: 'error',
         });
       }
     } catch (error) {
       console.error(error);
       show({
-        title: "Error",
-        description: "An error occurred while deleting the post",
-        type: "error",
+        title: 'Error',
+        description: 'An error occurred while deleting the post',
+        type: 'error',
       });
     }
   };
@@ -156,9 +157,9 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
         method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        credentials: "include",
+        credentials: 'include',
         body: JSON.stringify({
           content: postContent,
           visibility: postVisibility,
@@ -166,31 +167,31 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       });
 
       if (response.ok) {
-        console.log("Post edited successfully");
+        console.log('Post edited successfully');
         show({
-          title: "Success",
-          description: "Post edited successfully",
-          type: "success",
+          title: 'Success',
+          description: 'Post edited successfully',
+          type: 'success',
         });
         window.location.reload(); // Refresh the page to show updated content
       } else {
-        console.error("Failed to edit the post");
+        console.error('Failed to edit the post');
         show({
-          title: "Error",
-          description: "Failed to edit the post",
-          type: "error",
+          title: 'Error',
+          description: 'Failed to edit the post',
+          type: 'error',
         });
       }
     } catch (error) {
       console.error(error);
       show({
-        title: "Error",
-        description: "An error occurred while editing the post",
-        type: "error",
+        title: 'Error',
+        description: 'An error occurred while editing the post',
+        type: 'error',
       });
     }
   };
-  console.log("Post: ");
+  console.log('Post: ');
   console.log(data);
   return (
     <>
@@ -267,7 +268,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => {
-                    console.log("Cancel button clicked");
+                    console.log('Cancel button clicked');
                   }}
                   className="mr-2 px-4 py-2 bg-info hover:bg-secondary transition-colors rounded"
                 >
@@ -275,7 +276,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                 </button>
                 <button
                   onClick={() => {
-                    console.log("Delete button clicked");
+                    console.log('Delete button clicked');
                     handleDelete();
                   }}
                   className="px-4 py-2 bg-danger hover:bg-secondary transition-colors rounded"
@@ -291,7 +292,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded"
           ref={openModalButtonRef}
-          style={{ display: "none" }} // Make the button invisible
+          style={{ display: 'none' }} // Make the button invisible
         >
           Open Modal
         </button>
@@ -318,13 +319,13 @@ const PostComponent: FC<Props> = ({ className, data }) => {
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent click propagation
                   setPostVisibility(
-                    postVisibility === "Public" ? "Friend" : "Public",
+                    postVisibility === 'Public' ? 'Friend' : 'Public',
                   );
                 }}
               >
-                {postVisibility === "Public"
-                  ? "Change to Friend"
-                  : "Change to Public"}
+                {postVisibility === 'Public'
+                  ? 'Change to Friend'
+                  : 'Change to Public'}
               </button>
               <div className="flex justify-end mt-4">
                 <button
@@ -352,7 +353,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded"
           ref={openModalButtonEditRef}
-          style={{ display: "none" }} // Make the button invisible
+          style={{ display: 'none' }} // Make the button invisible
         >
           Open Modal
         </button>
@@ -536,7 +537,7 @@ const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo, currentUser }) => {
         src={
           data.profileImage
             ? data.profileImage
-            : "https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2"
+            : 'https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2'
         }
         alt="User avatar"
       />
@@ -638,11 +639,11 @@ const Reactions: FC<ReactionsProps> = ({
     [ReactionTypes.NULL]: 0,
   });
 
-  let endpoint = "";
+  let endpoint = '';
   const changeReaction = (to: ReactionTypes) => {
-    if (context === "post") {
+    if (context === 'post') {
       endpoint = `${URL_BASE}/posts/${postId}/reaction`;
-    } else if (context === "comment") {
+    } else if (context === 'comment') {
       endpoint = `${URL_BASE}/posts/${postId}/comment/${commentId}/reaction`;
     }
     if (to === reactedReaction) {
@@ -674,10 +675,10 @@ const Reactions: FC<ReactionsProps> = ({
         reactionType.charAt(0).toUpperCase() +
         reactionType.slice(1).toLowerCase();
       const response = await fetch(`${endpoint}`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           type: formattedType,
@@ -686,9 +687,9 @@ const Reactions: FC<ReactionsProps> = ({
       });
 
       if (response.ok) {
-        console.log("Reacted successfully");
+        console.log('Reacted successfully');
       } else {
-        console.error("Failed to react");
+        console.error('Failed to react');
       }
     } catch (error) {
       console.error(error);
@@ -698,14 +699,14 @@ const Reactions: FC<ReactionsProps> = ({
   const deleteReaction = async () => {
     try {
       const response = await fetch(`${endpoint}`, {
-        method: "DELETE",
-        credentials: "include",
+        method: 'DELETE',
+        credentials: 'include',
       });
 
       if (response.ok) {
-        console.log("Deleted successfully");
+        console.log('Deleted successfully');
       } else {
-        console.error("Failed to react");
+        console.error('Failed to react');
       }
     } catch (error) {
       console.error(error);
@@ -797,8 +798,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   ...props
 }) => {
   let baseStyle = {
-    fill: "transparent",
-    color: "white",
+    fill: 'transparent',
+    color: 'white',
   } as CSSProperties;
 
   let activeStyle = isSelected
@@ -831,7 +832,13 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   );
 };
 
-export { CommentSection, PostImages, AuthorPfp, FallBackPfp, CommentComp as Comment };
+export {
+  CommentSection,
+  PostImages,
+  AuthorPfp,
+  FallBackPfp,
+  CommentComp as Comment,
+};
 export type { Posts, User, Reaction };
 const Post = PostComponent;
 export default Post;

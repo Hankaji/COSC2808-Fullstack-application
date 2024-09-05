@@ -1,5 +1,7 @@
 import { UserRoundPlus } from 'lucide-react';
 import { FC } from 'react';
+import { useParams } from 'react-router';
+import { URL_BASE } from '../../../config';
 import { User } from '../../../types/user';
 import { mergeClassNames } from '../../../utils';
 

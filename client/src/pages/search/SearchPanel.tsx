@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { AuthorPfp } from '../../components/Post';
 import Tabs, { Tab } from '../../components/Tabs';
 import CompactedGroup from '../../components/CompactedGroup';
-import { User } from '../../types/post';
+import { parseBasicUser, User } from '../../types/post';
 import { URL_BASE } from '../../config';
 import { mergeClassNames } from '../../utils';
 import { Group, parseGroup } from '../../types/group';
