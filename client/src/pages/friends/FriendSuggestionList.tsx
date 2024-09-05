@@ -3,26 +3,19 @@ import { Account } from '../../types';
 import { URL_BASE } from '../../config';
 import useAuth from '../../hooks/useAuth';
 import useToast from '../../hooks/useToast';
-import { parseAccount } from '../../types/account';
 import AccInfoWithIconButtons from '../../components/AccInfoWithIconButtons';
 
-const FriendSuggestionList: FC = () => {
+interface FriendSuggestionListProps {
+  suggestions: Account[];
+}
+
+const FriendSuggestionList: FC<FriendSuggestionListProps> = ({
+  suggestions,
+}) => {
   const { auth } = useAuth();
   const toast = useToast();
 
-  const [suggestionList, setSuggestionList] = useState<Account[]>([]);
   const [requestReceiverList, setRequestReceiverList] = useState<string[]>([]);
-
-  const fetchFriendSuggestions = useCallback(async () => {
-    if (!auth.user) return;
-    const endpoint = `${URL_BASE}/users/${auth.user.userId}/friends/recommend`;
-    const res = await fetch(endpoint, {
-      method: 'GET',
-      credentials: 'include',
-    });
-    const result = await res.json();
-    setSuggestionList(result.map((acc: any) => parseAccount(acc)));
-  }, [auth.user]);
 
   const fetchRequestSentList = useCallback(async () => {
     if (!auth.user) return;
@@ -50,7 +43,7 @@ const FriendSuggestionList: FC = () => {
             body: JSON.stringify({ receiver_id: user.id }),
           });
           if (res.ok) {
-            await fetchRequestSentList();
+            fetchRequestSentList();
           } else {
             throw Error('Failed to send friend request');
           }
@@ -76,7 +69,7 @@ const FriendSuggestionList: FC = () => {
 
   const list = useMemo(
     () =>
-      suggestionList.map((acc) => {
+      suggestions.map((acc) => {
         const alreadySentRequest = requestReceiverList.includes(acc.id);
         return (
           <AccInfoWithIconButtons
@@ -93,12 +86,8 @@ const FriendSuggestionList: FC = () => {
           />
         );
       }),
-    [requestReceiverList, handleSendFriendRequest, suggestionList],
+    [requestReceiverList, handleSendFriendRequest, suggestions],
   );
-
-  useEffect(() => {
-    fetchFriendSuggestions();
-  }, [fetchFriendSuggestions]);
 
   useEffect(() => {
     fetchRequestSentList();
