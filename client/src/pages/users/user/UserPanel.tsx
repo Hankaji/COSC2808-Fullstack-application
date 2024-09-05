@@ -1,15 +1,13 @@
 import { BadgeCheck, CircleSlash } from 'lucide-react';
-import { FC, ReactNode, useEffect, useState } from 'react';
-import { useLoaderData } from 'react-router';
+import { FC } from 'react';
 import { Posts } from '../../../types/post';
 import PostsView from '../../../components/PostsView';
 import Tabs, { Tab } from '../../../components/Tabs';
 import { User } from '../../../types/user';
-import { mergeClassNames } from '../../../utils';
 
 const mockData: Posts[] = [
   {
-    _id: '1',
+    id: '1',
     user: {
       profileImage:
         'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',

@@ -1,10 +1,10 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import AccInfoWithAction from '../../components/AccInfoWithAction';
 import { Account } from '../../types';
 import { URL_BASE } from '../../config';
 import useAuth from '../../hooks/useAuth';
 import useToast from '../../hooks/useToast';
-import { convertFetchDataToAccount } from '../../types/account';
+import { parseAccount } from '../../types/account';
+import AccInfoWithIconButtons from '../../components/AccInfoWithIconButtons';
 
 const FriendSuggestionList: FC = () => {
   const { auth } = useAuth();
@@ -21,7 +21,7 @@ const FriendSuggestionList: FC = () => {
       credentials: 'include',
     });
     const result = await res.json();
-    setSuggestionList(result.map((acc: any) => convertFetchDataToAccount(acc)));
+    setSuggestionList(result.map((acc: any) => parseAccount(acc)));
   }, [auth.user]);
 
   const fetchRequestSentList = useCallback(async () => {
@@ -78,17 +78,18 @@ const FriendSuggestionList: FC = () => {
     () =>
       suggestionList.map((acc) => {
         const alreadySentRequest = requestReceiverList.includes(acc.id);
-        const status = alreadySentRequest ? 'requestSent' : 'none';
         return (
-          <AccInfoWithAction
+          <AccInfoWithIconButtons
             key={acc.id}
             data={acc}
-            status={status}
-            actionFn={
-              alreadySentRequest
-                ? undefined
-                : () => handleSendFriendRequest(acc)
-            }
+            buttons={[
+              {
+                type: alreadySentRequest ? 'requestSent' : 'add',
+                onClick: alreadySentRequest
+                  ? undefined
+                  : () => handleSendFriendRequest(acc),
+              },
+            ]}
           />
         );
       }),
@@ -104,10 +105,8 @@ const FriendSuggestionList: FC = () => {
   }, [fetchRequestSentList]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
-      <div className="flex-grow overflow-y-auto mt-6 pr-3">
-        <div className="space-y-6">{list}</div>
-      </div>
+    <div className="flex flex-col h-[calc(100vh-180px)]">
+      <div className="flex-grow overflow-y-auto mt-2 pr-3">{list}</div>
     </div>
   );
 };

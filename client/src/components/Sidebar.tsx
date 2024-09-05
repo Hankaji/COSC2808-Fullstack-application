@@ -1,13 +1,11 @@
 import {
   Bell,
-  ChartNoAxesGantt,
   Home,
   LogOut,
   type LucideIcon,
   Search,
   SquarePlus,
   User,
-  UserRound,
   UsersRound,
 } from 'lucide-react';
 import type { FC } from 'react';
@@ -20,7 +18,7 @@ import { mergeClassNames } from '../utils';
 type SidebarItemBase = {
   Logo: LucideIcon;
   name: string;
-  requireAdmin?: boolean;
+  type?: 'user' | 'admin';
 };
 
 type SidebarInternalLinkItem = SidebarItemBase & {
@@ -36,37 +34,49 @@ const internalLinkItems: SidebarInternalLinkItem[] = [
     Logo: Home,
     name: 'Home',
     path: '/',
+    type: 'user',
   },
   {
     Logo: Search,
     name: 'Search',
     path: '/search',
+    type: 'user',
   },
   {
     Logo: Bell,
     name: 'Notifications',
     path: '/notifications',
+    type: 'user',
   },
   {
     Logo: User,
     name: 'Friends',
     path: '/friends',
+    type: 'user',
   },
   {
     Logo: UsersRound,
     name: 'Groups',
     path: '/groups',
+    type: 'user',
   },
   {
     Logo: SquarePlus,
     name: 'Create group',
     path: '/groups/create',
+    type: 'user',
   },
   {
-    Logo: ChartNoAxesGantt,
-    name: 'Admin',
-    path: '/admin',
-    requireAdmin: true,
+    Logo: User,
+    name: 'Users',
+    path: '/admin/users',
+    type: 'admin',
+  },
+  {
+    Logo: UsersRound,
+    name: 'Groups',
+    path: '/admin/groups',
+    type: 'admin',
   },
 ];
 
@@ -83,9 +93,10 @@ const Sidebar = () => {
       name: 'Logout',
       onClick: () => {
         const logoutRequest = async () => {
-          const endpoint = `${URL_BASE}/authentication/logout`;
+          const endpoint = `${URL_BASE}/logout`;
           const res = await fetch(endpoint, {
             method: 'POST',
+            credentials: 'include',
           });
 
           if (res.ok) {
@@ -119,11 +130,9 @@ const Sidebar = () => {
       {/* Navigation items */}
       <ul className="flex flex-col gap-3 w-full">
         {internalLinkItems.map((item, idx) => {
-          if (item.requireAdmin) {
-            if (!auth.user?.isAdmin) {
-              return null;
-            }
-          }
+          if (item.type === 'admin' && !auth.user?.isAdmin) return null;
+          if (item.type === 'user' && auth.user?.isAdmin) return null;
+
           return (
             <li key={idx}>
               <SidebarButton

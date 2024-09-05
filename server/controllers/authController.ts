@@ -42,6 +42,7 @@ export const register = async (req: Request, res: Response) => {
 			email,
 			password: hashedPassword,
 			profileImage,
+			createdAt: new Date()
 		});
 		await newUser.save();
 

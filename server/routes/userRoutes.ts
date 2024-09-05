@@ -17,7 +17,7 @@ import {
 const userRouter = express.Router();
 
 userRouter.get("/", isAuthenticated, getUsers);
-userRouter.patch("/notifications/:notification_index", isAuthenticated, readNotification);
+userRouter.patch("/notifications/:notificationId", isAuthenticated, readNotification);
 userRouter.delete("/unfriend/:id", isAuthenticated, unfriendById);
 userRouter.patch("/suspend/:id", isAuthenticated, isAdmin, suspendUser);
 userRouter.patch("/resume/:id", isAuthenticated, isAdmin, resumeUser);
