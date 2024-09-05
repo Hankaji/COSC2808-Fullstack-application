@@ -16,7 +16,8 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
 
   const toast = useContext(ToastContext);
 
-  const handleVisibilityChange = () => {
+  const handleVisibilityChange = (event: { preventDefault: () => void; }) => {
+    event.preventDefault(); // Prevent form submission
     setVisibility((prev) => (prev === 'Public' ? 'Friend' : 'Public'));
   };
 
