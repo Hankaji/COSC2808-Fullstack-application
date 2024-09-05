@@ -1,12 +1,12 @@
-import React, { FC, ReactNode, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { AuthorPfp } from '../../components/Post';
 import Tabs, { Tab } from '../../components/Tabs';
+import CompactedGroup from '../../components/CompactedGroup';
 import { User } from '../../types/post';
 import { URL_BASE } from '../../config';
 import { mergeClassNames } from '../../utils';
 import { Group, parseGroup } from '../../types/group';
-import { CompactedGroupComp } from '../groups/JoinedGroupList';
 
 const SearchPanel = () => {
   return (
@@ -103,9 +103,9 @@ const PeopleComp: FC<{ data: User }> = ({ data }) => {
 
 const AllGroups: FC<{ groups: Group[] }> = ({ groups }) => {
   return (
-    <div>
+    <div className="mt-2">
       {groups.map((group) => {
-        return <CompactedGroupComp data={group} />;
+        return <CompactedGroup data={group} />;
       })}
     </div>
   );

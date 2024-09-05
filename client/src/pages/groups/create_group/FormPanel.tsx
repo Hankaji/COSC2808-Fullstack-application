@@ -12,14 +12,14 @@ import { URL_BASE } from '../../../config';
 import useToast from '../../../hooks/useToast';
 
 const GroupFormPanel = () => {
-  const [visibility, setVisibility] = useState<'Public' | 'Private'>('Public');
-
   const toast = useToast();
+
+  const [visibility, setVisibility] = useState<'Public' | 'Private'>('Public');
 
   const descriptionRef = useRef<HTMLDivElement>(null);
 
   const getVisibilityNode = (visibility: 'Public' | 'Private') => {
-    if (visibility == 'Public') {
+    if (visibility === 'Public') {
       return (
         <VisibilitySpan
           Icon={Globe}
@@ -77,6 +77,7 @@ const GroupFormPanel = () => {
         return data;
       } catch (error) {}
     };
+
     toast.showAsync(submit, {
       loading: {
         title: 'Loading...',
@@ -101,14 +102,14 @@ const GroupFormPanel = () => {
       {/* Category */}
       <h2 className="flex flex-col text-xl font-semibold">
         Name
-        <span className="text-sm text-muted font-normal">
+        <span className="text-sm text-gray-500 font-normal">
           Group name should contain only alphabetical character and cannot be
           changed upon creation.
         </span>
       </h2>
       {/* Input form */}
       <div className="flex items-center justify-start gap-1 text-lg bg-background rounded-sm py-2 px-4 border-border border-2 border-solid focus-within:border-primary transition-colors">
-        <span className="text-muted">g/</span>
+        <span className="text-gray-500">g/</span>
         <Input
           name="name"
           className="p-0 focus:ring-0 focus:ring-offset-0 border-0 text-lg bg-transparent"
@@ -118,7 +119,7 @@ const GroupFormPanel = () => {
       {/* Category */}
       <h2 className="flex flex-col text-xl font-semibold">
         Description
-        <span className="text-sm text-muted font-normal">
+        <span className="text-sm text-gray-500 font-normal">
           Tell people more about your group.
         </span>
       </h2>
@@ -162,7 +163,7 @@ const GroupFormPanel = () => {
       {/* Category */}
       <h2 className="flex flex-col text-xl font-semibold">
         Cover image
-        <span className="text-sm text-muted font-normal">
+        <span className="text-sm text-gray-500 font-normal">
           The cover image for your group when fully viewed.
         </span>
       </h2>
@@ -171,7 +172,7 @@ const GroupFormPanel = () => {
       {/* Category */}
       <h2 className="flex flex-col text-xl font-semibold">
         Group avatar
-        <span className="text-sm text-muted font-normal">
+        <span className="text-sm text-gray-500 font-normal">
           The image people see when they search for your group.
         </span>
       </h2>
@@ -182,7 +183,7 @@ const GroupFormPanel = () => {
       <div className="flex items-center justify-end w-full">
         <button
           type="submit"
-          className="rounded-lg font-bold py-2 px-4 bg-primary text-foreground hover:bg-secondary transition-colors"
+          className="rounded-full bg-white hover:bg-slate-300 text-black px-4 py-2 text-sm font-bold"
         >
           Create group
         </button>
@@ -203,7 +204,7 @@ const VisibilitySpan: FC<{ Icon: LucideIcon; name: string; des?: string }> = ({
         {name}
       </span>
       {des && (
-        <p className="text-sm text-muted group-hover:text-white transition-colors">
+        <p className="text-sm text-gray-500 group-hover:text-white transition-colors">
           {des}
         </p>
       )}

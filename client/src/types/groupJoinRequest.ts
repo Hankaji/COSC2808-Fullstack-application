@@ -1,4 +1,4 @@
-import { parseRequestStatus, RequestStatus } from './group_creation_request';
+import { RequestStatus } from './group';
 import { parseBasicUser, User } from './post';
 
 export interface GroupJoinRequest {
@@ -13,6 +13,6 @@ export const parseGroupJoinReq = (data: any) => {
     id: data.id,
     user: parseBasicUser(data.user),
     requestedDate: new Date(data.createdAt),
-    status: parseRequestStatus(data.status),
+    status: data.status,
   } as GroupJoinRequest;
 };

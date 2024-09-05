@@ -3,8 +3,8 @@ export interface User {
   displayName: string;
   email: string;
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: string;
+  updatedAt?: string;
   __v: number;
   virtualProfileImage: string;
   id: string;

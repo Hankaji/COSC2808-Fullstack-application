@@ -1,10 +1,9 @@
-import { Globe, Lock } from 'lucide-react';
 import { FC, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import Tabs, { Tab } from '../../components/Tabs';
+import CompactedGroup from '../../components/CompactedGroup';
 import { URL_BASE } from '../../config';
 import useAuth from '../../hooks/useAuth';
-import { Group, GroupVisibility, parseGroup } from '../../types/group';
+import { Group, GroupVisibility } from '../../types/group';
 
 const JoinedGroupList = () => {
   const { auth } = useAuth();
@@ -29,9 +28,9 @@ const JoinedGroupList = () => {
             description: grp.description,
             visibility:
               GroupVisibility[
-              (
-                grp.visibility as string
-              ).toUpperCase() as keyof typeof GroupVisibility
+                (
+                  grp.visibility as string
+                ).toUpperCase() as keyof typeof GroupVisibility
               ],
             admins: grp.admins,
             groupImage: grp.virtualGroupImage,
@@ -56,7 +55,7 @@ const JoinedGroupList = () => {
     };
 
     getData();
-  }, []);
+  }, [auth.user]);
 
   const tabs: Tab[] = [
     {
@@ -70,7 +69,7 @@ const JoinedGroupList = () => {
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
+    <div className="flex flex-col h-[calc(100vh-180px)]">
       <Tabs tabs={tabs} />
     </div>
   );
@@ -79,40 +78,15 @@ const JoinedGroupList = () => {
 const GroupsTab: FC<{ groups: Group[] }> = ({ groups }) => {
   return (
     <div className="flex-grow overflow-y-auto mt-6 pr-3">
-      <div className="space-y-6">
-        {groups.length > 0 ? (
-          groups.map((grp) => {
-            return <CompactedGroupComp key={grp.id} data={grp} />;
-          })
-        ) : (
-          <p>You have yet joined a group</p>
-        )}
-      </div>
+      {groups.length > 0 ? (
+        groups.map((grp) => {
+          return <CompactedGroup key={grp.id} data={grp} />;
+        })
+      ) : (
+        <p>You have yet joined a group</p>
+      )}
     </div>
   );
 };
 
-const CompactedGroupComp: FC<{ data: Group }> = ({ data }) => {
-  return (
-    <Link
-      to={`/groups/${data.id}`}
-      className="flex gap-4 items-center justify-start hover:bg-secondary/50 rounded-lg py-2 px-4 cursor-pointer transition-colors"
-    >
-      <div className="size-16 overflow-hidden rounded-full bg-gray-500">
-        {data.groupImage && (
-          <img
-            className="object-cover"
-            sizes="64"
-            src={data.groupImage}
-            alt="Group"
-          />
-        )}
-      </div>
-      <p className="text-lg font-bold">{data.name}</p>
-      {data.visibility === GroupVisibility.PUBLIC ? <Globe /> : <Lock />}
-    </Link>
-  );
-};
-
-export { CompactedGroupComp };
 export default JoinedGroupList;

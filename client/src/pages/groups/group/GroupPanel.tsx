@@ -49,7 +49,7 @@ const GroupPanel = () => {
       const data = await res.json();
       console.log(data);
       return data;
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const fetchPosts = async () => {
@@ -71,7 +71,7 @@ const GroupPanel = () => {
       if (res.ok) {
         setPosts(posts);
       }
-    } catch (_) { }
+    } catch (_) {}
   };
 
   useEffect(() => {

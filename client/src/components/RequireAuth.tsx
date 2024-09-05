@@ -39,6 +39,13 @@ const RequireAuth: FC<Props> = ({ requireAdminAccess }) => {
     });
   });
 
+  // If admin, redirect to Admin Users page if it's in the "/" path
+  useEffect(() => {
+    if (auth.user?.isAdmin && location.pathname === '/') {
+      navigate('/admin/users');
+    }
+  }, [auth.user?.isAdmin, location.pathname, navigate]);
+
   return <Outlet />;
 };
 

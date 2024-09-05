@@ -3,6 +3,7 @@ import useAuth from '../../hooks/useAuth';
 import useToast from '../../hooks/useToast';
 import type { Account } from '../../types';
 import { URL_BASE } from '../../config';
+import AccInfoWithTextBtn from '../../components/AccInfoWithTextBtn';
 
 const FriendList: FC = () => {
   const { auth } = useAuth();
@@ -68,52 +69,20 @@ const FriendList: FC = () => {
   }, [fetchFriendList]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
-      <div className="flex-grow overflow-y-auto mt-6 pr-3">
-        <div className="space-y-6">
-          {list.map((acc) => (
-            <FriendListItem
-              key={acc.id}
-              data={acc}
-              onRemove={() => handleRemoveFriend(acc)}
-            />
-          ))}
-        </div>
+    <div className="flex flex-col h-[calc(100vh-180px)]">
+      <div className="flex-grow overflow-y-auto mt-2 pr-3">
+        {list.map((acc) => (
+          <AccInfoWithTextBtn
+            data={acc}
+            button={{
+              text: 'Remove',
+              actionFn: () => handleRemoveFriend(acc),
+            }}
+          />
+        ))}
       </div>
     </div>
   );
 };
 
 export default FriendList;
-
-interface FriendListItemProps {
-  data: Account;
-  onRemove: () => void;
-}
-
-const FriendListItem: FC<FriendListItemProps> = ({
-  data: { username, displayName, imgUrl },
-  onRemove,
-}) => {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <img
-          src={imgUrl}
-          className="rounded-full bg-gray-500 size-12"
-          alt={username}
-        />
-        <div>
-          <p className="text-base">{displayName}</p>
-          <p className="text-sm text-gray-500">@{username}</p>
-        </div>
-      </div>
-      <button
-        onClick={onRemove}
-        className="rounded-full bg-white hover:bg-slate-300 text-black px-4 py-2 text-sm font-bold"
-      >
-        Remove
-      </button>
-    </div>
-  );
-};
