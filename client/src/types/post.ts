@@ -31,7 +31,7 @@ export interface User {
 
 export type Reaction = {
   author: User;
-  type: string;
+  type: ReactionTypes;
 };
 
 export enum ReactionTypes {
