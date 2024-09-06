@@ -1117,7 +1117,6 @@ export const deleteReactionFromComment = async (
   try {
     const postId = req.params.id;
     const commentId = req.params.comment_id;
-    const reactionId = req.params.reaction_id;
     const userId = req.session.userId;
     const isAdmin = req.session.isAdmin;
 
@@ -1129,11 +1128,6 @@ export const deleteReactionFromComment = async (
     // Validate the comment ID format
     if (!mongoose.Types.ObjectId.isValid(commentId)) {
       return res.status(400).json({ message: "Invalid comment ID" });
-    }
-
-    // Validate the reaction ID format
-    if (!mongoose.Types.ObjectId.isValid(reactionId)) {
-      return res.status(400).json({ message: "Invalid reaction ID" });
     }
 
     // Find the post by ID
@@ -1148,8 +1142,11 @@ export const deleteReactionFromComment = async (
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    // Find the reaction by reaction_id within the comment's reactions array
-    const reaction = comment.reactions.id(reactionId);
+    // Find the reaction by userId
+    const reaction = comment.reactions.find(
+      (reaction) => reaction.author_id.toString() === userId.toString(),
+    );
+
     if (!reaction) {
       return res.status(404).json({ message: "Reaction not found" });
     }
@@ -1162,7 +1159,7 @@ export const deleteReactionFromComment = async (
     }
 
     // Remove the reaction from the comment's reactions array using pull
-    comment.reactions.pull(reactionId);
+    comment.reactions.pull(reaction._id);
 
     // Save the updated post
     await post.save();
