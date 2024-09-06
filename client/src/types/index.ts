@@ -1,9 +1,12 @@
+export type AccountRelationship = "Stranger" | "Friend" | "Pending";
+
 export type Account = {
   id: string;
   username: string;
   displayName: string;
   imgUrl?: string;
   isSuspended?: boolean;
+  relationship?: AccountRelationship;
 };
 
 export type FriendRequest = {
@@ -12,11 +15,11 @@ export type FriendRequest = {
 };
 
 export type NotificationType =
-  | 'User'
-  | 'Group'
-  | 'Post'
-  | 'Comment'
-  | 'Reaction';
+  | "User"
+  | "Group"
+  | "Post"
+  | "Comment"
+  | "Reaction";
 
 export type Notification = {
   id: string;
@@ -30,6 +33,6 @@ export type Group = {
   id: string;
   name: string;
   description: string;
-  visibility: 'public' | 'private';
+  visibility: "public" | "private";
   imgUrl: string;
 };

@@ -4,11 +4,13 @@ import Group from "../models/group";
 import User from "../models/user";
 import { GroupRequest } from "../models/request";
 
+type Relationship = "Stranger" | "Admin" | "Member" | "Pending";
+
 // Get all groups
 export const getGroups = async (req: Request, res: Response) => {
 	try {
 		const currentUserId = req.session.userId;
-		const { name, page = 1, limit = 10 } = req.query;
+		const { name } = req.query;
 
 		// Build the query object based on the search parameters
 		let query: any = {};
@@ -18,18 +20,11 @@ export const getGroups = async (req: Request, res: Response) => {
 			query.name = new RegExp(name as string, "i");
 		}
 
-		// Convert page and limit to numbers
-		const pageNumber = parseInt(page as string) || 1;
-		const limitNumber = parseInt(limit as string) || 10;
-		const skip = (pageNumber - 1) * limitNumber;
-
 		// Find groups with the query, and apply pagination
 		const groups = await Group.find(query)
 			.select(
 				"_id name description visibility groupImage coverImage admins members",
 			)
-			.skip(skip)
-			.limit(limitNumber)
 			.populate("admins", "_id username displayName")
 			.populate("members", "_id username displayName")
 			.lean();
@@ -46,10 +41,14 @@ export const getGroups = async (req: Request, res: Response) => {
 		// Add virtualGroupImage, virtualCoverImage, and relationship to each group
 		const groupsWithImagesAndRelationship = groups.map((group) => {
 			// Determine the relationship status
-			let relationship = "Stranger";
+			let relationship: Relationship = "Stranger";
+
+			if (group.admins.some((admin) => admin._id.toString() == currentUserId?.toString())) {
+				relationship = "Admin";
+			}
 
 			// Check if the current user is a member of the group
-			if (group.members.some((member) => member._id.toString() == currentUserId?.toString())) {
+			else if (group.members.some((member) => member._id.toString() == currentUserId?.toString())) {
 				relationship = "Member";
 			}
 			// Check if the current user has a pending request
@@ -122,10 +121,12 @@ export const getGroupById = async (req: Request, res: Response) => {
 		}).lean();
 
 		// Determine the relationship status
-		let relationship = "Stranger";
+		let relationship: Relationship = "Stranger";
 
 		// Check if the current user is a member of the group
-		if (group.members.some((member) => member._id.toString() == currentUserId?.toString())) {
+		if (group.admins.some((admin) => admin._id.toString() == currentUserId?.toString())) {
+			relationship = "Admin";
+		} else if (group.members.some((member) => member._id.toString() == currentUserId?.toString())) {
 			relationship = "Member";
 		} else if (pendingGroupRequest) {
 			relationship = "Pending";

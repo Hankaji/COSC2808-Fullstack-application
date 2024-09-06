@@ -1,4 +1,6 @@
-import { parseBasicUser, User } from './post';
+import { parseBasicUser, User } from "./post";
+
+export type GroupRelationship = "Stranger" | "Admin" | "Member" | "Pending";
 
 export interface Group {
   id: string;
@@ -9,6 +11,7 @@ export interface Group {
   coverImage?: string;
   admins: User[];
   members: User[];
+  relationship?: GroupRelationship;
 }
 
 export enum GroupVisibility {
@@ -16,7 +19,7 @@ export enum GroupVisibility {
   PRIVATE,
 }
 
-export type RequestStatus = 'Pending' | 'Accepted' | 'Rejected';
+export type RequestStatus = "Pending" | "Accepted" | "Rejected";
 
 export const parseGroup = (data: any): Group => {
   return {
@@ -33,5 +36,6 @@ export const parseGroup = (data: any): Group => {
     coverImage: data.virtualCoverImage,
     admins: data.admins,
     members: (data.members as any[]).map((mem) => parseBasicUser(mem)),
+    relationship: data.relationship ?? undefined,
   };
 };

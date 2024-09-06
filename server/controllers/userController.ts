@@ -2,7 +2,9 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import User from "../models/user";
 import Group from "../models/group";
-import { FriendRequest, GroupRequest, GroupCreationRequest } from "../models/request";
+import { FriendRequest } from "../models/request";
+
+type Relationship = "Stranger" | "Friend" | "Pending";
 
 // Get users
 export const getUsers = async (req: Request, res: Response) => {
@@ -27,7 +29,11 @@ export const getUsers = async (req: Request, res: Response) => {
 
     // Apply additional filters
     if (name) {
-      query.username = { $regex: name, $options: "i" }; // Case-insensitive search
+      // Match either username or displayName
+      query.$or = [
+        { username: { $regex: name, $options: "i" } },
+        { displayName: { $regex: name, $options: "i" } },
+      ];
     }
 
     if (status && isAdmin) {
@@ -38,7 +44,9 @@ export const getUsers = async (req: Request, res: Response) => {
     const users = await User.find(query).exec();
 
     // Find the current user's friend list
-    const currentUser = await User.findById(currentUserId).select("friends").exec();
+    const currentUser = await User.findById(currentUserId)
+      .select("friends")
+      .exec();
 
     // Get all friend requests involving the current user (sent or received)
     const friendRequests = await FriendRequest.find({
@@ -51,7 +59,7 @@ export const getUsers = async (req: Request, res: Response) => {
     // Format the response
     const formattedUsers = users.map((user) => {
       // Determine the relationship with the current user
-      let relationship = "Stranger";
+      let relationship: Relationship = "Stranger";
 
       // Check if the user is a friend
       if (currentUser?.friends.includes(user._id)) {
@@ -60,8 +68,10 @@ export const getUsers = async (req: Request, res: Response) => {
         // Check if there is a pending friend request
         const hasPendingRequest = friendRequests.some((request) => {
           return (
-            (request.sender_id.equals(currentUserId) && request.receiver_id.equals(user._id)) ||
-            (request.sender_id.equals(user._id) && request.receiver_id.equals(currentUserId))
+            (request.sender_id.equals(currentUserId) &&
+              request.receiver_id.equals(user._id)) ||
+            (request.sender_id.equals(user._id) &&
+              request.receiver_id.equals(currentUserId))
           );
         });
 
@@ -113,7 +123,9 @@ export const getUserById = async (req: Request, res: Response) => {
     }
 
     // Get the current user's friend list
-    const currentUser = await User.findById(currentUserId).select("friends").exec();
+    const currentUser = await User.findById(currentUserId)
+      .select("friends")
+      .exec();
 
     // Find any pending friend requests involving the current user
     const friendRequests = await FriendRequest.find({
@@ -124,7 +136,7 @@ export const getUserById = async (req: Request, res: Response) => {
     }).exec();
 
     // Determine the relationship
-    let relationship = "Stranger";
+    let relationship: Relationship = "Stranger";
 
     if (currentUser?.friends.includes(user._id)) {
       relationship = "Friend";
@@ -142,7 +154,9 @@ export const getUserById = async (req: Request, res: Response) => {
         user.profileImage &&
         user.profileImage.contentType &&
         user.profileImage.data
-          ? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+          ? `data:${
+              user.profileImage.contentType
+            };base64,${user.profileImage.data.toString("base64")}`
           : undefined,
       createAt: user.createdAt,
       updatedAt: user.updatedAt,
