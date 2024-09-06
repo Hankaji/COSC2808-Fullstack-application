@@ -79,6 +79,8 @@ const People: FC<{ users: User[] }> = ({ users }) => {
 const PeopleComp: FC<{ data: User }> = ({ data }) => {
   const navigate = useNavigate();
 
+  console.log(`/users/${data.id}`);
+
   return (
     <div
       onClick={(e) => {

@@ -69,7 +69,9 @@ const router = createBrowserRouter([
             method: 'GET',
             credentials: 'include',
           });
-          return await res.json();
+          const data = await res.json();
+          console.log(data);
+          return data;
         },
       },
       {
@@ -98,7 +100,7 @@ const router = createBrowserRouter([
                 const groupData = parseGroup(data);
 
                 return groupData;
-              } catch (error) { }
+              } catch (error) {}
             },
           },
         ],

@@ -3,6 +3,7 @@ import {
   HTMLAttributes,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
 } from 'react';
 import { mergeClassNames } from '../utils';
@@ -26,8 +27,8 @@ const PostsView = forwardRef<PostsViewRef, Props>(
     const [posts, setPosts] = useState<Posts[] | undefined>(undefined);
     const [hasMore, setHasMore] = useState<boolean>(true);
 
-    const [page, setPage] = useState<number>(1);
-    const [isFetching, setIsFetching] = useState<boolean>(false);
+    const page = useRef(1);
+    const isFetching = useRef(false);
 
     useImperativeHandle(ref, () => ({
       fetchPosts,
@@ -39,17 +40,17 @@ const PostsView = forwardRef<PostsViewRef, Props>(
     const reset = () => {
       setPosts(undefined);
       setHasMore(true);
-      setPage(1);
+      page.current = 1;
     };
 
     // Fetch posts from the endpoint
     const fetchPosts = async () => {
       // Set this so fetch won't be called multiple times
-      setIsFetching(true);
+      isFetching.current = true;
       try {
         // SearchParams
         const params = new URLSearchParams({
-          page: page.toString(),
+          page: page.current.toString(),
         });
 
         const res = await fetch(`${fetchEndpoint}?${params.toString()}`, {
@@ -57,13 +58,13 @@ const PostsView = forwardRef<PostsViewRef, Props>(
           credentials: 'include',
         });
 
-        console.log(res);
-
         if (res.ok) {
           // Get data and parse it
           const data: any[] = await res.json();
           const fetchedPosts = data.map((post) => parsePost(post));
 
+          console.log(`${fetchEndpoint}?${params.toString()}`);
+          console.log(data);
           console.log(fetchedPosts);
 
           // 10 is the limit per page
@@ -75,8 +76,8 @@ const PostsView = forwardRef<PostsViewRef, Props>(
           );
 
           // Increase page value for next fetch
-          setPage((prev) => prev + 1);
-          setIsFetching(false);
+          page.current += 1;
+          isFetching.current = false;
         }
       } catch (error) {
         console.error('Failed to fetch posts:', error);
@@ -84,7 +85,7 @@ const PostsView = forwardRef<PostsViewRef, Props>(
     };
 
     useEffect(() => {
-      if (!isFetching && hasMore) {
+      if (!isFetching.current && hasMore) {
         fetchPosts();
       }
     }, [inView]);
@@ -98,7 +99,7 @@ const PostsView = forwardRef<PostsViewRef, Props>(
             })
           ) : (
             <div className="p-12 flex gap-2 justify-center items-center">
-              This user hasn't published any posts
+              There are no posts to display
             </div>
           )
         ) : (

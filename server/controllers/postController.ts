@@ -39,7 +39,11 @@ export const getPosts = async (req: Request, res: Response) => {
 
 			// Find posts from friends and groups
 			postsQuery = Post.find({
-				$or: [{ user_id: { $in: friendIds } }, { group_id: { $in: groupIds } }],
+				$or: [
+					{ user_id: { $in: friendIds } },
+					{ user_id: userId },
+					{ group_id: { $in: groupIds } },
+				],
 			});
 		}
 
@@ -72,8 +76,15 @@ export const getPosts = async (req: Request, res: Response) => {
 			),
 		);
 
+		// Remove duplicate posts (based on _id)
+		const uniquePosts = posts.filter(
+			(post, index, self) =>
+				index ===
+				self.findIndex((p) => p._id.toString() === post._id.toString()),
+		);
+
 		// Process virtual images to be included in the response
-		const processedPosts = posts.map((post) => {
+		const processedPosts = uniquePosts.map((post) => {
 			const user = post.user_id as any;
 
 			// Manually create the virtualProfileImage

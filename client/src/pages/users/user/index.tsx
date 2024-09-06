@@ -10,8 +10,8 @@ const UserPage = () => {
   const [userData, setUserData] = useState<User>(parseUser(loaderData));
 
   return (
-    <Layout stickyRightSideCmp={<UserSideBar userData={loaderData} />}>
-      <UserPanel userData={loaderData} />
+    <Layout stickyRightSideCmp={<UserSideBar userData={userData} />}>
+      <UserPanel userData={userData} />
     </Layout>
   );
 };

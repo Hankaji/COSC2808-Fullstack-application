@@ -12,11 +12,11 @@ interface Props {
 const UserSideBar: FC<Props> = ({ userData }) => {
   const joinedDate = new Date(userData.createdAt);
 
-  const joinedDateStr = new Intl.DateTimeFormat('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(joinedDate);
+  // const joinedDateStr = new Intl.DateTimeFormat('en-US', {
+  //   day: 'numeric',
+  //   month: 'short',
+  //   year: 'numeric',
+  // }).format(joinedDate);
 
   const endpoint = `${URL_BASE}/requests/friend_requests/`;
   const body = {
@@ -29,7 +29,7 @@ const UserSideBar: FC<Props> = ({ userData }) => {
         method: 'POST',
         body: JSON.stringify(body),
       });
-    } catch (e) { }
+    } catch (e) {}
   };
 
   return (
