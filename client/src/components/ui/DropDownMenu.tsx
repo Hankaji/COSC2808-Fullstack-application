@@ -57,6 +57,9 @@ const DropDownMenu: FC<MenuProps> = ({
           e.stopPropagation();
           handleClick();
         }}
+        onBlur={() => {
+          setIsOpen(false);
+        }}
         onMouseEnter={handleEnter}
         onMouseLeave={handleLeave}
         className={mergeClassNames(

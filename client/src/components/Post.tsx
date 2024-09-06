@@ -40,6 +40,7 @@ import PopupModal from './PopupModal';
 import { ToastContext } from '../context/ToastProvider';
 import { URL_BASE } from '../config';
 import { isEditable } from '@testing-library/user-event/dist/utils';
+import useAuth from '../hooks/useAuth';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
@@ -582,7 +583,19 @@ const FallBackPfp = () => {
   );
 };
 
+interface CommentProp {
+  data: Comment;
+  postId: string;
+}
+
 const CommentComp: FC<CommentProp> = ({ data, postId }) => {
+  const { auth } = useAuth();
+  const currUser = auth.user!;
+
+  // If current user id match with comment's author_id, or is admin => Can edit/delete comment
+  const isCurrentUserEditable: boolean =
+    currUser.isAdmin || data.author_id.id === currUser.userId;
+
   return (
     <div className="flex flex-col justify-start items-start gap-2">
       <div className="flex gap-2">
@@ -590,9 +603,9 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
       </div>
       <p>{data.content}</p>
       {/* Comment actions */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 justify-start items-center">
         {/* Reactions */}
-        <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
+        <button className="flex transition-colors gap-1 rounded">
           <Reactions
             reactions={data.reactions}
             context="comment"
@@ -600,14 +613,18 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
             commentId={data.id}
           />
         </button>
-        {/* Edit */}
-        <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
-          Edit
-        </button>
-        {/* Delete */}
-        <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
-          Delete
-        </button>
+        {isCurrentUserEditable && (
+          <>
+            {/* Edit */}
+            <button className="flex transition-colors px-2 hover:text-info hover:bg-info/25 rounded-lg">
+              Edit
+            </button>
+            {/* Delete */}
+            <button className="flex transition-colors px-2 hover:text-danger hover:bg-danger/25 rounded-lg">
+              Delete
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -618,18 +635,13 @@ const CommentSection: FC<{ data: Comment[]; postId: string }> = ({
   postId,
 }) => {
   return (
-    <div className="overflow-y-scroll h-full w-full">
+    <div className="flex flex-col gap-4 overflow-y-scroll h-full w-full">
       {data.map((cmt) => {
         return <CommentComp key={cmt.id} data={cmt} postId={postId} />;
       })}
     </div>
   );
 };
-
-interface CommentProp {
-  data: Comment;
-  postId: string;
-}
 
 const Reactions: FC<ReactionsProps> = ({
   reactions,
@@ -745,7 +757,6 @@ const Reactions: FC<ReactionsProps> = ({
   }, [reactions]);
   return (
     <DropDownMenu
-      hoverable
       content={
         <DropDownMenuContent layout="horizontal">
           <DropDownItem asChild>
