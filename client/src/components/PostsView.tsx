@@ -84,6 +84,21 @@ const PostsView = forwardRef<PostsViewRef, Props>(
       }
     };
 
+    const onPostDelete = (id: string) => {
+      setPosts((prev) => prev && prev.filter((post) => post.id !== id));
+    };
+
+    const onPostEdit = (p_post: Posts) => {
+      setPosts((prev) =>
+        prev?.map((post) => {
+          // If find the edited post_id => replace it with new edited post
+          if (post.id !== p_post.id) {
+            return post;
+          } else return p_post;
+        }),
+      );
+    };
+
     useEffect(() => {
       if (!isFetching.current && hasMore) {
         fetchPosts();
@@ -95,7 +110,14 @@ const PostsView = forwardRef<PostsViewRef, Props>(
         {posts ? (
           posts.length > 0 ? (
             posts.map((post) => {
-              return <Post key={post.id} data={post} />;
+              return (
+                <Post
+                  onSuccessEdit={onPostEdit}
+                  onSuccessDelete={onPostDelete}
+                  key={post.id}
+                  data={post}
+                />
+              );
             })
           ) : (
             <div className="p-12 flex gap-2 justify-center items-center">

@@ -46,6 +46,8 @@ import useToast from '../hooks/useToast';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
+  onSuccessDelete: (id: string) => void;
+  onSuccessEdit: (popst: Posts) => void;
 }
 
 interface ReactionsProps {
@@ -55,7 +57,12 @@ interface ReactionsProps {
   commentId?: string; // Optional, only needed for comments
 }
 
-const PostComponent: FC<Props> = ({ className, data }) => {
+const PostComponent: FC<Props> = ({
+  className,
+  data,
+  onSuccessDelete,
+  onSuccessEdit,
+}) => {
   const [isPopup, setIsPopup] = useState<boolean>(false);
   const [isEditPopup, setIsEditPopup] = useState<boolean>(false); // State for edit modal
   const [postContent, setPostContent] = useState<string>(data.content); // State for post content
@@ -79,8 +86,6 @@ const PostComponent: FC<Props> = ({ className, data }) => {
 
   const { show } = toastContext;
 
-  // console.log(data);
-
   // handle the Delete for post
   const handleDelete = async () => {
     try {
@@ -102,7 +107,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         if (postIdPattern.test(location.pathname)) {
           navigate('/'); // Navigate to the home page
         } else {
-          window.location.reload(); // Refresh the page
+          onSuccessDelete(data.id);
         }
       } else {
         console.error('Failed to delete the post');
@@ -144,7 +149,11 @@ const PostComponent: FC<Props> = ({ className, data }) => {
           description: 'Post edited successfully',
           type: 'success',
         });
-        window.location.reload(); // Refresh the page to show updated content
+        onSuccessEdit({
+          ...data,
+          content: postContent,
+          visibility: postVisibility,
+        } as Posts);
       } else {
         console.error('Failed to edit the post');
         show({
@@ -1004,7 +1013,6 @@ const Reactions: FC<ReactionsProps> = ({
     >
       <SmilePlus />
       {getCount()}
-      -69
     </DropDownMenu>
   );
 };
