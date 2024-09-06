@@ -49,7 +49,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 }
 
 interface ReactionsProps {
-  reactions: Reaction[];
+  pReactions: Reaction[];
   context: 'post' | 'comment';
   postId: string;
   commentId?: string; // Optional, only needed for comments
@@ -77,7 +77,9 @@ const PostComponent: FC<Props> = ({ className, data }) => {
     setIsPopup(true);
   };
 
-  const { show, showAsync } = toastContext;
+  const { show } = toastContext;
+
+  // console.log(data);
 
   // handle the Delete for post
   const handleDelete = async () => {
@@ -160,6 +162,10 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       });
     }
   };
+
+  // console.log('Post: ');
+  // console.log(data);
+
   return (
     <>
       <div
@@ -204,7 +210,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
         {/* Post actions */}
         <div className="flex gap-4">
           <Reactions
-            reactions={data.reactions}
+            pReactions={data.reactions}
             context="post"
             postId={data.id}
           />
@@ -505,7 +511,7 @@ const PostPopup: FC<{
         {/* Post actions */}
         <div className="flex gap-4">
           <Reactions
-            reactions={data.reactions}
+            pReactions={data.reactions}
             context="post"
             postId={data.id}
           />
@@ -764,7 +770,7 @@ const CommentComp: FC<CommentProp> = ({
         {/* Reactions */}
         <button className="flex transition-colors gap-1 rounded">
           <Reactions
-            reactions={data.reactions}
+            pReactions={data.reactions}
             context="comment"
             postId={postId}
             commentId={data.id}
@@ -819,11 +825,13 @@ const CommentSection: FC<{
 };
 
 const Reactions: FC<ReactionsProps> = ({
-  reactions,
+  pReactions,
   context,
   postId,
   commentId,
 }) => {
+  const { auth } = useAuth();
+
   const [reactedReaction, setReactedReaction] = useState<ReactionTypes>(
     ReactionTypes.NULL,
   );
@@ -838,14 +846,22 @@ const Reactions: FC<ReactionsProps> = ({
     [ReactionTypes.NULL]: 0,
   });
 
+  const getCount = () => {
+    const eachReactionCount = Object.values(reactionCounts);
+    return eachReactionCount.reduce((prev, curr) => prev + curr);
+  };
+
   let endpoint = '';
   const changeReaction = (to: ReactionTypes) => {
+    // Set endpoint based on context
     if (context === 'post') {
       endpoint = `${URL_BASE}/posts/${postId}/reaction`;
     } else if (context === 'comment') {
       endpoint = `${URL_BASE}/posts/${postId}/comment/${commentId}/reaction`;
     }
+
     if (to === reactedReaction) {
+      // If same reaction
       setReactionCounts((prev) => ({
         ...prev,
         [to]: prev[to] - 1,
@@ -867,6 +883,7 @@ const Reactions: FC<ReactionsProps> = ({
       addReaction(to);
     }
   };
+
   // handle adding + editing reaction
   const addReaction = async (reactionType: ReactionTypes) => {
     try {
@@ -913,6 +930,17 @@ const Reactions: FC<ReactionsProps> = ({
   };
 
   useEffect(() => {
+    // Set default reaction if there is one from user
+    pReactions.forEach((reaction) => {
+      console.log(pReactions);
+      if (reaction.author.id === auth.user!.userId) {
+        console.log(reaction.type);
+        setReactedReaction(reaction.type);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
     const newCounts = {
       [ReactionTypes.LIKE]: 0,
       [ReactionTypes.LOVE]: 0,
@@ -921,7 +949,7 @@ const Reactions: FC<ReactionsProps> = ({
       [ReactionTypes.NULL]: 0,
     };
 
-    reactions.forEach((reaction) => {
+    pReactions.forEach((reaction) => {
       const reactionType = reaction.type.toUpperCase() as ReactionTypes;
       if (reactionType in newCounts) {
         newCounts[reactionType]++;
@@ -929,7 +957,8 @@ const Reactions: FC<ReactionsProps> = ({
     });
 
     setReactionCounts(newCounts);
-  }, [reactions]);
+  }, [pReactions]);
+
   return (
     <DropDownMenu
       content={
@@ -974,7 +1003,8 @@ const Reactions: FC<ReactionsProps> = ({
       }
     >
       <SmilePlus />
-      {reactions.length}
+      {getCount()}
+      -69
     </DropDownMenu>
   );
 };

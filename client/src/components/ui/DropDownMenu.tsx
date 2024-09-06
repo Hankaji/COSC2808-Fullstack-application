@@ -30,6 +30,7 @@ const DropDownMenu: FC<MenuProps> = ({
   const [isMouseIn, setIsMouseIn] = useState<boolean>(false);
   const debouncedMouseExit = useDebounce<boolean>(isMouseIn);
 
+  const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleEnter = () => {
@@ -52,14 +53,16 @@ const DropDownMenu: FC<MenuProps> = ({
   };
 
   // Function to handle clicks outside the dropdown
-  // event type is any since TypeScript is stupid enough to not figure out what MouseEvent is
+  // event type is any since TypeScript is stupid enough to not figure out what MouseEvent
   const handleClickOutside = (event: any) => {
     if (
       dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
-      setIsOpen(false);
-    }
+      dropdownRef.current.contains(event.target as Node)
+    )
+      return;
+    if (triggerRef.current && triggerRef.current.contains(event.target as Node))
+      return;
+    setIsOpen(false);
   };
 
   // useEffect to detect clicks outside the dropdown
@@ -78,6 +81,7 @@ const DropDownMenu: FC<MenuProps> = ({
   return (
     <div className="relative w-full">
       <div
+        ref={triggerRef}
         onClick={(e) => {
           e.stopPropagation();
           handleClick();

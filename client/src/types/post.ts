@@ -49,7 +49,6 @@ export enum ReactionTypes {
 }
 
 export const parsePost = (data: any) => {
-  console.log(data);
   return {
     id: data._id,
     user: parseBasicUser(data.user),

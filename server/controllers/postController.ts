@@ -64,6 +64,10 @@ export const getPosts = async (req: Request, res: Response) => {
 				select: "_id username displayName profileImage",
 			})
 			.populate({
+				path: "reactions.author_id", // Populates the author of each comment
+				select: "_id username displayName profileImage",
+			})
+			.populate({
 				path: "comments.reactions.author_id", // Populates the author of each reaction in comments
 				select: "_id username displayName profileImage",
 			})
