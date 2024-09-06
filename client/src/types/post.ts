@@ -13,12 +13,17 @@ export interface Posts {
   __v: number;
 }
 
+export interface CommentEditHistory {
+  content: string;
+  createdAt: Date;
+}
+
 export interface Comment {
   author_id: User;
   content: string;
   reactions: Reaction[];
   createdAt: Date;
-  editHistory: any[];
+  editHistory: CommentEditHistory[];
   id: string;
 }
 
@@ -67,9 +72,18 @@ export const parseComment = (data: any) => {
       parseReaction(react),
     ),
     createdAt: new Date(data.createdAt),
-    editHistory: data.editHistory,
+    editHistory: (data.editHistory as any[]).map((his) =>
+      parseCommentEditHistory(his),
+    ),
     id: data._id,
   } as Comment;
+};
+
+export const parseCommentEditHistory = (data: any): CommentEditHistory => {
+  return {
+    content: data.content,
+    createdAt: new Date(data.createdAt),
+  };
 };
 
 export const parseReaction = (data: any) => {

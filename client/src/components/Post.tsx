@@ -658,6 +658,10 @@ const CommentComp: FC<CommentProp> = ({
         console.log(res);
 
         if (res.ok) {
+          data.editHistory.push({
+            content: data.content,
+            createdAt: new Date(),
+          });
           onCommentEditSuccess({
             ...data,
             content: cmt,
@@ -717,7 +721,10 @@ const CommentComp: FC<CommentProp> = ({
       <div className="flex gap-2">
         <AuthorPfp data={parseBasicUser(data.author_id)} />
       </div>
-      <p>{data.content}</p>
+      {data.editHistory && data.editHistory.length > 0 && (
+        <p className="font-bold italic text-muted text-sm">edited</p>
+      )}
+      <p className="truncate">{data.content}</p>
       {isEditing && (
         <div className="relative flex items-center w-full max-h-[999px] transition-all duration-500 justify-start gap-1 text-lg bg-background py-2 px-4 border-b-border border-b-2 border-solid focus-within:border-primary">
           <div
