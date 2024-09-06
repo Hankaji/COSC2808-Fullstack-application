@@ -576,18 +576,12 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
   return (
     <div className="flex flex-col justify-start items-start gap-2">
       <div className="flex gap-2">
-        <AuthorPfp
-          data={
-            {
-              ...parseBasicUser(data.author_id),
-              profileImage: (data.author_id as any).profileImage,
-            } as User
-          }
-        />
+        <AuthorPfp data={parseBasicUser(data.author_id)} />
       </div>
       <p>{data.content}</p>
       {/* Comment actions */}
       <div className="flex gap-4">
+        {/* Reactions */}
         <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
           <Reactions
             reactions={data.reactions}
@@ -595,6 +589,14 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
             postId={postId}
             commentId={data.id}
           />
+        </button>
+        {/* Edit */}
+        <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
+          Edit
+        </button>
+        {/* Delete */}
+        <button className="flex transition-colors gap-1 p-2 hover:text-danger hover:bg-danger/25 rounded-full">
+          Delete
         </button>
       </div>
     </div>

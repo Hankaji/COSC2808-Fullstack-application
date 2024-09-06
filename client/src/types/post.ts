@@ -35,11 +35,11 @@ export type Reaction = {
 };
 
 export enum ReactionTypes {
-  LIKE = "LIKE",
-  LOVE = "LOVE",
-  HAHA = "HAHA",
-  ANGRY = "ANGRY",
-  NULL = "NULL",
+  LIKE = 'LIKE',
+  LOVE = 'LOVE',
+  HAHA = 'HAHA',
+  ANGRY = 'ANGRY',
+  NULL = 'NULL',
 }
 
 export const parsePost = (data: any) => {
@@ -84,6 +84,6 @@ export const parseBasicUser = (data: any) => {
     id: data._id,
     username: data.username,
     displayName: data.displayName,
-    profileImage: data.virtualProfileImage,
+    profileImage: data.virtualProfileImage || data.profileImage,
   } as User;
 };
