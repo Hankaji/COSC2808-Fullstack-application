@@ -477,11 +477,6 @@ const PostPopup: FC<{
     >
       {data.images && data.images.length > 0 && (
         <div className="flex items-center overflow-hidden z-[100] h-[80%] w-[60%] aspect-auto rounded-lg rounded-tr-none rounded-br-none">
-          {/* <img */}
-          {/*   className="object-cover w-full h-full" */}
-          {/*   src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small" */}
-          {/*   alt="" */}
-          {/* /> */}
           <PostImages imgData={data.images} />
         </div>
       )}
@@ -547,9 +542,11 @@ const PostPopup: FC<{
             {comment.trim() === '' && !isEditing && 'Post a comments'}
           </span>
           <button
-            onClick={() =>
-              addComment(userCommentRef.current?.textContent || 'err')
-            }
+            onClick={() => {
+              if (!userCommentRef.current) return;
+              addComment(userCommentRef.current.textContent!);
+              userCommentRef.current.textContent = '';
+            }}
             className="py-1 px-4 rounded-lg bg-primary"
           >
             Post
