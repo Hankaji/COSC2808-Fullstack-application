@@ -299,10 +299,10 @@ const ViewRequests = () => {
         title: 'Accepting...',
       },
       success: (_) => ({
-        title: 'Congratulation! your group is now more popular',
+        title: 'Accepted a new member',
       }),
       error: (_) => ({
-        title: 'Couldnt accept member, please try again',
+        title: 'Could not accept member, please try again',
       }),
     });
   };
@@ -327,10 +327,10 @@ const ViewRequests = () => {
         title: 'Rejecting...',
       },
       success: (_) => ({
-        title: 'Member is no longer in this group',
+        title: 'Successfully removed a member',
       }),
       error: (_) => ({
-        title: 'Couldnt reject member, please try again',
+        title: 'Could not reject member, please try again',
       }),
     });
   };
