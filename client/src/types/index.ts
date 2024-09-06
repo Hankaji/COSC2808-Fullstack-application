@@ -1,4 +1,4 @@
-export type AccountRelationship = "Stranger" | "Friend" | "Pending";
+export type AccountRelationship = 'Stranger' | 'Friend' | 'Pending';
 
 export type Account = {
   id: string;
@@ -15,11 +15,11 @@ export type FriendRequest = {
 };
 
 export type NotificationType =
-  | "User"
-  | "Group"
-  | "Post"
-  | "Comment"
-  | "Reaction";
+  | 'User'
+  | 'Group'
+  | 'Post'
+  | 'Comment'
+  | 'Reaction';
 
 export type Notification = {
   id: string;
@@ -33,6 +33,6 @@ export type Group = {
   id: string;
   name: string;
   description: string;
-  visibility: "public" | "private";
+  visibility: 'public' | 'private';
   imgUrl: string;
 };

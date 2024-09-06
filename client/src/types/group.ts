@@ -1,6 +1,6 @@
-import { parseBasicUser, User } from "./post";
+import { parseBasicUser, User } from './post';
 
-export type GroupRelationship = "Stranger" | "Admin" | "Member" | "Pending";
+export type GroupRelationship = 'Stranger' | 'Admin' | 'Member' | 'Pending';
 
 export interface Group {
   id: string;
@@ -19,7 +19,7 @@ export enum GroupVisibility {
   PRIVATE,
 }
 
-export type RequestStatus = "Pending" | "Accepted" | "Rejected";
+export type RequestStatus = 'Pending' | 'Accepted' | 'Rejected';
 
 export const parseGroup = (data: any): Group => {
   return {

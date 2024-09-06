@@ -1,13 +1,13 @@
-import { Globe, Lock } from "lucide-react";
-import { Check, Plus, UserRoundCheck } from "lucide-react";
-import { FC } from "react";
-import { Link } from "react-router-dom";
-import { Group, GroupVisibility } from "../types/group";
+import { Globe, Lock } from 'lucide-react';
+import { Check, Plus, UserRoundCheck } from 'lucide-react';
+import { FC } from 'react';
+import { Link } from 'react-router-dom';
+import { Group, GroupVisibility } from '../types/group';
 
 interface GroupInfoProps {
   data: Group;
   button?: {
-    type: "toRequest" | "requestSent" | "member";
+    type: 'toRequest' | 'requestSent' | 'member';
     onClick?: () => void;
   };
 }
@@ -17,14 +17,14 @@ const CompactedGroup: FC<GroupInfoProps> = ({ data, button }) => {
     ? null
     : (() => {
         const handleOnClick = (
-          e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+          e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
         ) => {
           e.preventDefault();
           button.onClick?.();
         };
 
         switch (button.type) {
-          case "toRequest":
+          case 'toRequest':
             return (
               <button
                 onClick={handleOnClick}
@@ -33,13 +33,13 @@ const CompactedGroup: FC<GroupInfoProps> = ({ data, button }) => {
                 <Plus size={16} className="stroke-blue-900" />
               </button>
             );
-          case "requestSent":
+          case 'requestSent':
             return (
               <button className="rounded-full p-1.5 bg-gray-100 cursor-default">
                 <Check size={16} className="stroke-gray-900" />
               </button>
             );
-          case "member":
+          case 'member':
             return (
               <button className="rounded-full p-1.5 bg-green-100">
                 <UserRoundCheck size={16} className="stroke-green-900" />

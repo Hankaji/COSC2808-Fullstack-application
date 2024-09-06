@@ -60,9 +60,7 @@ const UserPanel: FC<Props> = ({ userData }) => {
         />
         <div className="flex flex-col justify-center items-start">
           <h1 className="text-4xl font-semibold">{userData.displayName}</h1>
-          <p className="text-xl text-muted-foreground font-semibold">
-            @{userData.username}
-          </p>
+          <p className="text-lg text-muted-foreground">@{userData.username}</p>
         </div>
         <div className="flex justify-center items-center gap-2 ml-auto text-success">
           {true ? <BadgeCheck size={36} /> : <CircleSlash size={36} />}

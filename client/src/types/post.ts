@@ -35,11 +35,11 @@ export type Reaction = {
 };
 
 export enum ReactionTypes {
-  LIKE = "LIKE",
-  LOVE = "LOVE",
-  HAHA = "HAHA",
-  ANGRY = "ANGRY",
-  NULL = "NULL",
+  LIKE = 'LIKE',
+  LOVE = 'LOVE',
+  HAHA = 'HAHA',
+  ANGRY = 'ANGRY',
+  NULL = 'NULL',
 }
 
 export const parsePost = (data: any) => {

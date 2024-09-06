@@ -7,7 +7,7 @@ export function parseAccount(data: {
   email: string;
   virtualProfileImage?: string;
   status: string;
-  relationship?: AccountRelationship
+  relationship?: AccountRelationship;
 }): Account {
   return {
     id: data._id,
@@ -15,6 +15,6 @@ export function parseAccount(data: {
     displayName: data.displayName,
     imgUrl: data.virtualProfileImage,
     isSuspended: data.status === 'Suspended',
-    relationship: data.relationship
+    relationship: data.relationship,
   };
 }
