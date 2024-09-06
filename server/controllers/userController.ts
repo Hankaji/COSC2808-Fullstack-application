@@ -43,50 +43,54 @@ export const getUsers = async (req: Request, res: Response) => {
 		// Execute the query
 		const users = await User.find(query).exec();
 
-    // Find the current user's friend list
-    const currentUser = await User.findById(currentUserId).select("friends").exec();
+		// Find the current user's friend list
+		const currentUser = await User.findById(currentUserId)
+			.select("friends")
+			.exec();
 
-    // Get all friend requests involving the current user (sent or received)
-    const friendRequests = await FriendRequest.find({
-      $or: [
-        { sender_id: currentUserId, status: "Pending" },
-        { receiver_id: currentUserId, status: "Pending" },
-      ],
-    }).exec();
+		// Get all friend requests involving the current user (sent or received)
+		const friendRequests = await FriendRequest.find({
+			$or: [
+				{ sender_id: currentUserId, status: "Pending" },
+				{ receiver_id: currentUserId, status: "Pending" },
+			],
+		}).exec();
 
-    // Format the response
-    const formattedUsers = users.map((user) => {
-      // Determine the relationship with the current user
-      let relationship = "Stranger";
+		// Format the response
+		const formattedUsers = users.map((user) => {
+			// Determine the relationship with the current user
+			let relationship = "Stranger";
 
-      // Check if the user is a friend
-      if (currentUser?.friends.includes(user._id)) {
-        relationship = "Friend";
-      } else {
-        // Check if there is a pending friend request
-        const hasPendingRequest = friendRequests.some((request) => {
-          return (
-            (request.sender_id.equals(currentUserId) && request.receiver_id.equals(user._id)) ||
-            (request.sender_id.equals(user._id) && request.receiver_id.equals(currentUserId))
-          );
-        });
+			// Check if the user is a friend
+			if (currentUser?.friends.includes(user._id)) {
+				relationship = "Friend";
+			} else {
+				// Check if there is a pending friend request
+				const hasPendingRequest = friendRequests.some((request) => {
+					return (
+						(request.sender_id.equals(currentUserId) &&
+							request.receiver_id.equals(user._id)) ||
+						(request.sender_id.equals(user._id) &&
+							request.receiver_id.equals(currentUserId))
+					);
+				});
 
-        if (hasPendingRequest) {
-          relationship = "Pending";
-        }
-      }
+				if (hasPendingRequest) {
+					relationship = "Pending";
+				}
+			}
 
-      return {
-        _id: user._id,
-        username: user.username,
-        displayName: user.displayName,
-        email: user.email,
-        // @ts-ignore
-        virtualProfileImage: user.virtualProfileImage,
-        status: user.status,
-        relationship,
-      };
-    });
+			return {
+				_id: user._id,
+				username: user.username,
+				displayName: user.displayName,
+				email: user.email,
+				// @ts-ignore
+				virtualProfileImage: user.virtualProfileImage,
+				status: user.status,
+				relationship,
+			};
+		});
 
 		// Return the users
 		return res.status(200).json(formattedUsers);
@@ -98,10 +102,10 @@ export const getUsers = async (req: Request, res: Response) => {
 
 // Get a user by ID
 export const getUserById = async (req: Request, res: Response) => {
-  try {
-    // Extract user ID from the request parameters
-    const { id } = req.params;
-    const currentUserId = req.session.userId;
+	try {
+		// Extract user ID from the request parameters
+		const { id } = req.params;
+		const currentUserId = req.session.userId;
 
 		// Validate the ID format
 		if (!id || !mongoose.Types.ObjectId.isValid(id)) {
@@ -110,7 +114,9 @@ export const getUserById = async (req: Request, res: Response) => {
 
 		// Find the user by ID
 		const user = await User.findById(id)
-			.select("_id username createdAt status displayName email profileImage friends")
+			.select(
+				"_id username createdAt status displayName email profileImage friends",
+			)
 			.lean();
 
 		// Check if the user exists
@@ -118,49 +124,51 @@ export const getUserById = async (req: Request, res: Response) => {
 			return res.status(404).json({ message: "User not found" });
 		}
 
-    // Get the current user's friend list
-    const currentUser = await User.findById(currentUserId).select("friends").exec();
+		// Get the current user's friend list
+		const currentUser = await User.findById(currentUserId)
+			.select("friends")
+			.exec();
 
-    // Find any pending friend requests involving the current user
-    const friendRequests = await FriendRequest.find({
-      $or: [
-        { sender_id: currentUserId, receiver_id: id, status: "Pending" },
-        { receiver_id: currentUserId, sender_id: id, status: "Pending" },
-      ],
-    }).exec();
+		// Find any pending friend requests involving the current user
+		const friendRequests = await FriendRequest.find({
+			$or: [
+				{ sender_id: currentUserId, receiver_id: id, status: "Pending" },
+				{ receiver_id: currentUserId, sender_id: id, status: "Pending" },
+			],
+		}).exec();
 
-    // Determine the relationship
-    let relationship = "Stranger";
+		// Determine the relationship
+		let relationship = "Stranger";
 
-    if (currentUser?.friends.includes(user._id)) {
-      relationship = "Friend";
-    } else if (friendRequests.length > 0) {
-      relationship = "Pending";
-    }
+		if (currentUser?.friends.includes(user._id)) {
+			relationship = "Friend";
+		} else if (friendRequests.length > 0) {
+			relationship = "Pending";
+		}
 
-    // Create the user details object
-    const userFullDetails = {
-      _id: user._id,
-      username: user.username,
-      displayName: user.displayName,
-      email: user.email,
-      virtualProfileImage:
-        user.profileImage &&
-        user.profileImage.contentType &&
-        user.profileImage.data
-          ? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
-          : undefined,
-      createAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      relationship, // Include the relationship status
-    };
+		// Create the user details object
+		const userFullDetails = {
+			_id: user._id,
+			username: user.username,
+			displayName: user.displayName,
+			email: user.email,
+			virtualProfileImage:
+				user.profileImage &&
+				user.profileImage.contentType &&
+				user.profileImage.data
+					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
+					: undefined,
+			createAt: user.createdAt,
+			updatedAt: user.updatedAt,
+			relationship, // Include the relationship status
+		};
 
-    // Return the user with relationship status
-    return res.status(200).json(userFullDetails);
-  } catch (error) {
-    console.error("Error retrieving user:", error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
+		// Return the user with relationship status
+		return res.status(200).json(userFullDetails);
+	} catch (error) {
+		console.error("Error retrieving user:", error);
+		return res.status(500).json({ message: "Internal server error" });
+	}
 };
 
 // Get a user's friends by ID
@@ -379,16 +387,20 @@ export const readNotification = async (req: Request, res: Response) => {
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		// Check if the notification index is valid
-		if (
-			notificationIndex < 0 ||
-			notificationIndex >= user.notifications.length
-		) {
-			return res.status(400).json({ message: "Invalid notification index" });
+		let foundNotification = false;
+
+		for (const item of user.notifications) {
+			if (notificationId === item.id) {
+				item.isRead = true;
+				foundNotification = true;
+				break;
+			}
 		}
 
-		// Mark the notification as read
-		user.notifications[notificationIndex].isRead = true;
+		if (!foundNotification) {
+			return res.status(400).json({ message: "Invalid notification ID" });
+		}
+
 		await user.save();
 
 		// Return success response
