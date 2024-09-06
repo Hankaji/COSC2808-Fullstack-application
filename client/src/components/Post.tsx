@@ -704,13 +704,13 @@ const CommentComp: FC<CommentProp> = ({
 
     toast.showAsync(delRequest, {
       loading: {
-        title: 'Editing comment...',
+        title: 'Deleting comment...',
       },
       success: (_) => ({
-        title: 'Comment edited',
+        title: 'Comment deleted',
       }),
       error: (_) => ({
-        title: 'Couldnt edit comment',
+        title: 'Couldnt delete comment',
         description: 'Please try again later',
       }),
     });
