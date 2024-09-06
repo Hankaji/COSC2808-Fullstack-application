@@ -65,6 +65,13 @@ export const getPosts = async (req: Request, res: Response) => {
 			})
 			.exec();
 
+		// Sort the comments by createdAt in descending order (latest first)
+		posts.map((post) =>
+			post.comments.sort(
+				(a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+			),
+		);
+
 		// Process virtual images to be included in the response
 		const processedPosts = posts.map((post) => {
 			const user = post.user_id as any;
@@ -650,7 +657,7 @@ export const addCommentToPost = async (req: Request, res: Response) => {
 		post.comments.push(newComment);
 
 		// Save the updated post
-		await post.save();
+		const savedPost = await post.save();
 
 		// Notify the post author
 		if (post.user_id != author_id) {
@@ -673,8 +680,20 @@ export const addCommentToPost = async (req: Request, res: Response) => {
 			}
 		}
 
+		// Find the newly added comment (last one in the array) and populate its author_id
+		const newlyAddedComment = savedPost.comments[savedPost.comments.length - 1];
+
+		// Populate the `author_id` in the newly added comment
+		const populatedComment = await Post.populate(newlyAddedComment, {
+			path: "author_id",
+			select: "_id username displayName profileImage",
+		});
+
 		// Return success response
-		return res.status(201).json({ message: "Comment added successfully" });
+		return res.status(201).json({
+			message: "Comment added successfully",
+			comment: populatedComment,
+		});
 	} catch (error) {
 		console.error("Error adding comment:", error);
 		return res.status(500).json({ message: "Internal server error" });

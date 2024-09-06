@@ -29,6 +29,7 @@ import {
   Reaction,
   ReactionTypes,
   parseBasicUser,
+  parseComment,
 } from '../types/post';
 import { mergeClassNames } from '../utils';
 import {
@@ -41,6 +42,7 @@ import { ToastContext } from '../context/ToastProvider';
 import { URL_BASE } from '../config';
 import { isEditable } from '@testing-library/user-event/dist/utils';
 import useAuth from '../hooks/useAuth';
+import useToast from '../hooks/useToast';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
@@ -76,41 +78,6 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   };
 
   const { show, showAsync } = toastContext;
-
-  const addComment = async (content: string) => {
-    const addRequest = async () => {
-      try {
-        const endpoint = `${URL_BASE}/posts/${data.id}/comment`;
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          credentials: 'include',
-          body: JSON.stringify({
-            content: content,
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        console.log(res);
-      } catch (error) { }
-    };
-
-    showAsync(addRequest, {
-      loading: {
-        title: 'Posting comment...',
-      },
-      success: (_) => ({
-        title: 'Comment posted',
-      }),
-      error: (_) => ({
-        title: 'Couldnt post comment',
-        description: 'Please try again later',
-      }),
-    });
-
-    setTimeout(() => window.location.reload(), 1000);
-  };
 
   // handle the Delete for post
   const handleDelete = async () => {
@@ -193,8 +160,6 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       });
     }
   };
-  console.log('Post: ');
-  console.log(data);
   return (
     <>
       <div
@@ -249,13 +214,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
           </button>
         </div>
       </div>
-      {isPopup && (
-        <PostPopup
-          onCommentPost={addComment}
-          closePopup={setIsPopup}
-          data={data}
-        />
-      )}
+      {isPopup && <PostPopup closePopup={setIsPopup} data={data} />}
       {/* popup for delete confirmation */}
       <PopupModal
         widthPercent={0.5}
@@ -443,13 +402,70 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
 };
 
 const PostPopup: FC<{
-  onCommentPost: (content: string) => Promise<any>;
   closePopup: any;
   data: Posts;
-}> = ({ onCommentPost, closePopup, data }) => {
+}> = ({ closePopup, data }) => {
   const [comment, setComment] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const userCommentRef = useRef<HTMLDivElement>(null);
+
+  const toast = useToast();
+
+  const [commentList, setCommentList] = useState<Comment[]>(data.comments);
+
+  const addComment = (content: string) => {
+    const addRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/posts/${data.id}/comment`;
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          credentials: 'include',
+          body: JSON.stringify({
+            content: content,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log(res);
+
+        if (res.ok) {
+          const data = await res.json();
+          const comment = parseComment(data.comment);
+          setCommentList((prev) => [comment, ...prev]);
+        }
+      } catch (error) { }
+    };
+
+    toast.showAsync(addRequest, {
+      loading: {
+        title: 'Posting comment...',
+      },
+      success: (_) => ({
+        title: 'Comment posted',
+      }),
+      error: (_) => ({
+        title: 'Couldnt post comment',
+        description: 'Please try again later',
+      }),
+    });
+  };
+
+  const onCommentEditSuccess = (p_cmt: Comment) => {
+    setCommentList((prev) =>
+      prev.map((cmt) => {
+        if (cmt.id === p_cmt.id) {
+          return p_cmt;
+        } else {
+          return cmt;
+        }
+      }),
+    );
+  };
+  const onCommentDeleteSuccess = (id: string) => {
+    setCommentList((prev) => prev.filter((cmt) => cmt.id !== id));
+  };
 
   return (
     <div
@@ -458,19 +474,26 @@ const PostPopup: FC<{
       }}
       className="z-50 fixed top-0 left-0 w-svw h-svh backdrop-blur-[2px] flex justify-center items-center px-[15%]"
     >
-      <div className="overflow-hidden z-[100] h-[80%] w-[60%] bg-background aspect-auto rounded-lg rounded-tr-none rounded-br-none">
-        <img
-          className="object-cover w-full h-full"
-          src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small"
-          alt=""
-        />
-      </div>
+      {data.images && data.images.length > 0 && (
+        <div className="flex items-center overflow-hidden z-[100] h-[80%] w-[60%] aspect-auto rounded-lg rounded-tr-none rounded-br-none">
+          {/* <img */}
+          {/*   className="object-cover w-full h-full" */}
+          {/*   src="https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small" */}
+          {/*   alt="" */}
+          {/* /> */}
+          <PostImages imgData={data.images} />
+        </div>
+      )}
       <div
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
         }}
-        className={`flex flex-col z-[100] gap-4 w-full h-[80%] rounded-tl-none rounded-bl-none p-4 my-4 border-border border-solid border-2 rounded-lg bg-card`}
+        className={mergeClassNames(
+          `flex flex-col z-[100] gap-4 w-full h-[80%]`,
+          'p-4 my-4 border-border border-solid border-2 rounded-tr-lg  rounded-br-lg bg-card',
+          !data.images && ' rounded-tl-lg rounded-bl-lg',
+        )}
       >
         {/* Author */}
         <div className="flex gap-2">
@@ -480,9 +503,8 @@ const PostPopup: FC<{
           </div>
         </div>
         {/* Content */}
-        {/* TODO: Change placeholder */}
         <div className="flex flex-col justify-start items-start gap-2">
-          <p>New artwork Heheheh</p>
+          <p>{data.content}</p>
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
@@ -515,12 +537,17 @@ const PostPopup: FC<{
             contentEditable
             className="w-full h-max p-0 text-wrap break-words break-all transition-all duration-500 resize-none bg-background text-lg rounded-lg outline-none"
           ></div>
-          <span className="absolute left-0 pl-4 cursor-default select-none text-muted">
+          <span
+            onClick={() => {
+              userCommentRef.current?.focus();
+            }}
+            className="absolute left-0 pl-4 cursor-default select-none text-muted"
+          >
             {comment.trim() === '' && !isEditing && 'Post a comments'}
           </span>
           <button
             onClick={() =>
-              onCommentPost(userCommentRef.current?.textContent || 'err')
+              addComment(userCommentRef.current?.textContent || 'err')
             }
             className="py-1 px-4 rounded-lg bg-primary"
           >
@@ -528,7 +555,12 @@ const PostPopup: FC<{
           </button>
         </div>
         {/* Comments */}
-        <CommentSection data={data.comments} postId={data.id} />
+        <CommentSection
+          onCommentEditSuccess={onCommentEditSuccess}
+          onCommentDeleteSuccess={onCommentDeleteSuccess}
+          data={commentList}
+          postId={data.id}
+        />
       </div>
     </div>
   );
@@ -586,15 +618,99 @@ const FallBackPfp = () => {
 interface CommentProp {
   data: Comment;
   postId: string;
+  onCommentEditSuccess: (cmt: Comment) => void;
+  onCommentDeleteSuccess: (id: string) => void;
 }
 
-const CommentComp: FC<CommentProp> = ({ data, postId }) => {
+const CommentComp: FC<CommentProp> = ({
+  data,
+  postId,
+  onCommentEditSuccess,
+  onCommentDeleteSuccess,
+}) => {
   const { auth } = useAuth();
   const currUser = auth.user!;
+  const toast = useToast();
+
+  const [comment, setComment] = useState<string>('');
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const userCommentRef = useRef<HTMLDivElement>(null);
 
   // If current user id match with comment's author_id, or is admin => Can edit/delete comment
   const isCurrentUserEditable: boolean =
     currUser.isAdmin || data.author_id.id === currUser.userId;
+
+  const onCommentEdit = (cmt: string) => {
+    const editRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/posts/${postId}/comment/${data.id}`;
+        const res = await fetch(endpoint, {
+          method: 'PATCH',
+          credentials: 'include',
+          body: JSON.stringify({
+            content: cmt,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log(res);
+
+        if (res.ok) {
+          onCommentEditSuccess({
+            ...data,
+            content: cmt,
+          });
+
+          setIsEditing(false);
+        }
+      } catch (error) { }
+    };
+
+    toast.showAsync(editRequest, {
+      loading: {
+        title: 'Editing comment...',
+      },
+      success: (_) => ({
+        title: 'Comment edited',
+      }),
+      error: (_) => ({
+        title: 'Couldnt edit comment',
+        description: 'Please try again later',
+      }),
+    });
+  };
+
+  const onCommentDelete = () => {
+    const delRequest = async () => {
+      try {
+        const endpoint = `${URL_BASE}/posts/${postId}/comment/${data.id}`;
+        const res = await fetch(endpoint, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+
+        console.log(res);
+        if (res.ok) {
+          onCommentDeleteSuccess(data.id);
+        }
+      } catch (error) { }
+    };
+
+    toast.showAsync(delRequest, {
+      loading: {
+        title: 'Editing comment...',
+      },
+      success: (_) => ({
+        title: 'Comment edited',
+      }),
+      error: (_) => ({
+        title: 'Couldnt edit comment',
+        description: 'Please try again later',
+      }),
+    });
+  };
 
   return (
     <div className="flex flex-col justify-start items-start gap-2">
@@ -602,6 +718,42 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
         <AuthorPfp data={parseBasicUser(data.author_id)} />
       </div>
       <p>{data.content}</p>
+      {isEditing && (
+        <div className="relative flex items-center w-full max-h-[999px] transition-all duration-500 justify-start gap-1 text-lg bg-background py-2 px-4 border-b-border border-b-2 border-solid focus-within:border-primary">
+          <div
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onInput={() => {
+              setIsEditing(true);
+              setComment(userCommentRef.current?.textContent || '');
+            }}
+            ref={userCommentRef}
+            contentEditable
+            className="w-full h-max p-0 text-wrap break-words break-all transition-all duration-500 resize-none bg-background text-lg rounded-lg outline-none"
+          ></div>
+          {/* <span className="absolute left-0 pl-4 cursor-default select-none text-muted"> */}
+          {/*   {comment.trim() === '' && !isEditing && 'Post a comments'} */}
+          {/* </span> */}
+          <button
+            onClick={() => {
+              setIsEditing(false);
+            }}
+            className="py-1 px-4 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              onCommentEdit(userCommentRef.current?.textContent || 'err');
+            }}
+            className="py-1 px-4 rounded-lg bg-primary hover:bg-secondary transition-colors"
+          >
+            Edit
+          </button>
+        </div>
+      )}
       {/* Comment actions */}
       <div className="flex gap-4 justify-start items-center">
         {/* Reactions */}
@@ -616,11 +768,19 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
         {isCurrentUserEditable && (
           <>
             {/* Edit */}
-            <button className="flex transition-colors px-2 hover:text-info hover:bg-info/25 rounded-lg">
+            <button
+              onClick={() => {
+                setIsEditing(true);
+              }}
+              className="flex transition-colors px-2 hover:text-info hover:bg-info/25 rounded-lg"
+            >
               Edit
             </button>
             {/* Delete */}
-            <button className="flex transition-colors px-2 hover:text-danger hover:bg-danger/25 rounded-lg">
+            <button
+              onClick={onCommentDelete}
+              className="flex transition-colors px-2 hover:text-danger hover:bg-danger/25 rounded-lg"
+            >
               Delete
             </button>
           </>
@@ -630,14 +790,24 @@ const CommentComp: FC<CommentProp> = ({ data, postId }) => {
   );
 };
 
-const CommentSection: FC<{ data: Comment[]; postId: string }> = ({
-  data,
-  postId,
-}) => {
+const CommentSection: FC<{
+  data: Comment[];
+  postId: string;
+  onCommentEditSuccess: (cmt: Comment) => void;
+  onCommentDeleteSuccess: (id: string) => void;
+}> = ({ data, postId, onCommentDeleteSuccess, onCommentEditSuccess }) => {
   return (
     <div className="flex flex-col gap-4 overflow-y-scroll h-full w-full">
       {data.map((cmt) => {
-        return <CommentComp key={cmt.id} data={cmt} postId={postId} />;
+        return (
+          <CommentComp
+            onCommentEditSuccess={onCommentEditSuccess}
+            onCommentDeleteSuccess={onCommentDeleteSuccess}
+            key={cmt.id}
+            data={cmt}
+            postId={postId}
+          />
+        );
       })}
     </div>
   );
