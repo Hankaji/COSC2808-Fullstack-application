@@ -36,6 +36,7 @@ export interface User {
 
 export type Reaction = {
   author: User;
+  id: string;
   type: ReactionTypes;
 };
 
@@ -48,6 +49,7 @@ export enum ReactionTypes {
 }
 
 export const parsePost = (data: any) => {
+  console.log(data);
   return {
     id: data._id,
     user: parseBasicUser(data.user),
@@ -55,9 +57,7 @@ export const parsePost = (data: any) => {
     content: data.content,
     images: data.images,
     visibility: data.visibility,
-    reactions: (data.reactions as string[]).map((react) =>
-      parseReaction(react),
-    ),
+    reactions: (data.reactions as any[]).map((react) => parseReaction(react)),
     comments: (data.comments as any[]).map((cmt) => parseComment(cmt)),
     editHistory: data.editHistory,
     createdAt: new Date(data.createdAt),
@@ -86,11 +86,12 @@ export const parseCommentEditHistory = (data: any): CommentEditHistory => {
   };
 };
 
-export const parseReaction = (data: any) => {
+export const parseReaction = (data: any): Reaction => {
   return {
-    author: parseBasicUser(data.author),
+    author: parseBasicUser(data.author_id),
+    id: data._id,
     type: ReactionTypes[data.type.toUpperCase() as keyof typeof ReactionTypes],
-  } as Reaction;
+  };
 };
 
 export const parseBasicUser = (data: any) => {
