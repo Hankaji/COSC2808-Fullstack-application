@@ -39,6 +39,7 @@ import {
 import PopupModal from './PopupModal';
 import { ToastContext } from '../context/ToastProvider';
 import { URL_BASE } from '../config';
+import { isEditable } from '@testing-library/user-event/dist/utils';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
@@ -445,6 +446,8 @@ const PostPopup: FC<{
   closePopup: any;
   data: Posts;
 }> = ({ onCommentPost, closePopup, data }) => {
+  const [comment, setComment] = useState<string>('');
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const userCommentRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -452,7 +455,7 @@ const PostPopup: FC<{
       onClick={() => {
         closePopup(false);
       }}
-      className="fixed top-0 left-0 w-svw h-svh backdrop-blur-[2px] flex justify-center items-center px-[15%]"
+      className="z-50 fixed top-0 left-0 w-svw h-svh backdrop-blur-[2px] flex justify-center items-center px-[15%]"
     >
       <div className="overflow-hidden z-[100] h-[80%] w-[60%] bg-background aspect-auto rounded-lg rounded-tr-none rounded-br-none">
         <img
@@ -493,20 +496,27 @@ const PostPopup: FC<{
           </button>
         </div>
         <div className="border-border border-solid border-2"></div>
-        <div className="flex items-center max-h-[999px] transition-all duration-500 justify-start gap-1 text-lg bg-background py-2 px-4 border-b-border border-b-2 border-solid focus-within:border-primary">
+        {/* Comment input textarea */}
+        <div className=" relative flex items-center max-h-[999px] transition-all duration-500 justify-start gap-1 text-lg bg-background py-2 px-4 border-b-border border-b-2 border-solid focus-within:border-primary">
           <div
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
+            onInput={() => {
+              setIsEditing(true);
+              setComment(userCommentRef.current?.textContent || '');
+            }}
+            onBlur={() => {
+              setIsEditing(false);
+            }}
             ref={userCommentRef}
             contentEditable
             className="w-full h-max p-0 text-wrap break-words break-all transition-all duration-500 resize-none bg-background text-lg rounded-lg outline-none"
-          >
-            {/* <span className="cursor-none text-muted"> */}
-            {/*   {comment.trim() === '' && 'Post a comments'} */}
-            {/* </span> */}
-          </div>
+          ></div>
+          <span className="absolute left-0 pl-4 cursor-default select-none text-muted">
+            {comment.trim() === '' && !isEditing && 'Post a comments'}
+          </span>
           <button
             onClick={() =>
               onCommentPost(userCommentRef.current?.textContent || 'err')
