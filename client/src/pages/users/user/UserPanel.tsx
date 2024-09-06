@@ -7,7 +7,7 @@ import { User } from '../../../types/user';
 
 const mockData: Posts[] = [
   {
-    id: '1',
+    _id: '1',
     user: {
       profileImage:
         'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',

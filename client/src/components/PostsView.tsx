@@ -11,7 +11,7 @@ const PostsView: FC<Props> = ({ posts, ...props }) => {
   return (
     <div {...props} className={mergeClassNames('w-full', props.className)}>
       {posts.map((post) => {
-        return <Post key={post.id} data={post} />; // Use the Post component with the new name
+        return <Post key={post._id} data={post} />; // Use the Post component with the new name
       })}
     </div>
   );

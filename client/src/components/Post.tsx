@@ -52,6 +52,9 @@ interface ReactionsProps {
 }
 
 const PostComponent: FC<Props> = ({ className, data }) => {
+  console.log('Post data:', data); // Log data to inspect its structure
+  console.log('Post data id:', data._id); // Log data to inspect its structure
+
   const [isPopup, setIsPopup] = useState<boolean>(false);
   const [isEditPopup, setIsEditPopup] = useState<boolean>(false); // State for edit modal
   const [postContent, setPostContent] = useState<string>(data.content); // State for post content
@@ -78,7 +81,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   // handle the Delete for post
   const handleDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
+      const response = await fetch(`http://localhost:8080/posts/${data._id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -119,7 +122,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   // handle the Edit for post
   const handleEdit = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
+      const response = await fetch(`http://localhost:8080/posts/${data._id}`, {
         method: 'PATCH',
         headers: {
           "Content-Type": "application/json",
@@ -205,7 +208,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
           <Reactions
             reactions={data.reactions}
             context="post"
-            postId={data.id}
+            postId={data._id}
           />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
@@ -440,7 +443,7 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
           <Reactions
             reactions={data.reactions}
             context="post"
-            postId={data.id}
+            postId={data._id}
           />
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
@@ -449,7 +452,7 @@ const PostPopup: FC<{ closePopup: any; data: Posts }> = ({
         </div>
         <div className="border-border border-solid border-2"></div>
         {/* Comments */}
-        <CommentSection data={data.comments} postId={data.id} />
+        <CommentSection data={data.comments} postId={data._id} />
       </div>
     </div>
   );

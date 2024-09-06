@@ -1,5 +1,5 @@
 export interface Posts {
-  id: string;
+  _id: string;
   user: User;
   group_id: null;
   content: string;
@@ -44,7 +44,7 @@ export enum ReactionTypes {
 
 export const parsePost = (data: any) => {
   return {
-    id: data._id,
+    _id: data._id,
     user: parseBasicUser(data.user),
     group_id: data.group_id,
     content: data.content,
