@@ -455,6 +455,7 @@ const PostPopup: FC<{
   const onCommentEditSuccess = (p_cmt: Comment) => {
     setCommentList((prev) =>
       prev.map((cmt) => {
+        // Mapping to change the content of edited comment
         if (cmt.id === p_cmt.id) {
           return p_cmt;
         } else {

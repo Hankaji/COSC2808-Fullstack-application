@@ -1,12 +1,11 @@
 import {
-  Children,
   FC,
   HtmlHTMLAttributes,
   MouseEvent,
-  MouseEventHandler,
   PropsWithChildren,
   ReactElement,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import useDebounce from '../../hooks/useDebounce';
@@ -31,6 +30,8 @@ const DropDownMenu: FC<MenuProps> = ({
   const [isMouseIn, setIsMouseIn] = useState<boolean>(false);
   const debouncedMouseExit = useDebounce<boolean>(isMouseIn);
 
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const handleEnter = () => {
     if (!hoverable) return;
     setIsMouseIn(true);
@@ -50,15 +51,36 @@ const DropDownMenu: FC<MenuProps> = ({
     setIsOpen((prev) => !prev);
   };
 
+  // Function to handle clicks outside the dropdown
+  // event type is any since TypeScript is stupid enough to not figure out what MouseEvent is
+  const handleClickOutside = (event: any) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
+      setIsOpen(false);
+    }
+  };
+
+  // useEffect to detect clicks outside the dropdown
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
     <div className="relative w-full">
       <div
         onClick={(e) => {
           e.stopPropagation();
           handleClick();
-        }}
-        onBlur={() => {
-          setIsOpen(false);
         }}
         onMouseEnter={handleEnter}
         onMouseLeave={handleLeave}
@@ -72,7 +94,7 @@ const DropDownMenu: FC<MenuProps> = ({
       >
         {children}
       </div>
-      {isOpen && content}
+      {isOpen && <div ref={dropdownRef}>{content}</div>}
     </div>
   );
 };
