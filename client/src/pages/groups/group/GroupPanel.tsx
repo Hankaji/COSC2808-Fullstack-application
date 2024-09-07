@@ -37,10 +37,10 @@ const GroupPanel = () => {
     try {
       const endpoint = `${URL_BASE}/requests/group_requests`;
       const res = await fetch(endpoint, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           group_id: groupId,
@@ -129,9 +129,9 @@ const GroupHeader: FC<GroupHeaderProps> = ({
         <div className="h-0 min-w-fit">
           <img
             className={mergeClassNames(
-              'bg-gray-500 object-cover',
-              'relative aspect-square rounded-full size-24 -translate-y-1/2',
-              'border-background border-solid border-4',
+              "bg-gray-500 object-cover",
+              "relative aspect-square rounded-full size-24 -translate-y-1/2",
+              "border-background border-solid border-4",
             )}
             src={avatarImg}
             alt="group avatar"

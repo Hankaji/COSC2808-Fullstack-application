@@ -10,9 +10,9 @@ interface Props {
 
 const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
   const { groupId } = useParams<{ groupId: string }>();
-  const [visibility, setVisibility] = useState('Public');
+  const [visibility, setVisibility] = useState("Public");
   const [images, setImages] = useState<File[]>([]);
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
 
   const params = useParams();
@@ -22,7 +22,7 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
 
   const handleVisibilityChange = (event: { preventDefault: () => void }) => {
     event.preventDefault(); // Prevent form submission
-    setVisibility((prev) => (prev === 'Public' ? 'Friend' : 'Public'));
+    setVisibility((prev) => (prev === "Public" ? "Friend" : "Public"));
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,34 +43,33 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
 
   const handlePost = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Attempting to create post...');
 
     if (!content.trim() && images.length === 0) {
       toast?.show({
-        title: 'Empty Post',
-        description: 'Please add some content or images before posting.',
-        type: 'warning',
+        title: "Empty Post",
+        description: "Please add some content or images before posting.",
+        type: "warning",
       });
       return;
     }
 
     const postData = new FormData();
-    postData.append('content', content);
-    postData.append('visibility', visibility);
+    postData.append("content", content);
+    postData.append("visibility", visibility);
     images.forEach((image) => {
-      postData.append('images', image);
+      postData.append("images", image);
     });
     if (groupId) {
-      postData.append('group_id', groupId);
+      postData.append("group_id", groupId);
     }
 
     toast?.showAsync(
       async () => {
         setIsPosting(true);
-        const response = await fetch('http://localhost:8080/posts', {
-          method: 'POST',
+        const response = await fetch("http://localhost:8080/posts", {
+          method: "POST",
           body: postData,
-          credentials: 'include',
+          credentials: "include",
         });
 
         if (!response.ok) {
@@ -78,7 +77,7 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
           throw new Error(errorData);
         } else {
           // Run these on post uploaded succesfully
-          setContent('');
+          setContent("");
           setImages([]);
           setIsPosting(false);
           onPostUpload && onPostUpload();
@@ -88,18 +87,18 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
       },
       {
         loading: {
-          title: 'Creating Post',
-          description: 'Please wait while we create your post...',
+          title: "Creating Post",
+          description: "Please wait while we create your post...",
         },
         success: (_) => {
           return {
-            title: 'Post Created',
-            description: 'Your post has been created successfully!',
+            title: "Post Created",
+            description: "Your post has been created successfully!",
           };
         },
         error: (error) => ({
-          title: 'Post Creation Failed',
-          description: error.message || 'An unknown error occurred',
+          title: "Post Creation Failed",
+          description: error.message || "An unknown error occurred",
         }),
       },
     );
@@ -147,7 +146,7 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
           className="ml-auto py-1 px-4 bg-primary rounded-lg"
           disabled={isPosting}
         >
-          {isPosting ? 'Posting...' : 'Post'}
+          {isPosting ? "Posting..." : "Post"}
         </button>
       </div>
       <div className="border-border border border-solid w-full "></div>
