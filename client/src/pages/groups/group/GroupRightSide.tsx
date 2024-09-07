@@ -195,7 +195,7 @@ const ViewAllPeople = () => {
         } else {
           throw Error;
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(removeRequest, {
@@ -295,7 +295,7 @@ const ViewRequests = () => {
         } else {
           throw Error;
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(acceptRequest, {
@@ -325,7 +325,7 @@ const ViewRequests = () => {
         } else {
           throw Error;
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(rejectRequest, {

@@ -10,7 +10,6 @@ import { mergeClassNames } from '../utils';
 import { parsePost, Posts } from '../types/post'; // Rename the type import
 import Post from './Post'; // Import the Post component with a different name
 import Loading from './ui/Loading';
-import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import useInView from '../hooks/useInView';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
