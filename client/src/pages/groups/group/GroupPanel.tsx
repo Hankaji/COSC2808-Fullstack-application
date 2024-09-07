@@ -147,31 +147,26 @@ const GroupHeader: FC<GroupHeaderProps> = ({
               Joined
             </div>
           )}
-          {!auth.user?.isAdmin &&
-            (!isJoined ? (
-              <button
-                onClick={(e) => {
-                  toast.showAsync(onJoin, {
-                    loading: {
-                      title: 'Sending request...',
-                    },
-                    success: (_) => ({
-                      title: 'Request sent',
-                    }),
-                    error: (_) => ({
-                      title: 'Could not send request',
-                    }),
-                  });
-                }}
-                className="px-4 py-2 transition-colors rounded-lg bg-primary hover:bg-secondary ml-auto"
-              >
-                Join
-              </button>
-            ) : (
-              <button className="px-4 py-2 transition-colors rounded-lg bg-danger hover:bg-secondary">
-                Leave
-              </button>
-            ))}
+          {!auth.user?.isAdmin && !isJoined && (
+            <button
+              onClick={(e) => {
+                toast.showAsync(onJoin, {
+                  loading: {
+                    title: 'Sending request...',
+                  },
+                  success: (_) => ({
+                    title: 'Request sent',
+                  }),
+                  error: (_) => ({
+                    title: 'Could not send request',
+                  }),
+                });
+              }}
+              className="px-4 py-2 transition-colors rounded-lg bg-primary hover:bg-secondary ml-auto"
+            >
+              Join
+            </button>
+          )}
         </div>
       </div>
     </div>
