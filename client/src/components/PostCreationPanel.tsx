@@ -1,6 +1,6 @@
 import { FormEvent, useState, useContext, FC } from 'react';
 import { useParams } from 'react-router-dom';
-import { Globe, ChevronDown, Image, X, ArrowLeftRight } from 'lucide-react';
+import { Globe, Image, X, ArrowLeftRight } from 'lucide-react';
 import { ToastContext } from '../context/ToastProvider';
 import useAuth from '../hooks/useAuth';
 
@@ -16,7 +16,6 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
   const [isPosting, setIsPosting] = useState(false);
 
   const params = useParams();
-  console.log(params.groupId);
 
   const toast = useContext(ToastContext);
   const { auth } = useAuth();
