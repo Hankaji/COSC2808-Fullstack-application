@@ -42,7 +42,6 @@ import { ToastContext } from '../context/ToastProvider';
 import { URL_BASE } from '../config';
 import useAuth from '../hooks/useAuth';
 import useToast from '../hooks/useToast';
-import { fetchPostHistory } from './fetchPostHistory';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
@@ -89,7 +88,25 @@ const PostComponent: FC<Props> = ({
   };
 
   const { show } = toastContext;
-
+  const fetchPostHistory = async (postId: string) => {
+    try {
+      const response = await fetch(`http://localhost:8080/posts/${postId}/history`, {
+        method: 'GET',
+        credentials: 'include', // Include credentials if needed
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error fetching post history: ${response.statusText}`);
+      }
+  
+      const historyData = await response.json();
+      console.log('Fetched post history:', historyData); // Debugging statement
+      return historyData;
+    } catch (error) {
+      console.error('Error fetching post history:', error);
+      throw error;
+    }
+  };
   // Fetch edit history when the edit history modal is opened
   const handleEditHistoryClick = async () => {
     try {
