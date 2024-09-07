@@ -1,10 +1,10 @@
-import { FC, useCallback, useState } from "react";
-import { Check, Plus, UserRoundCheck } from "lucide-react";
-import PostsView from "../../../components/PostsView";
-import { URL_BASE } from "../../../config";
-import { Account } from "../../../types";
-import useToast from "../../../hooks/useToast";
-import { parseAccount } from "../../../types/account";
+import { FC, useCallback, useState } from 'react';
+import { Check, Plus, UserRoundCheck } from 'lucide-react';
+import PostsView from '../../../components/PostsView';
+import { URL_BASE } from '../../../config';
+import { Account } from '../../../types';
+import useToast from '../../../hooks/useToast';
+import { parseAccount } from '../../../types/account';
 
 interface Props {
   userData: Account;
@@ -18,8 +18,8 @@ const UserPanel: FC<Props> = ({ userData }) => {
   const fetchUserData = useCallback(async () => {
     const endpoint = `http://localhost:8080/users/${user.id}`;
     const res = await fetch(endpoint, {
-      method: "GET",
-      credentials: "include",
+      method: 'GET',
+      credentials: 'include',
     });
     const data = await res.json();
     setUser(parseAccount(data));
@@ -30,17 +30,17 @@ const UserPanel: FC<Props> = ({ userData }) => {
       const endpoint = `${URL_BASE}/requests/friend_requests`;
       try {
         const res = await fetch(endpoint, {
-          credentials: "include",
+          credentials: 'include',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
-          method: "POST",
+          method: 'POST',
           body: JSON.stringify({ receiver_id: user.id }),
         });
         if (res.ok) {
           fetchUserData();
         } else {
-          throw Error("Failed to send friend request");
+          throw Error('Failed to send friend request');
         }
       } catch (error: any) {
         console.error(error);
@@ -49,32 +49,32 @@ const UserPanel: FC<Props> = ({ userData }) => {
 
     toast.showAsync(sendFriendRequest, {
       loading: {
-        title: "Loading...",
+        title: 'Loading...',
       },
       success: (_: any) => ({
         title: `Friend request sent to ${user.displayName}`,
       }),
       error: (_: any) => ({
-        title: "Something wrong happened",
+        title: 'Something wrong happened',
       }),
     });
   }, [toast, fetchUserData, user.displayName, user.id]);
 
   const actionButton = (() => {
     switch (user.relationship) {
-      case "Friend":
+      case 'Friend':
         return (
           <button className="rounded-full p-2 bg-green-100">
             <UserRoundCheck size={30} className="stroke-green-900" />
           </button>
         );
-      case "Pending":
+      case 'Pending':
         return (
           <button className="rounded-full p-2 bg-gray-100 cursor-default">
             <Check size={30} className="stroke-gray-900" />
           </button>
         );
-      case "Stranger":
+      case 'Stranger':
         return (
           <button
             onClick={(e) => {
