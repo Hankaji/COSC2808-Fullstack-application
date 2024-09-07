@@ -45,9 +45,12 @@ const GroupPanel = () => {
       });
 
       const data = await res.json();
-      console.log(data);
-      return data;
-    } catch (error) {}
+      if (res.ok) {
+        return data;
+      } else {
+        throw Error;
+      }
+    } catch (error) { }
   };
 
   return (
