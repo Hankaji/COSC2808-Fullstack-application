@@ -1,12 +1,12 @@
-import { useLoaderData, useParams } from 'react-router';
-import PostCreationPanel from '../../../components/PostCreationPanel';
-import { mergeClassNames } from '../../../utils';
-import PostsView, { PostsViewRef } from '../../../components/PostsView';
-import { Group, GroupVisibility } from '../../../types/group';
-import { FC, useRef } from 'react';
-import useAuth from '../../../hooks/useAuth';
-import { URL_BASE } from '../../../config';
-import useToast from '../../../hooks/useToast';
+import { useLoaderData, useParams } from "react-router";
+import PostCreationPanel from "../../../components/PostCreationPanel";
+import { mergeClassNames } from "../../../utils";
+import PostsView, { PostsViewRef } from "../../../components/PostsView";
+import { Group, GroupVisibility } from "../../../types/group";
+import { FC, useRef } from "react";
+import useAuth from "../../../hooks/useAuth";
+import { URL_BASE } from "../../../config";
+import useToast from "../../../hooks/useToast";
 
 const GroupPanel = () => {
   const groupData = useLoaderData() as Group;
@@ -17,16 +17,16 @@ const GroupPanel = () => {
 
   const postViewRef = useRef<PostsViewRef>(null);
 
+  // Find if current user has joined the group
+  const thisUserInGroup = groupData.members.filter(
+    (mem) => mem.id === auth.user?.userId,
+  );
+
   const canView = (): boolean => {
     if (auth.user?.isAdmin) {
       return true;
     }
     if (groupData.visibility === GroupVisibility.PRIVATE) {
-      // Find if current user has joined the group
-      const thisUserInGroup = groupData.members.filter(
-        (mem) => mem.id === auth.user?.userId,
-      );
-
       // Length = 0 means user is not in group
       if (thisUserInGroup.length === 0) return false;
     }
@@ -37,10 +37,10 @@ const GroupPanel = () => {
     try {
       const endpoint = `${URL_BASE}/requests/group_requests`;
       const res = await fetch(endpoint, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           group_id: groupId,
@@ -53,7 +53,7 @@ const GroupPanel = () => {
       } else {
         throw Error;
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   return (
@@ -70,12 +70,16 @@ const GroupPanel = () => {
       />
       {canView() ? (
         <>
-          <PostCreationPanel
-            onPostUpload={() => {
-              postViewRef.current?.reset();
-              postViewRef.current?.fetchPosts();
-            }}
-          />
+          {thisUserInGroup.length === 0 ? (
+            console.log("Not able to post")
+          ) : (
+            <PostCreationPanel
+              onPostUpload={() => {
+                postViewRef.current?.reset();
+                postViewRef.current?.fetchPosts();
+              }}
+            />
+          )}
           <PostsView
             ref={postViewRef}
             fetchEndpoint={`${URL_BASE}/posts/group/${groupData.id}`}
@@ -129,9 +133,9 @@ const GroupHeader: FC<GroupHeaderProps> = ({
         <div className="h-0 min-w-fit">
           <img
             className={mergeClassNames(
-              'bg-gray-500 object-cover',
-              'relative aspect-square rounded-full size-24 -translate-y-1/2',
-              'border-background border-solid border-4',
+              "bg-gray-500 object-cover",
+              "relative aspect-square rounded-full size-24 -translate-y-1/2",
+              "border-background border-solid border-4",
             )}
             src={avatarImg}
             alt="group avatar"
@@ -151,13 +155,13 @@ const GroupHeader: FC<GroupHeaderProps> = ({
                 onClick={(e) => {
                   toast.showAsync(onJoin, {
                     loading: {
-                      title: 'Sending request...',
+                      title: "Sending request...",
                     },
                     success: (_) => ({
-                      title: 'Request sent',
+                      title: "Request sent",
                     }),
                     error: (_) => ({
-                      title: 'Could not send request',
+                      title: "Could not send request",
                     }),
                   });
                 }}
