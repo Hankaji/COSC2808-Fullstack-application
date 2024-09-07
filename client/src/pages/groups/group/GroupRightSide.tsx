@@ -13,8 +13,8 @@ import useToast from '../../../hooks/useToast';
 import {
   GroupJoinRequest,
   parseGroupJoinReq,
-} from "../../../types/groupJoinRequest";
-import Tabs, { Tab } from "../../../components/Tabs";
+} from '../../../types/groupJoinRequest';
+import Tabs, { Tab } from '../../../components/Tabs';
 
 const GroupRightSide = () => {
   const groupData = useLoaderData() as Group;
@@ -35,8 +35,8 @@ const GroupRightSide = () => {
     const fetchAdmins = async () => {
       const endpoint = `${URL_BASE}/groups/${groupData.id}/admins`;
       const res = await fetch(endpoint, {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       });
 
       const data: any[] = await res.json();
@@ -55,14 +55,14 @@ const GroupRightSide = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className={mergeClassNames("block-container flex-col")}>
+      <div className={mergeClassNames('block-container flex-col')}>
         {/* Group Description */}
         <div className="flex flex-col">
           <h1 className="font-bold text-lg">{groupData.name}</h1>
           <p>
             {groupData.description
               ? groupData.description
-              : "No description was provided"}
+              : 'No description was provided'}
           </p>
         </div>
         {/* Visibility */}
@@ -112,6 +112,7 @@ const GroupRightSide = () => {
         <PopupModal
           heightPercent={0.8}
           className="w-full"
+          expand
           modelRender={showPopup(0)}
         >
           <button className="flex gap-2 w-full items-center justify-center font-semibold rounded-lg bg-primary text-foreground py-2">
@@ -121,6 +122,7 @@ const GroupRightSide = () => {
         {isGroupAdmin && (
           <PopupModal
             heightPercent={0.8}
+            expand
             className="w-full"
             modelRender={showPopup(1)}
           >
@@ -144,7 +146,7 @@ const Popup: FC<{ initialTab?: number; isGroupAdmin?: boolean }> = ({
 
   const tabs: Tab[] = [
     {
-      name: "People",
+      name: 'People',
       element: <ViewAllPeople />,
     },
     ...(isGroupAdmin
@@ -188,8 +190,8 @@ const ViewAllPeople = () => {
       try {
         const endpoint = `${URL_BASE}/groups/${groupData.id}/members/${memberId}`;
         const res = await fetch(endpoint, {
-          method: "DELETE",
-          credentials: "include",
+          method: 'DELETE',
+          credentials: 'include',
         });
 
         if (res.ok) {
@@ -204,13 +206,13 @@ const ViewAllPeople = () => {
 
     toast.showAsync(removeRequest, {
       loading: {
-        title: "Removing...",
+        title: 'Removing...',
       },
       success: (_) => ({
-        title: "Member removed successfully",
+        title: 'Member removed successfully',
       }),
       error: (_) => ({
-        title: "Couldnt remove member, please try again",
+        title: 'Couldnt remove member, please try again',
       }),
     });
   };
@@ -219,8 +221,8 @@ const ViewAllPeople = () => {
     const fetchMembers = async () => {
       const endpoint = `${URL_BASE}/groups/${groupData.id}/members`;
       const res = await fetch(endpoint, {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       });
 
       const data: any[] = await res.json();
@@ -293,8 +295,8 @@ const ViewRequests = () => {
       try {
         const endpoint = `${URL_BASE}/requests/group_requests/accept/${reqId}`;
         const res = await fetch(endpoint, {
-          method: "PATCH",
-          credentials: "include",
+          method: 'PATCH',
+          credentials: 'include',
         });
 
         if (res.ok) {
@@ -307,7 +309,7 @@ const ViewRequests = () => {
 
     toast.showAsync(acceptRequest, {
       loading: {
-        title: "Accepting...",
+        title: 'Accepting...',
       },
       success: (_) => ({
         title: 'Accepted a new member',
@@ -323,8 +325,8 @@ const ViewRequests = () => {
       try {
         const endpoint = `${URL_BASE}/requests/group_requests/reject/${reqId}`;
         const res = await fetch(endpoint, {
-          method: "PATCH",
-          credentials: "include",
+          method: 'PATCH',
+          credentials: 'include',
         });
 
         if (res.ok) {
@@ -337,7 +339,7 @@ const ViewRequests = () => {
 
     toast.showAsync(rejectRequest, {
       loading: {
-        title: "Rejecting...",
+        title: 'Rejecting...',
       },
       success: (_) => ({
         title: 'Successfully removed a member',
@@ -352,8 +354,8 @@ const ViewRequests = () => {
     const fetchReqs = async () => {
       const endpoint = `${URL_BASE}/groups/${groupData.id}/requests`;
       const res = await fetch(endpoint, {
-        method: "GET",
-        credentials: "include",
+        method: 'GET',
+        credentials: 'include',
       });
 
       const data: any[] = await res.json();

@@ -6,6 +6,7 @@ interface PopupModalProps extends PropsWithChildren {
   heightPercent?: number;
   className?: string;
   backdropBlur?: Number;
+  expand?: boolean;
   modelRender: ReactNode;
 }
 
@@ -14,6 +15,7 @@ const PopupModal: FC<PopupModalProps> = ({
   heightPercent = 0.5,
   className,
   backdropBlur = 0,
+  expand = false,
   modelRender,
   children,
 }) => {
@@ -52,7 +54,10 @@ const PopupModal: FC<PopupModalProps> = ({
               maxWidth: `${widthPercent * 100}%`,
               maxHeight: `${heightPercent * 100}%`,
             }}
-            className=""
+            className={mergeClassNames(
+              'overflow-hidden',
+              expand && 'size-full',
+            )}
           >
             {modelRender}
           </div>

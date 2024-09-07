@@ -176,6 +176,18 @@ export const getUserPosts = async (req: Request, res: Response) => {
         path: 'user_id',
         select: '_id username displayName profileImage contentType',
       })
+      .populate({
+        path: 'comments.author_id', // Populates the author of each comment
+        select: '_id username displayName profileImage',
+      })
+      .populate({
+        path: 'reactions.author_id', // Populates the author of each comment
+        select: '_id username displayName profileImage',
+      })
+      .populate({
+        path: 'comments.reactions.author_id', // Populates the author of each reaction in comments
+        select: '_id username displayName profileImage',
+      })
       .exec();
 
     // Process virtual images to be included in the response
@@ -263,6 +275,18 @@ export const getGroupPosts = async (req: Request, res: Response) => {
       .populate({
         path: 'user_id',
         select: '_id username displayName profileImage contentType',
+      })
+      .populate({
+        path: 'comments.author_id', // Populates the author of each comment
+        select: '_id username displayName profileImage',
+      })
+      .populate({
+        path: 'reactions.author_id', // Populates the author of each comment
+        select: '_id username displayName profileImage',
+      })
+      .populate({
+        path: 'comments.reactions.author_id', // Populates the author of each reaction in comments
+        select: '_id username displayName profileImage',
       })
       .exec();
 
