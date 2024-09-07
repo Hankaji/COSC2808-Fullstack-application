@@ -4,10 +4,13 @@ import Group from "../models/group";
 import User from "../models/user";
 import { GroupRequest } from "../models/request";
 
+type Relationship = "Stranger" | "Admin" | "Member" | "Pending";
+
 // Get all groups
 export const getGroups = async (req: Request, res: Response) => {
 	try {
-		const { name, page = 1, limit = 10 } = req.query;
+		const currentUserId = req.session.userId;
+		const { name } = req.query;
 
 		// Build the query object based on the search parameters
 		let query: any = {};
@@ -17,46 +20,68 @@ export const getGroups = async (req: Request, res: Response) => {
 			query.name = new RegExp(name as string, "i");
 		}
 
-		// Convert page and limit to numbers
-		const pageNumber = parseInt(page as string) || 1;
-		const limitNumber = parseInt(limit as string) || 10;
-		const skip = (pageNumber - 1) * limitNumber;
-
 		// Find groups with the query, and apply pagination
 		const groups = await Group.find(query)
 			.select(
 				"_id name description visibility groupImage coverImage admins members",
 			)
-			.skip(skip)
-			.limit(limitNumber)
 			.populate("admins", "_id username displayName")
 			.populate("members", "_id username displayName")
 			.lean();
 
-		// Add virtualGroupImage and virtualCoverImage to each group
-		const groupsWithImages = groups.map((group) => ({
-			_id: group._id,
-			name: group.name,
-			description: group.description,
-			visibility: group.visibility,
-			virtualGroupImage:
-				group.groupImage &&
-				group.groupImage.contentType &&
-				group.groupImage.data
-					? `data:${group.groupImage.contentType};base64,${group.groupImage.data.toString("base64")}`
-					: undefined,
-			virtualCoverImage:
-				group.coverImage &&
-				group.coverImage.contentType &&
-				group.coverImage.data
-					? `data:${group.coverImage.contentType};base64,${group.coverImage.data.toString("base64")}`
-					: undefined,
-			admins: group.admins,
-			members: group.members,
-		}));
+		// Find any pending group requests for the current user
+		const pendingGroupRequests = await GroupRequest.find({
+			user_id: currentUserId,
+			status: "Pending",
+		}).select("group_id").lean();
 
-		// Return the groups
-		return res.status(200).json(groupsWithImages);
+		// Extract group_ids from pending requests
+		const pendingGroupIds = pendingGroupRequests.map((request) => request.group_id.toString());
+
+		// Add virtualGroupImage, virtualCoverImage, and relationship to each group
+		const groupsWithImagesAndRelationship = groups.map((group) => {
+			// Determine the relationship status
+			let relationship: Relationship = "Stranger";
+
+			if (group.admins.some((admin) => admin._id.toString() == currentUserId?.toString())) {
+				relationship = "Admin";
+			}
+
+			// Check if the current user is a member of the group
+			else if (group.members.some((member) => member._id.toString() == currentUserId?.toString())) {
+				relationship = "Member";
+			}
+			// Check if the current user has a pending request
+			else if (pendingGroupIds.includes(group._id.toString())) {
+				relationship = "Pending";
+			}
+
+			// Return the group data with virtual images and relationship
+			return {
+				_id: group._id,
+				name: group.name,
+				description: group.description,
+				visibility: group.visibility,
+				virtualGroupImage:
+					group.groupImage &&
+					group.groupImage.contentType &&
+					group.groupImage.data
+						? `data:${group.groupImage.contentType};base64,${group.groupImage.data.toString("base64")}`
+						: undefined,
+				virtualCoverImage:
+					group.coverImage &&
+					group.coverImage.contentType &&
+					group.coverImage.data
+						? `data:${group.coverImage.contentType};base64,${group.coverImage.data.toString("base64")}`
+						: undefined,
+				admins: group.admins,
+				members: group.members,
+				relationship,
+			};
+		});
+
+		// Return the groups with the relationship field
+		return res.status(200).json(groupsWithImagesAndRelationship);
 	} catch (error) {
 		console.error("Error retrieving groups:", error);
 		return res.status(500).json({ message: "Internal server error" });
@@ -66,8 +91,8 @@ export const getGroups = async (req: Request, res: Response) => {
 // Get a group by ID
 export const getGroupById = async (req: Request, res: Response) => {
 	try {
-		// Extract the group ID from the request parameters
 		const groupId = req.params.id;
+		const currentUserId = req.session.userId;
 
 		// Validate the group ID format
 		if (!mongoose.Types.ObjectId.isValid(groupId)) {
@@ -77,7 +102,7 @@ export const getGroupById = async (req: Request, res: Response) => {
 		// Find the group by ID
 		const group = await Group.findById(groupId)
 			.select(
-				"_id name description visibility groupImage coverImage admins members",
+				"_id name description visibility groupImage coverImage admins members"
 			)
 			.populate("admins", "_id username displayName")
 			.populate("members", "_id username displayName")
@@ -88,8 +113,27 @@ export const getGroupById = async (req: Request, res: Response) => {
 			return res.status(404).json({ message: "Group not found" });
 		}
 
-		// Add virtualGroupImage and virtualCoverImage to the group
-		const groupWithImages = {
+		// Find any pending group requests for the current user
+		const pendingGroupRequest = await GroupRequest.findOne({
+			user_id: currentUserId,
+			group_id: groupId,
+			status: "Pending",
+		}).lean();
+
+		// Determine the relationship status
+		let relationship: Relationship = "Stranger";
+
+		// Check if the current user is a member of the group
+		if (group.admins.some((admin) => admin._id.toString() == currentUserId?.toString())) {
+			relationship = "Admin";
+		} else if (group.members.some((member) => member._id.toString() == currentUserId?.toString())) {
+			relationship = "Member";
+		} else if (pendingGroupRequest) {
+			relationship = "Pending";
+		}
+
+		// Add virtualGroupImage, virtualCoverImage, and relationship to the group
+		const groupWithImagesAndRelationship = {
 			_id: group._id,
 			name: group.name,
 			description: group.description,
@@ -108,10 +152,11 @@ export const getGroupById = async (req: Request, res: Response) => {
 					: undefined,
 			admins: group.admins,
 			members: group.members,
+			relationship,
 		};
 
 		// Return the group
-		return res.status(200).json(groupWithImages);
+		return res.status(200).json(groupWithImagesAndRelationship);
 	} catch (error) {
 		console.error("Error retrieving group:", error);
 		return res.status(500).json({ message: "Internal server error" });

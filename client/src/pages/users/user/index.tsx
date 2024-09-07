@@ -1,15 +1,14 @@
 import { useLoaderData } from 'react-router';
 import Layout from '../../../components/Layout';
-import { User } from '../../../types/user';
+import { Account } from '../../../types';
 import UserPanel from './UserPanel';
-import UserSideBar from './UserSideBar';
 
 const UserPage = () => {
-  const loaderData = useLoaderData() as User;
+  const userData = useLoaderData() as Account;
 
   return (
-    <Layout stickyRightSideCmp={<UserSideBar userData={loaderData} />}>
-      <UserPanel userData={loaderData} />
+    <Layout>
+      <UserPanel userData={userData} />
     </Layout>
   );
 };

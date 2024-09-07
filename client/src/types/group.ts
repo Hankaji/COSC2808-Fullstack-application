@@ -1,5 +1,7 @@
 import { parseBasicUser, User } from './post';
 
+export type GroupRelationship = 'Stranger' | 'Admin' | 'Member' | 'Pending';
+
 export interface Group {
   id: string;
   name: string;
@@ -9,6 +11,7 @@ export interface Group {
   coverImage?: string;
   admins: User[];
   members: User[];
+  relationship?: GroupRelationship;
 }
 
 export enum GroupVisibility {
@@ -33,5 +36,6 @@ export const parseGroup = (data: any): Group => {
     coverImage: data.virtualCoverImage,
     admins: data.admins,
     members: (data.members as any[]).map((mem) => parseBasicUser(mem)),
+    relationship: data.relationship ?? undefined,
   };
 };

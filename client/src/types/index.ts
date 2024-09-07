@@ -1,9 +1,12 @@
+export type AccountRelationship = 'Stranger' | 'Friend' | 'Pending';
+
 export type Account = {
   id: string;
   username: string;
   displayName: string;
   imgUrl?: string;
   isSuspended?: boolean;
+  relationship?: AccountRelationship;
 };
 
 export type FriendRequest = {

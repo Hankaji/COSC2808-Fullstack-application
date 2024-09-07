@@ -1,14 +1,12 @@
-import { useLoaderData, useParams } from "react-router";
-import PostCreationPanel from "../../../components/PostCreationPanel";
-import { mergeClassNames } from "../../../utils";
-import PostsView from "../../../components/PostsView";
-import { Group, GroupVisibility, parseGroup } from "../../../types/group";
-import { FC, useEffect, useState } from "react";
-import useAuth from "../../../hooks/useAuth";
-import { URL_BASE } from "../../../config";
-import useToast from "../../../hooks/useToast";
-import { parsePost, Posts } from "../../../types/post";
-import Loading from "../../../components/ui/Loading";
+import { useLoaderData, useParams } from 'react-router';
+import PostCreationPanel from '../../../components/PostCreationPanel';
+import { mergeClassNames } from '../../../utils';
+import PostsView, { PostsViewRef } from '../../../components/PostsView';
+import { Group, GroupVisibility } from '../../../types/group';
+import { FC, useRef } from 'react';
+import useAuth from '../../../hooks/useAuth';
+import { URL_BASE } from '../../../config';
+import useToast from '../../../hooks/useToast';
 
 const GroupPanel = () => {
   const groupData = useLoaderData() as Group;
@@ -17,7 +15,7 @@ const GroupPanel = () => {
   const params = useParams();
   const groupId = params.groupId;
 
-  const [posts, setPosts] = useState<Posts[] | undefined>(undefined);
+  const postViewRef = useRef<PostsViewRef>(null);
 
   const canView = (): boolean => {
     if (groupData.visibility === GroupVisibility.PRIVATE) {
@@ -47,33 +45,13 @@ const GroupPanel = () => {
       });
 
       const data = await res.json();
-      return data;
+      if (res.ok) {
+        return data;
+      } else {
+        throw Error;
+      }
     } catch (error) { }
   };
-
-  const fetchPosts = async () => {
-    try {
-      setPosts(undefined);
-      const endpoint = `${URL_BASE}/posts/group/${groupData.id}`;
-      const res = await fetch(endpoint, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      const data: any[] = await res.json();
-
-      // Parse data as Posts
-      const posts = data.map((post) => parsePost(post));
-
-      if (res.ok) {
-        setPosts(posts);
-      }
-    } catch (_) { }
-  };
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
 
   return (
     <div className="flex flex-col gap-4">
@@ -91,16 +69,14 @@ const GroupPanel = () => {
         <>
           <PostCreationPanel
             onPostUpload={() => {
-              fetchPosts();
+              postViewRef.current?.reset();
+              postViewRef.current?.fetchPosts();
             }}
           />
-          {posts ? (
-            <PostsView posts={posts} />
-          ) : (
-            <div className="w-full p-12 flex justify-center items-center">
-              <Loading /> Loading posts
-            </div>
-          )}
+          <PostsView
+            ref={postViewRef}
+            fetchEndpoint={`${URL_BASE}/posts/group/${groupData.id}`}
+          />
         </>
       ) : (
         <div className="size-full flex flex-col gap-6 items-center justify-center">
@@ -176,7 +152,7 @@ const GroupHeader: FC<GroupHeaderProps> = ({
                     title: "Request sent",
                   }),
                   error: (_) => ({
-                    title: "Coulnt send request",
+                    title: 'Could not send request',
                   }),
                 });
               }}

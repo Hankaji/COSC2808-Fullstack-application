@@ -1,4 +1,4 @@
-import { Account } from '.';
+import { Account, AccountRelationship } from '.';
 
 export function parseAccount(data: {
   _id: string;
@@ -7,6 +7,7 @@ export function parseAccount(data: {
   email: string;
   virtualProfileImage?: string;
   status: string;
+  relationship?: AccountRelationship;
 }): Account {
   return {
     id: data._id,
@@ -14,5 +15,6 @@ export function parseAccount(data: {
     displayName: data.displayName,
     imgUrl: data.virtualProfileImage,
     isSuspended: data.status === 'Suspended',
+    relationship: data.relationship,
   };
 }

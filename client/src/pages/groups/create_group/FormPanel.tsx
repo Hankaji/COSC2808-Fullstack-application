@@ -23,7 +23,7 @@ const GroupFormPanel = () => {
   const resetForm = () => {
     setVisibility('Public');
     setName('');
-    setImageKey(prevKey => prevKey + 1); // Increment the key to force re-render of ImageUpload components
+    setImageKey((prevKey) => prevKey + 1); // Increment the key to force re-render of ImageUpload components
     if (descriptionRef.current) {
       descriptionRef.current.innerText = '';
     }
@@ -83,7 +83,11 @@ const GroupFormPanel = () => {
         });
 
         const data = await res.json();
-        return data;
+        if (res.ok) {
+          return data;
+        } else {
+          throw Error;
+        }
       } catch (error) {
         throw error;
       }
@@ -96,7 +100,7 @@ const GroupFormPanel = () => {
       success: (data) => {
         resetForm();
         return {
-          title: `${data.message}`,
+          title: `Created a new group creation request`,
         };
       },
       error: (_) => ({
@@ -177,14 +181,22 @@ const GroupFormPanel = () => {
           The cover image for your group when fully viewed.
         </span>
       </h2>
-      <ImageUpload key={`cover-${imageKey}`} name="coverImage" className="rounded-sm py-2 px-4" />
+      <ImageUpload
+        key={`cover-${imageKey}`}
+        name="coverImage"
+        className="rounded-sm py-2 px-4"
+      />
       <h2 className="flex flex-col text-xl font-semibold">
         Group avatar
         <span className="text-sm text-gray-500 font-normal">
           The image people see when they search for your group.
         </span>
       </h2>
-      <ImageUpload key={`avatar-${imageKey}`} name="groupImage" className="rounded-sm py-2 px-4" />
+      <ImageUpload
+        key={`avatar-${imageKey}`}
+        name="groupImage"
+        className="rounded-sm py-2 px-4"
+      />
       <Divider alignment="horizontal" />
       <div className="flex items-center justify-end w-full">
         <button

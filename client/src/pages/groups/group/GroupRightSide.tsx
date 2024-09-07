@@ -22,14 +22,14 @@ const GroupRightSide = () => {
 
   const [admins, setAdmins] = useState<User[]>([]);
 
-  const isGroupAdmin = (): boolean => {
+  const isGroupAdmin = (() => {
     for (let admin of admins) {
       if (admin.id === auth.user!.userId) {
         return true;
       }
     }
     return false;
-  };
+  })();
 
   useEffect(() => {
     const fetchAdmins = async () => {
@@ -47,10 +47,10 @@ const GroupRightSide = () => {
     };
 
     fetchAdmins();
-  }, []);
+  }, [groupData.id]);
 
   const showPopup = (tab: number) => {
-    return <Popup initialTab={tab} isGroupAdmin={isGroupAdmin()} />;
+    return <Popup initialTab={tab} isGroupAdmin={isGroupAdmin} />;
   };
 
   return (
@@ -118,7 +118,7 @@ const GroupRightSide = () => {
             <UserRound size={24} /> People
           </button>
         </PopupModal>
-        {isGroupAdmin() && (
+        {isGroupAdmin && (
           <PopupModal
             heightPercent={0.8}
             className="w-full"
@@ -147,10 +147,14 @@ const Popup: FC<{ initialTab?: number; isGroupAdmin?: boolean }> = ({
       name: "People",
       element: <ViewAllPeople />,
     },
-    {
-      name: "Join requests",
-      element: <ViewRequests />,
-    },
+    ...(isGroupAdmin
+      ? [
+          {
+            name: 'Join requests',
+            element: <ViewRequests />,
+          },
+        ]
+      : []),
   ];
 
   if (requireAdminAccess[selectedTab] && !isGroupAdmin) {
@@ -188,6 +192,8 @@ const ViewAllPeople = () => {
           setMembers((members) =>
             members.filter((member) => member.id !== memberId),
           );
+        } else {
+          throw Error;
         }
       } catch (error) { }
     };
@@ -286,6 +292,8 @@ const ViewRequests = () => {
 
         if (res.ok) {
           setReqs((req) => req.filter((req) => req.id !== reqId));
+        } else {
+          throw Error;
         }
       } catch (error) { }
     };
@@ -295,10 +303,10 @@ const ViewRequests = () => {
         title: "Accepting...",
       },
       success: (_) => ({
-        title: "Congratulation! your group is now more popular",
+        title: 'Accepted a new member',
       }),
       error: (_) => ({
-        title: "Couldnt accept member, please try again",
+        title: 'Could not accept member, please try again',
       }),
     });
   };
@@ -314,6 +322,8 @@ const ViewRequests = () => {
 
         if (res.ok) {
           setReqs((req) => req.filter((req) => req.id !== reqId));
+        } else {
+          throw Error;
         }
       } catch (error) { }
     };
@@ -323,10 +333,10 @@ const ViewRequests = () => {
         title: "Rejecting...",
       },
       success: (_) => ({
-        title: "Member is no longer in this group",
+        title: 'Successfully removed a member',
       }),
       error: (_) => ({
-        title: "Couldnt reject member, please try again",
+        title: 'Could not reject member, please try again',
       }),
     });
   };
