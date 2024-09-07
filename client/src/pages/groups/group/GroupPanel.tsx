@@ -70,9 +70,7 @@ const GroupPanel = () => {
       />
       {canView() ? (
         <>
-          {thisUserInGroup.length === 0 ? (
-            console.log(null)
-          ) : (
+          {thisUserInGroup.length === 0 ? null : (
             <PostCreationPanel
               onPostUpload={() => {
                 postViewRef.current?.reset();
