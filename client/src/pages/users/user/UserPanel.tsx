@@ -4,6 +4,7 @@ import PostsView from '../../../components/PostsView';
 import { URL_BASE } from '../../../config';
 import { Account } from '../../../types';
 import useToast from '../../../hooks/useToast';
+import useAuth from '../../../hooks/useAuth';
 import { parseAccount } from '../../../types/account';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 
 const UserPanel: FC<Props> = ({ userData }) => {
   const toast = useToast();
+  const { auth } = useAuth();
 
   const [user, setUser] = useState<Account>(userData);
 
@@ -105,7 +107,7 @@ const UserPanel: FC<Props> = ({ userData }) => {
             </p>
           </div>
         </div>
-        {actionButton}
+        {!auth.user?.isAdmin && actionButton}
       </div>
       <PostsView fetchEndpoint={`${URL_BASE}/posts/user/${userData.id}`} />
     </div>

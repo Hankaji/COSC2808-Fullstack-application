@@ -1,6 +1,6 @@
 import { FormEvent, useState, useContext, FC } from 'react';
 import { useParams } from 'react-router-dom';
-import { Globe, ChevronDown, Image, X } from 'lucide-react';
+import { Globe, Image, X, ArrowLeftRight } from 'lucide-react';
 import { ToastContext } from '../context/ToastProvider';
 import useAuth from '../hooks/useAuth';
 
@@ -14,6 +14,8 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
   const [images, setImages] = useState<File[]>([]);
   const [content, setContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
+
+  const params = useParams();
 
   const toast = useContext(ToastContext);
   const { auth } = useAuth();
@@ -126,17 +128,19 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
       </div>
       {/* Actions */}
       <div className="flex w-full">
-        <div className="flex gap-2 items-center">
-          Visibility:
-          <button
-            className="py-1 px-4 bg-secondary rounded-sm flex gap-1 items-center"
-            onClick={handleVisibilityChange}
-          >
-            <Globe size={16} />
-            {visibility}
-            <ChevronDown size={16} />
-          </button>
-        </div>
+        {/* If user in a group don't display the visibility option */}
+        {!params.groupId && (
+          <div className="flex gap-2 items-center">
+            Visibility:
+            <button
+              className="py-1 px-4 bg-secondary rounded-sm flex gap-2 items-center"
+              onClick={handleVisibilityChange}
+            >
+              <Globe size={16} />
+              {visibility} <ArrowLeftRight size={16} />
+            </button>
+          </div>
+        )}
         <button
           type="submit"
           className="ml-auto py-1 px-4 bg-primary rounded-lg"
@@ -145,7 +149,7 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
           {isPosting ? "Posting..." : "Post"}
         </button>
       </div>
-      <div className="border-border border-2 border-solid w-full "></div>
+      <div className="border-border border border-solid w-full "></div>
       <ul>
         <label className="rounded-lg p-2 cursor-pointer">
           <Image className="text-primary" />
