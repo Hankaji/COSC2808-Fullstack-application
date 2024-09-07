@@ -17,7 +17,6 @@ const Search: FC = () => {
   const [message, setMessage] = useState('');
   const [users, setUsers] = useState<Account[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
-  console.log('groups :', groups);
 
   const searchUsers = useCallback(async (searchText: string) => {
     const endpoint = new URL(`${URL_BASE}/users`);
