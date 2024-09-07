@@ -1,5 +1,6 @@
 import {
   Bell,
+  Edit,
   Home,
   LogOut,
   type LucideIcon,
@@ -78,6 +79,12 @@ const internalLinkItems: SidebarInternalLinkItem[] = [
     path: "/admin/groups",
     type: "admin",
   },
+  {
+    Logo: Edit,
+    name: 'Edit Profile',
+    path: '/editprofile',
+    type: 'user',
+  }
 ];
 
 const Sidebar = () => {

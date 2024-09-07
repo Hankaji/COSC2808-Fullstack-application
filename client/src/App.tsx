@@ -18,6 +18,7 @@ import PostPage from './pages/posts/post';
 import Search from './pages/search';
 import Unauthorized from './pages/unauthorized';
 import UserPage from './pages/users/user';
+import EditProfile  from './pages/EditProfile';
 import { parseGroup } from './types/group';
 import { parseAccount } from './types/account';
 
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
       {
         path: '/search',
         element: <Search />,
+      },
+      {
+        path: '/editprofile',
+        element: <EditProfile />,
       },
       {
         path: '/posts/:postId',
