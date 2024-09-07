@@ -71,7 +71,7 @@ const GroupPanel = () => {
       {canView() ? (
         <>
           {thisUserInGroup.length === 0 ? (
-            console.log('Not able to post')
+            console.log(null)
           ) : (
             <PostCreationPanel
               onPostUpload={() => {
