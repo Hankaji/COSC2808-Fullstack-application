@@ -157,7 +157,7 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
         </label>
       </ul>
       {/* Image Previews */}
-      <div className="flex gap-2 mt-4">
+      {images.length > 0 && <div className="flex gap-2 mt-4">
         {images.map((image, index) => (
           <div key={index} className="relative">
             <img
@@ -174,7 +174,7 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
             </button>
           </div>
         ))}
-      </div>
+      </div>}
     </form>
   );
 };
