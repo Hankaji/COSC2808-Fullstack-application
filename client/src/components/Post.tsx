@@ -508,7 +508,7 @@ const PostPopup: FC<{
         <div className="flex gap-2">
           <AuthorPfp data={data.user} />
           <div className="flex ml-auto">
-            <Edit className="text-primary" />
+            {/* <Edit className="text-primary" /> */}
           </div>
         </div>
         {/* Content */}
