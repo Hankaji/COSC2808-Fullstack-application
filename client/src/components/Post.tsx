@@ -752,7 +752,7 @@ const CommentComp: FC<CommentProp> = ({
                 .reverse()
                 .map((his) => {
                   return (
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-2 overflow-y-scroll">
                       <span className="flex gap-1 items-center text-sm text-muted-foreground/75 font-semibold text-nowrap">
                         <Clock size={16} />
                         {`${his.createdAt.getDay()}/${his.createdAt.getMonth()} - ${his.createdAt.getHours()}:${his.createdAt.getMinutes()}`}
