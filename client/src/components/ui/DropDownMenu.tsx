@@ -15,6 +15,7 @@ interface MenuProps extends PropsWithChildren {
   hoverable?: boolean;
   asChild?: boolean;
   content: ReactElement;
+  expandWidth?: boolean;
   className?: string;
 }
 
@@ -23,6 +24,7 @@ const DropDownMenu: FC<MenuProps> = ({
   hoverable = false,
   asChild = false,
   content,
+  expandWidth = false,
   className,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -79,7 +81,7 @@ const DropDownMenu: FC<MenuProps> = ({
   }, [isOpen]);
 
   return (
-    <div className="relative">
+    <div className={mergeClassNames('relative', expandWidth && 'w-full')}>
       <div
         ref={triggerRef}
         onClick={(e) => {

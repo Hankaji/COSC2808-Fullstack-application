@@ -151,6 +151,7 @@ const GroupFormPanel = () => {
       <h2 className="flex flex-col text-xl font-semibold">Visibility</h2>
       <div className="flex items-center justify-start gap-1 text-lg bg-background rounded-sm border-border border-2 border-solid focus-within:border-primary transition-colors">
         <DropDownMenu
+          expandWidth
           className="w-full group rounded-sm py-2 px-4"
           content={
             <DropDownMenuContent className="w-full">
