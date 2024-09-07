@@ -37,6 +37,7 @@ import {
   parseComment,
 } from '../types/post';
 import { mergeClassNames } from '../utils';
+import ExcerptContent from './ExcerptContent';
 import PopupModal from './PopupModal';
 import {
   DropDownItem,
@@ -217,7 +218,7 @@ const PostComponent: FC<Props> = ({
         </div>
         {/* Content */}
         <div className="flex flex-col justify-start items-start gap-2">
-          <p>{data.content}</p>
+          <ExcerptContent content={data.content} />
           <PostImages imgData={data.images} />
         </div>
         {/* Post actions */}
@@ -518,8 +519,8 @@ const PostPopup: FC<{
           <AuthorPfp data={data.user} />
         </div>
         {/* Content */}
-        <div className="flex flex-col justify-start items-start gap-2">
-          <p>{data.content}</p>
+        <div className="flex flex-col justify-start items-start gap-2 break-all max-h-20">
+          <p className="overflow-y-auto">{data.content}</p>
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
