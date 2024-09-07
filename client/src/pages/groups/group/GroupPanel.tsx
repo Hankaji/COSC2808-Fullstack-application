@@ -37,10 +37,10 @@ const GroupPanel = () => {
     try {
       const endpoint = `${URL_BASE}/requests/group_requests`;
       const res = await fetch(endpoint, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           group_id: groupId,
@@ -53,7 +53,7 @@ const GroupPanel = () => {
       } else {
         throw Error;
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   return (
@@ -86,7 +86,7 @@ const GroupPanel = () => {
       ) : (
         <div className="size-full flex flex-col gap-6 items-center justify-center">
           <h1 className="text-9xl font-bold">Oops</h1>
-          <p className="text-xl flex flex-col items-center gap-2">
+          <p className="text-xl flex flex-col items-center gap-2 text-center">
             <span>
               It would seem the knowledge of this group surpasseth thy wisdom.
             </span>
@@ -131,9 +131,9 @@ const GroupHeader: FC<GroupHeaderProps> = ({
         <div className="h-0 min-w-fit">
           <img
             className={mergeClassNames(
-              "bg-gray-500 object-cover",
-              "relative aspect-square rounded-full size-24 -translate-y-1/2",
-              "border-background border-solid border-4",
+              'bg-gray-500 object-cover',
+              'relative aspect-square rounded-full size-24 -translate-y-1/2',
+              'border-background border-solid border-4',
             )}
             src={avatarImg}
             alt="group avatar"
