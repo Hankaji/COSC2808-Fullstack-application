@@ -2,11 +2,9 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import User from "../models/user";
 import Group from "../models/group";
-import {
-	FriendRequest,
-	GroupRequest,
-	GroupCreationRequest,
-} from "../models/request";
+import { FriendRequest } from "../models/request";
+
+type Relationship = "Stranger" | "Friend" | "Pending";
 
 // Get users
 export const getUsers = async (req: Request, res: Response) => {
@@ -29,10 +27,14 @@ export const getUsers = async (req: Request, res: Response) => {
 			};
 		}
 
-		// Apply additional filters
-		if (name) {
-			query.username = { $regex: name, $options: "i" }; // Case-insensitive search
-		}
+    // Apply additional filters
+    if (name) {
+      // Match either username or displayName
+      query.$or = [
+        { username: { $regex: name, $options: "i" } },
+        { displayName: { $regex: name, $options: "i" } },
+      ];
+    }
 
 		if (status && isAdmin) {
 			query.status = status; // Admins can filter by status
@@ -124,10 +126,10 @@ export const getUserById = async (req: Request, res: Response) => {
 			return res.status(404).json({ message: "User not found" });
 		}
 
-		// Get the current user's friend list
-		const currentUser = await User.findById(currentUserId)
-			.select("friends")
-			.exec();
+    // Get the current user's friend list
+    const currentUser = await User.findById(currentUserId)
+      .select("friends")
+      .exec();
 
 		// Find any pending friend requests involving the current user
 		const friendRequests = await FriendRequest.find({
@@ -137,8 +139,8 @@ export const getUserById = async (req: Request, res: Response) => {
 			],
 		}).exec();
 
-		// Determine the relationship
-		let relationship = "Stranger";
+    // Determine the relationship
+    let relationship: Relationship = "Stranger";
 
 		if (currentUser?.friends.includes(user._id)) {
 			relationship = "Friend";
@@ -146,22 +148,24 @@ export const getUserById = async (req: Request, res: Response) => {
 			relationship = "Pending";
 		}
 
-		// Create the user details object
-		const userFullDetails = {
-			_id: user._id,
-			username: user.username,
-			displayName: user.displayName,
-			email: user.email,
-			virtualProfileImage:
-				user.profileImage &&
-				user.profileImage.contentType &&
-				user.profileImage.data
-					? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString("base64")}`
-					: undefined,
-			createAt: user.createdAt,
-			updatedAt: user.updatedAt,
-			relationship, // Include the relationship status
-		};
+    // Create the user details object
+    const userFullDetails = {
+      _id: user._id,
+      username: user.username,
+      displayName: user.displayName,
+      email: user.email,
+      virtualProfileImage:
+        user.profileImage &&
+        user.profileImage.contentType &&
+        user.profileImage.data
+          ? `data:${
+              user.profileImage.contentType
+            };base64,${user.profileImage.data.toString("base64")}`
+          : undefined,
+      createAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      relationship, // Include the relationship status
+    };
 
 		// Return the user with relationship status
 		return res.status(200).json(userFullDetails);

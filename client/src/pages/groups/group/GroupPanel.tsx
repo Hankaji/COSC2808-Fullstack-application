@@ -149,7 +149,7 @@ const GroupHeader: FC<GroupHeaderProps> = ({
                     title: 'Request sent',
                   }),
                   error: (_) => ({
-                    title: 'Coulnt send request',
+                    title: 'Could not send request',
                   }),
                 });
               }}

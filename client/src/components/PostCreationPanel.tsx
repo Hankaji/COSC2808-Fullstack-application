@@ -157,24 +157,26 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
         </label>
       </ul>
       {/* Image Previews */}
-      <div className="flex gap-2 mt-4">
-        {images.map((image, index) => (
-          <div key={index} className="relative">
-            <img
-              src={URL.createObjectURL(image)}
-              alt={`Preview ${index}`}
-              className="w-20 h-20 object-cover rounded-lg"
-            />
-            <button
-              type="button" // Explicitly set the type to "button"
-              className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-              onClick={(e) => handleRemoveImage(index, e)}
-            >
-              <X size={16} />
-            </button>
-          </div>
-        ))}
-      </div>
+      {images.length > 0 && (
+        <div className="flex gap-2 mt-4">
+          {images.map((image, index) => (
+            <div key={index} className="relative">
+              <img
+                src={URL.createObjectURL(image)}
+                alt={`Preview ${index}`}
+                className="w-20 h-20 object-cover rounded-lg"
+              />
+              <button
+                type="button" // Explicitly set the type to "button"
+                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                onClick={(e) => handleRemoveImage(index, e)}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </form>
   );
 };

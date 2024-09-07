@@ -51,7 +51,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 }
 
 interface ReactionsProps {
-  pReactions: Reaction[];
+  reactions: Reaction[];
   context: 'post' | 'comment';
   postId: string;
   commentId?: string; // Optional, only needed for comments
@@ -172,9 +172,6 @@ const PostComponent: FC<Props> = ({
     }
   };
 
-  // console.log('Post: ');
-  // console.log(data);
-
   return (
     <>
       <div
@@ -219,7 +216,7 @@ const PostComponent: FC<Props> = ({
         {/* Post actions */}
         <div className="flex gap-4">
           <Reactions
-            pReactions={data.reactions}
+            reactions={data.reactions}
             context="post"
             postId={data.id}
           />
@@ -520,7 +517,7 @@ const PostPopup: FC<{
         {/* Post actions */}
         <div className="flex gap-4">
           <Reactions
-            pReactions={data.reactions}
+            reactions={data.reactions}
             context="post"
             postId={data.id}
           />
@@ -590,11 +587,7 @@ const AuthorPfp: FC<AuthorPfpProps> = ({ data, extraInfo, currentUser }) => {
     <div className="flex gap-2">
       <img
         className="rounded-full flex-[0_0_auto] aspect-square bg-gray-500 size-12"
-        src={
-          data.profileImage
-            ? data.profileImage
-            : 'https://i.redd.it/if-anyones-free-could-you-draw-my-avatar-image-1-as-the-v0-5skwcoczrnid1.png?width=987&format=png&auto=webp&s=55af69fa5cfd555a06d947f54e9f69fabb4bebb2'
-        }
+        src={data.profileImage}
         alt="User avatar"
       />
       {!currentUser ? (
@@ -779,7 +772,7 @@ const CommentComp: FC<CommentProp> = ({
         {/* Reactions */}
         <button className="flex transition-colors gap-1 rounded">
           <Reactions
-            pReactions={data.reactions}
+            reactions={data.reactions}
             context="comment"
             postId={postId}
             commentId={data.id}
@@ -834,7 +827,7 @@ const CommentSection: FC<{
 };
 
 const Reactions: FC<ReactionsProps> = ({
-  pReactions,
+  reactions,
   context,
   postId,
   commentId,
@@ -940,14 +933,13 @@ const Reactions: FC<ReactionsProps> = ({
 
   useEffect(() => {
     // Set default reaction if there is one from user
-    pReactions.forEach((reaction) => {
-      console.log(pReactions);
+    reactions.forEach((reaction) => {
       if (reaction.author.id === auth.user!.userId) {
         console.log(reaction.type);
         setReactedReaction(reaction.type);
       }
     });
-  }, []);
+  }, [auth.user, reactions]);
 
   useEffect(() => {
     const newCounts = {
@@ -958,7 +950,7 @@ const Reactions: FC<ReactionsProps> = ({
       [ReactionTypes.NULL]: 0,
     };
 
-    pReactions.forEach((reaction) => {
+    reactions.forEach((reaction) => {
       const reactionType = reaction.type.toUpperCase() as ReactionTypes;
       if (reactionType in newCounts) {
         newCounts[reactionType]++;
@@ -966,7 +958,7 @@ const Reactions: FC<ReactionsProps> = ({
     });
 
     setReactionCounts(newCounts);
-  }, [pReactions]);
+  }, [reactions]);
 
   return (
     <DropDownMenu

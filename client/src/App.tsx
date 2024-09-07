@@ -19,6 +19,7 @@ import Search from './pages/search';
 import Unauthorized from './pages/unauthorized';
 import UserPage from './pages/users/user';
 import { parseGroup } from './types/group';
+import { parseAccount } from './types/account';
 
 const router = createBrowserRouter([
   {
@@ -70,7 +71,7 @@ const router = createBrowserRouter([
             credentials: 'include',
           });
           const data = await res.json();
-          return data;
+          return parseAccount(data);
         },
       },
       {

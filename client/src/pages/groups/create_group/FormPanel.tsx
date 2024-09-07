@@ -96,7 +96,7 @@ const GroupFormPanel = () => {
       success: (data) => {
         resetForm();
         return {
-          title: `${data.message}`,
+          title: `Created a new group creation request`,
         };
       },
       error: (_) => ({
