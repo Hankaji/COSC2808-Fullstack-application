@@ -92,15 +92,18 @@ const PostComponent: FC<Props> = ({
   const { show } = toastContext;
   const fetchPostHistory = async (postId: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/posts/${postId}/history`, {
-        method: 'GET',
-        credentials: 'include', // Include credentials if needed
-      });
-  
+      const response = await fetch(
+        `http://localhost:8080/posts/${postId}/history`,
+        {
+          method: 'GET',
+          credentials: 'include', // Include credentials if needed
+        },
+      );
+
       if (!response.ok) {
         throw new Error(`Error fetching post history: ${response.statusText}`);
       }
-  
+
       const historyData = await response.json();
       console.log('Fetched post history:', historyData); // Debugging statement
       return historyData;
@@ -380,6 +383,7 @@ const PostComponent: FC<Props> = ({
           Open Modal
         </button>
       </PopupModal>
+      {/* Edit Histor */}
       <PopupModal
         widthPercent={0.5}
         heightPercent={0.5}
@@ -391,13 +395,21 @@ const PostComponent: FC<Props> = ({
               <h2 className="text-2xl font-bold">Edit History</h2>
               <div className="overflow-y-auto max-h-60">
                 {Array.isArray(editHistory) && editHistory.length > 0 ? (
-                  editHistory.slice().reverse().map((history, index) => (
-                    <div key={index} className="mb-4 flex flex-col gap-1">
-                      <p className="flex gap-2 items-center font-semibold text-muted-foreground/50">Edited on: {new Date(history.createdAt).toLocaleString()} <p className='bg-secondary text-secondary-foreground rounded-lg px-2 text-sm max-w-fit'>{history.visibility}</p>
-                      </p>
-                      <p>{history.content}</p>
-                    </div>
-                  ))
+                  editHistory
+                    .slice()
+                    .reverse()
+                    .map((history, index) => (
+                      <div key={index} className="mb-4 flex flex-col gap-1">
+                        <p className="flex gap-2 items-center font-semibold text-muted-foreground/50">
+                          Edited on:{' '}
+                          {new Date(history.createdAt).toLocaleString()}{' '}
+                          <p className="bg-secondary text-secondary-foreground rounded-lg px-2 text-sm max-w-fit">
+                            {history.visibility}
+                          </p>
+                        </p>
+                        <ExcerptContent content={history.content} />
+                      </div>
+                    ))
                 ) : (
                   <p>No edit history available.</p>
                 )}

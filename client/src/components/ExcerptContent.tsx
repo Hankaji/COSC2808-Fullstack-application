@@ -7,6 +7,7 @@ const ExcerptContent: FC<{ content: string; letterStrip?: number }> = ({
   const [showMore, setShowMore] = useState<boolean>(false);
 
   const shortContent = content.slice(0, letterStrip);
+  const isContentLong = shortContent.length >= letterStrip;
 
   return (
     <>
@@ -28,17 +29,19 @@ const ExcerptContent: FC<{ content: string; letterStrip?: number }> = ({
       ) : (
         <div>
           <p>{shortContent}</p>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setShowMore(true);
-            }}
-            className="inline text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-          >
-            {' '}
-            ...show more
-          </button>
+          {isContentLong && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowMore(true);
+              }}
+              className="inline text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+            >
+              {' '}
+              ...show more
+            </button>
+          )}
         </div>
       )}
     </>
