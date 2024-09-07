@@ -1,5 +1,6 @@
 import { ImageUp, Target, X } from 'lucide-react';
 import React, { FC, InputHTMLAttributes, useRef, useState } from 'react';
+import useToast from '../hooks/useToast';
 import { mergeClassNames } from '../utils';
 import { Input } from './ui/Input';
 
@@ -13,6 +14,26 @@ const ImageUpload: FC<Props> = ({ className, ...inputProps }) => {
   const [fileNames, setFileNames] = useState<string[] | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const toast = useToast();
+
+  // 1KB * nMB
+  const fileSizeLimit = 1024 * (1024 * 2);
+
+  const checkFile = (file: File): boolean => {
+    // Check size
+    if (file.size > fileSizeLimit) {
+      toast.show({
+        title: `File size is too big - ${file.name}`,
+        description: 'Max file size available is 2MB',
+        type: 'error',
+      });
+
+      return false;
+    }
+
+    return true;
+  };
 
   return (
     <div
@@ -31,18 +52,24 @@ const ImageUpload: FC<Props> = ({ className, ...inputProps }) => {
         ref={inputRef}
         {...inputProps}
         onChange={({ target: { files } }) => {
+          // If can input multiple files
           if (inputProps.multiple) {
             if (!files) return;
+
             let imageObjectUrls: string[] = [];
             let fileNames: string[] = [];
+
             for (let i = 0; i < files.length; i++) {
+              if (!checkFile(files[i])) return;
               imageObjectUrls.push(URL.createObjectURL(files[i]));
               fileNames.push(files[i].name);
             }
+
             setImages((prev) => [...prev, ...imageObjectUrls]);
             setFileNames((prev) => [...prev!, ...fileNames]);
           } else {
             if (!files) return;
+            if (!checkFile(files[0])) return;
             setImages([URL.createObjectURL(files[0])]);
             setFileNames([files[0].name]);
           }

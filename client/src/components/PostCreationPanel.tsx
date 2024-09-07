@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Globe, Image, X, ArrowLeftRight } from 'lucide-react';
 import { ToastContext } from '../context/ToastProvider';
 import useAuth from '../hooks/useAuth';
+import useToast from '../hooks/useToast';
 
 interface Props {
   onPostUpload?: () => void;
@@ -10,25 +11,41 @@ interface Props {
 
 const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
   const { groupId } = useParams<{ groupId: string }>();
-  const [visibility, setVisibility] = useState("Public");
+  const [visibility, setVisibility] = useState('Public');
   const [images, setImages] = useState<File[]>([]);
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
 
   const params = useParams();
 
-  const toast = useContext(ToastContext);
+  const toast = useToast();
   const { auth } = useAuth();
 
   const handleVisibilityChange = (event: { preventDefault: () => void }) => {
     event.preventDefault(); // Prevent form submission
-    setVisibility((prev) => (prev === "Public" ? "Friend" : "Public"));
+    setVisibility((prev) => (prev === 'Public' ? 'Friend' : 'Public'));
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const files = Array.from(event.target.files);
-      setImages((prevImages) => [...prevImages, ...files]);
+    // 1KB * nMB
+    const fileSizeLimit = 1024 * (1024 * 2);
+
+    const inputFiles = event.target.files;
+    if (inputFiles) {
+      const files = Array.from(inputFiles);
+
+      for (let file of files) {
+        if (file.size > fileSizeLimit) {
+          toast.show({
+            title: `File size is too big - ${file.name}`,
+            description: 'Max file size available is 2MB',
+            type: 'error',
+          });
+
+          continue;
+        }
+        setImages((prevImages) => [...prevImages, file]);
+      }
     }
   };
 
@@ -46,30 +63,30 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
 
     if (!content.trim() && images.length === 0) {
       toast?.show({
-        title: "Empty Post",
-        description: "Please add some content or images before posting.",
-        type: "warning",
+        title: 'Empty Post',
+        description: 'Please add some content or images before posting.',
+        type: 'warning',
       });
       return;
     }
 
     const postData = new FormData();
-    postData.append("content", content);
-    postData.append("visibility", visibility);
+    postData.append('content', content);
+    postData.append('visibility', visibility);
     images.forEach((image) => {
-      postData.append("images", image);
+      postData.append('images', image);
     });
     if (groupId) {
-      postData.append("group_id", groupId);
+      postData.append('group_id', groupId);
     }
 
     toast?.showAsync(
       async () => {
         setIsPosting(true);
-        const response = await fetch("http://localhost:8080/posts", {
-          method: "POST",
+        const response = await fetch('http://localhost:8080/posts', {
+          method: 'POST',
           body: postData,
-          credentials: "include",
+          credentials: 'include',
         });
 
         if (!response.ok) {
@@ -77,7 +94,7 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
           throw new Error(errorData);
         } else {
           // Run these on post uploaded succesfully
-          setContent("");
+          setContent('');
           setImages([]);
           setIsPosting(false);
           onPostUpload && onPostUpload();
@@ -87,18 +104,18 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
       },
       {
         loading: {
-          title: "Creating Post",
-          description: "Please wait while we create your post...",
+          title: 'Creating Post',
+          description: 'Please wait while we create your post...',
         },
         success: (_) => {
           return {
-            title: "Post Created",
-            description: "Your post has been created successfully!",
+            title: 'Post Created',
+            description: 'Your post has been created successfully!',
           };
         },
         error: (error) => ({
-          title: "Post Creation Failed",
-          description: error.message || "An unknown error occurred",
+          title: 'Post Creation Failed',
+          description: error.message || 'An unknown error occurred',
         }),
       },
     );
@@ -146,7 +163,7 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
           className="ml-auto py-1 px-4 bg-primary rounded-lg"
           disabled={isPosting}
         >
-          {isPosting ? "Posting..." : "Post"}
+          {isPosting ? 'Posting...' : 'Post'}
         </button>
       </div>
       <div className="border-border border border-solid w-full "></div>
