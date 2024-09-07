@@ -40,6 +40,7 @@ export const getPosts = async (req: Request, res: Response) => {
 			// Find posts from friends and groups
 			postsQuery = Post.find({
 				$or: [
+					// { visibility: "Public" },
 					{ user_id: { $in: friendIds } },
 					{ user_id: userId },
 					{ group_id: { $in: groupIds } },
