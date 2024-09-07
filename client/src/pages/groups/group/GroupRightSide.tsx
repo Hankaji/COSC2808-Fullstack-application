@@ -2,7 +2,7 @@ import { Check, Globe, Lock, Mail, Trash, UserRound } from 'lucide-react';
 import { mergeClassNames } from '../../../utils';
 import PopupModal from '../../../components/PopupModal';
 import { FC, useEffect, useState } from 'react';
-import { useLoaderData } from 'react-router';
+import { useLoaderData, useNavigate } from 'react-router';
 import { Group, GroupVisibility } from '../../../types/group';
 import { parseBasicUser, User } from '../../../types/post';
 import { URL_BASE } from '../../../config';
@@ -149,11 +149,11 @@ const Popup: FC<{ initialTab?: number; isGroupAdmin?: boolean }> = ({
     },
     ...(isGroupAdmin
       ? [
-          {
-            name: 'Join requests',
-            element: <ViewRequests />,
-          },
-        ]
+        {
+          name: 'Join requests',
+          element: <ViewRequests />,
+        },
+      ]
       : []),
   ];
 
@@ -175,9 +175,13 @@ const ViewAllPeople = () => {
   const [members, setMembers] = useState<User[]>([]);
   const [isLoading, setIsloading] = useState<boolean>(true);
 
+  const navigate = useNavigate();
+
   const adminIds: string[] = groupData.admins.map(
     (admin) => parseBasicUser(admin).id,
   );
+
+  const { auth } = useAuth();
 
   const removeMember = async (memberId: string) => {
     const removeRequest = async () => {
@@ -195,7 +199,7 @@ const ViewAllPeople = () => {
         } else {
           throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(removeRequest, {
@@ -240,14 +244,17 @@ const ViewAllPeople = () => {
               {members.map((member) => {
                 return (
                   <div
+                    onClick={(e) => {
+                      navigate(`/users/${member.id}`);
+                    }}
                     key={member.id}
-                    className="block-container w-full items-center"
+                    className="block-container w-full items-center cursor-pointer hover:bg-secondary transition-colors"
                   >
                     <AuthorPfp data={member} />
                     {adminIds.includes(member.id) && (
                       <p className="text-xl ml-auto font-bold">Moderator</p>
                     )}
-                    {!adminIds.includes(member.id) && (
+                    {adminIds.includes(auth.user?.userId || '') && (
                       <button
                         onClick={(e) => {
                           e.preventDefault();
@@ -295,7 +302,7 @@ const ViewRequests = () => {
         } else {
           throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(acceptRequest, {
@@ -325,7 +332,7 @@ const ViewRequests = () => {
         } else {
           throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(rejectRequest, {

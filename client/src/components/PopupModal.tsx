@@ -34,12 +34,17 @@ const PopupModal: FC<PopupModalProps> = ({
       {isOpen && (
         <div
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             setIsOpen(false);
           }}
           className="fixed z-50 top-0 left-0 w-screen h-screen flex justify-center items-center"
         >
           <div
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
             style={{
               width: `${widthPercent * 100}%`,
               height: `${heightPercent * 100}%`,
