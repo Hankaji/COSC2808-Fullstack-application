@@ -2,7 +2,6 @@ import { FC, useRef } from 'react';
 import PostCreationPanel from '../../components/PostCreationPanel';
 import PostsView, { PostsViewRef } from '../../components/PostsView';
 import { URL_BASE } from '../../config';
-import useAuth from '../../hooks/useAuth';
 
 const HomePanel: FC<{
   className?: string;

@@ -53,7 +53,7 @@ const GroupPanel = () => {
       } else {
         throw Error;
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   return (
@@ -115,6 +115,7 @@ const GroupHeader: FC<GroupHeaderProps> = ({
   isJoined,
 }) => {
   const toast = useToast();
+  const { auth } = useAuth();
 
   return (
     <div className="w-full">
@@ -139,35 +140,36 @@ const GroupHeader: FC<GroupHeaderProps> = ({
         {/* Group info */}
         <div className="flex gap-2 w-full items-center">
           <h1 className="font-bold text-2xl">g/{name}</h1>
-          {isJoined && (
+          {isJoined && !auth.user?.isAdmin && (
             <div className="px-4 py-2 ml-auto border-border border-solid border-2 rounded-lg bg-background">
               Joined
             </div>
           )}
-          {!isJoined ? (
-            <button
-              onClick={(e) => {
-                toast.showAsync(onJoin, {
-                  loading: {
-                    title: 'Sending request...',
-                  },
-                  success: (_) => ({
-                    title: 'Request sent',
-                  }),
-                  error: (_) => ({
-                    title: 'Could not send request',
-                  }),
-                });
-              }}
-              className="px-4 py-2 transition-colors rounded-lg bg-primary hover:bg-secondary ml-auto"
-            >
-              Join
-            </button>
-          ) : (
-            <button className="px-4 py-2 transition-colors rounded-lg bg-danger hover:bg-secondary">
-              Leave
-            </button>
-          )}
+          {!auth.user?.isAdmin &&
+            (!isJoined ? (
+              <button
+                onClick={(e) => {
+                  toast.showAsync(onJoin, {
+                    loading: {
+                      title: 'Sending request...',
+                    },
+                    success: (_) => ({
+                      title: 'Request sent',
+                    }),
+                    error: (_) => ({
+                      title: 'Could not send request',
+                    }),
+                  });
+                }}
+                className="px-4 py-2 transition-colors rounded-lg bg-primary hover:bg-secondary ml-auto"
+              >
+                Join
+              </button>
+            ) : (
+              <button className="px-4 py-2 transition-colors rounded-lg bg-danger hover:bg-secondary">
+                Leave
+              </button>
+            ))}
         </div>
       </div>
     </div>

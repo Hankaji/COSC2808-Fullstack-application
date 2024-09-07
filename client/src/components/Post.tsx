@@ -2,7 +2,6 @@ import {
   Angry,
   ChevronLeft,
   ChevronRight,
-  Edit,
   Ellipsis,
   Heart,
   Laugh,
@@ -46,7 +45,7 @@ import useToast from '../hooks/useToast';
 interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
   onSuccessDelete: (id: string) => void;
-  onSuccessEdit: (popst: Posts) => void;
+  onSuccessEdit: (posts: Posts) => void;
 }
 
 interface ReactionsProps {
@@ -457,7 +456,7 @@ const PostPopup: FC<{
         } else {
           throw Error;
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(addRequest, {
@@ -684,7 +683,7 @@ const CommentComp: FC<CommentProp> = ({
         } else {
           throw Error;
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(editRequest, {
@@ -716,7 +715,7 @@ const CommentComp: FC<CommentProp> = ({
         } else {
           throw Error;
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(delRequest, {
@@ -1043,8 +1042,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-      fill: color,
-    } as CSSProperties)
+        fill: color,
+      } as CSSProperties)
     : {};
 
   return (
