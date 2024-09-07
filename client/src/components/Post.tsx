@@ -173,7 +173,7 @@ const PostComponent: FC<Props> = ({
     }
   };
 
-  const isPostAuthor = (): boolean => {
+  const isPostAuthorOrIsUserAdmin = (): boolean => {
     return auth.user?.userId == data.user.id || auth.user?.isAdmin || false;
   };
 
@@ -188,7 +188,7 @@ const PostComponent: FC<Props> = ({
           <AuthorPfp data={data.user} />
           <div className="flex ml-auto">
             {/* <Edit className="text-primary" /> */}
-            {isPostAuthor() && (
+            {isPostAuthorOrIsUserAdmin() && (
               <DropDownMenu
                 content={
                   <DropDownMenuContent className="-translate-x-1/2">
