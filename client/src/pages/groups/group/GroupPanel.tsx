@@ -18,6 +18,9 @@ const GroupPanel = () => {
   const postViewRef = useRef<PostsViewRef>(null);
 
   const canView = (): boolean => {
+    if (auth.user?.isAdmin) {
+      return true;
+    }
     if (groupData.visibility === GroupVisibility.PRIVATE) {
       // Find if current user has joined the group
       const thisUserInGroup = groupData.members.filter(

@@ -102,6 +102,10 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
     );
   };
 
+  if (auth.user?.isAdmin) {
+    return null;
+  }
+
   return (
     <form
       onSubmit={handlePost}

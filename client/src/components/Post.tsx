@@ -74,6 +74,8 @@ const PostComponent: FC<Props> = ({
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { auth } = useAuth();
+
   // error handler for toast
   if (!toastContext) {
     throw new Error('ToastContext must be used within a ToastProvider');
@@ -169,6 +171,10 @@ const PostComponent: FC<Props> = ({
     }
   };
 
+  const isPostAuthorOrIsUserAdmin = (): boolean => {
+    return auth.user?.userId == data.user.id || auth.user?.isAdmin || false;
+  };
+
   return (
     <>
       <div
@@ -180,29 +186,32 @@ const PostComponent: FC<Props> = ({
           <AuthorPfp data={data.user} />
           <div className="flex ml-auto">
             {/* <Edit className="text-primary" /> */}
-            <DropDownMenu
-              content={
-                <DropDownMenuContent className="-translate-x-1/2">
-                  <DropDownItem
-                    onClick={() => {
-                      openModalButtonEditRef.current?.click(); // Trigger the "Open Modal" button click for editing
-                    }}
-                  >
-                    Edit post
-                  </DropDownItem>
-                  <DropDownItem
-                    onClick={() => {
-                      openModalButtonRef.current?.click(); // Trigger the "Open Modal" button click
-                    }}
-                  >
-                    Delete
-                  </DropDownItem>
-                  <DropDownItem>History</DropDownItem>
-                </DropDownMenuContent>
-              }
-            >
-              <Ellipsis />
-            </DropDownMenu>
+            {isPostAuthorOrIsUserAdmin() && (
+              <DropDownMenu
+                content={
+                  <DropDownMenuContent className="-translate-x-1/2">
+                    {!auth.user!.isAdmin && (
+                      <DropDownItem
+                        onClick={() => {
+                          openModalButtonEditRef.current?.click(); // Trigger the "Open Modal" button click for editing
+                        }}
+                      >
+                        Edit post
+                      </DropDownItem>
+                    )}
+                    <DropDownItem
+                      onClick={() => {
+                        openModalButtonRef.current?.click(); // Trigger the "Open Modal" button click
+                      }}
+                    >
+                      Delete
+                    </DropDownItem>
+                  </DropDownMenuContent>
+                }
+              >
+                <Ellipsis />
+              </DropDownMenu>
+            )}
           </div>
         </div>
         {/* Content */}
@@ -443,7 +452,7 @@ const PostPopup: FC<{
         } else {
           throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(addRequest, {
@@ -502,9 +511,6 @@ const PostPopup: FC<{
         {/* Author */}
         <div className="flex gap-2">
           <AuthorPfp data={data.user} />
-          <div className="flex ml-auto">
-            <Edit className="text-primary" />
-          </div>
         </div>
         {/* Content */}
         <div className="flex flex-col justify-start items-start gap-2">
@@ -673,7 +679,7 @@ const CommentComp: FC<CommentProp> = ({
         } else {
           throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(editRequest, {
@@ -705,7 +711,7 @@ const CommentComp: FC<CommentProp> = ({
         } else {
           throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(delRequest, {
@@ -1029,8 +1035,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-        fill: color,
-      } as CSSProperties)
+      fill: color,
+    } as CSSProperties)
     : {};
 
   return (
