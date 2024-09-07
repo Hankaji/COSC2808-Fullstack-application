@@ -9,7 +9,7 @@ const PostPanel = () => {
 
   return (
     <Post
-      onSuccessDelete={() => { }}
+      onSuccessDelete={() => {}}
       onSuccessEdit={(post) => setPost(post)}
       data={post}
     />

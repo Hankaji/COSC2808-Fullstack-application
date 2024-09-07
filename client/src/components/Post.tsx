@@ -450,7 +450,7 @@ const PostPopup: FC<{
           const comment = parseComment(data.comment);
           setCommentList((prev) => [comment, ...prev]);
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(addRequest, {
@@ -682,7 +682,7 @@ const CommentComp: FC<CommentProp> = ({
 
           setIsEditing(false);
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(editRequest, {
@@ -712,7 +712,7 @@ const CommentComp: FC<CommentProp> = ({
         if (res.ok) {
           onCommentDeleteSuccess(data.id);
         }
-      } catch (error) { }
+      } catch (error) {}
     };
 
     toast.showAsync(delRequest, {
@@ -1040,8 +1040,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-      fill: color,
-    } as CSSProperties)
+        fill: color,
+      } as CSSProperties)
     : {};
 
   return (

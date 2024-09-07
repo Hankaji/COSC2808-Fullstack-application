@@ -111,10 +111,7 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
       <div className="flex gap-4 w-full">
         <img
           className="rounded-full bg-gray-500 size-16"
-          src={
-            auth.user?.virtualProfileImage ||
-            'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6'
-          }
+          src={auth.user?.virtualProfileImage}
           alt="User avatar"
         />
         <textarea
