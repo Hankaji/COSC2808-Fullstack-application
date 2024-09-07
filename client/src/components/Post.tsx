@@ -2,8 +2,10 @@ import {
   Angry,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Ellipsis,
   Heart,
+  History,
   Laugh,
   LucideIcon,
   MessageCircle,
@@ -15,32 +17,32 @@ import {
   CSSProperties,
   FC,
   HTMLAttributes,
-  useState,
-  useRef,
   useContext,
   useEffect,
+  useRef,
+  useState,
 } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { URL_BASE } from '../config';
+import { ToastContext } from '../context/ToastProvider';
+import useAuth from '../hooks/useAuth';
+import useToast from '../hooks/useToast';
 import {
-  Posts,
   Comment,
-  User,
+  Posts,
   Reaction,
   ReactionTypes,
+  User,
   parseBasicUser,
   parseComment,
 } from '../types/post';
 import { mergeClassNames } from '../utils';
+import PopupModal from './PopupModal';
 import {
   DropDownItem,
   DropDownMenu,
   DropDownMenuContent,
 } from './ui/DropDownMenu';
-import PopupModal from './PopupModal';
-import { ToastContext } from '../context/ToastProvider';
-import { URL_BASE } from '../config';
-import useAuth from '../hooks/useAuth';
-import useToast from '../hooks/useToast';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
@@ -90,8 +92,8 @@ const PostComponent: FC<Props> = ({
   const handleDelete = async () => {
     try {
       const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
-        method: "DELETE",
-        credentials: "include",
+        method: 'DELETE',
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -130,7 +132,7 @@ const PostComponent: FC<Props> = ({
   const handleEdit = async () => {
     try {
       const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -404,8 +406,8 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
                   <div
                     key={idx}
                     className={mergeClassNames(
-                      "transition-all size-3 bg-white rounded-full",
-                      currentIdx === idx ? "p-2" : "bg-opacity-50",
+                      'transition-all size-3 bg-white rounded-full',
+                      currentIdx === idx ? 'p-2' : 'bg-opacity-50',
                     )}
                   ></div>
                 );
@@ -455,7 +457,7 @@ const PostPopup: FC<{
         } else {
           throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(addRequest, {
@@ -686,7 +688,7 @@ const CommentComp: FC<CommentProp> = ({
         } else {
           throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(editRequest, {
@@ -718,7 +720,7 @@ const CommentComp: FC<CommentProp> = ({
         } else {
           throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(delRequest, {
@@ -741,7 +743,31 @@ const CommentComp: FC<CommentProp> = ({
         <AuthorPfp data={parseBasicUser(data.author_id)} />
       </div>
       {data.editHistory && data.editHistory.length > 0 && (
-        <p className="font-bold italic text-muted text-sm">edited</p>
+        <PopupModal
+          backdropBlur={2}
+          modelRender={
+            <div className="block-container w-[40vw] flex-col items-start overflow-clip">
+              {data.editHistory.map((his) => {
+                return (
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="flex gap-1 items-center text-sm text-muted-foreground/75 font-semibold text-nowrap">
+                      <Clock size={16} />
+                      {`${his.createdAt.getDay()}/${his.createdAt.getMonth()} - ${his.createdAt.getHours()}:${his.createdAt.getMinutes()}`}
+                    </span>
+                    <span className="text-wrap break-words text-ellipsis truncate">
+                      {his.content}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          }
+        >
+          <button className="flex gap-2 justify-start items-center font-bold italic text-muted-foreground/75 text-sm hover:text-muted-foreground transition-colors">
+            edited
+            <History size={16} />
+          </button>
+        </PopupModal>
       )}
       <p className="truncate">{data.content}</p>
       {isEditing && (
@@ -1041,8 +1067,8 @@ const ReactionButton: FC<ReactionBtnProps> = ({
 
   let activeStyle = isSelected
     ? ({
-        fill: color,
-      } as CSSProperties)
+      fill: color,
+    } as CSSProperties)
     : {};
 
   return (

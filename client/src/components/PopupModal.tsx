@@ -38,7 +38,10 @@ const PopupModal: FC<PopupModalProps> = ({
             e.stopPropagation();
             setIsOpen(false);
           }}
-          className="fixed z-50 top-0 left-0 w-screen h-screen flex justify-center items-center"
+          className="fixed z-[100] top-0 left-0 w-screen h-screen flex justify-center items-center"
+          style={{
+            backdropFilter: `blur(${backdropBlur}px)`,
+          }}
         >
           <div
             onClick={(e) => {
@@ -46,8 +49,8 @@ const PopupModal: FC<PopupModalProps> = ({
               e.stopPropagation();
             }}
             style={{
-              width: `${widthPercent * 100}%`,
-              height: `${heightPercent * 100}%`,
+              maxWidth: `${widthPercent * 100}%`,
+              maxHeight: `${heightPercent * 100}%`,
             }}
             className=""
           >
