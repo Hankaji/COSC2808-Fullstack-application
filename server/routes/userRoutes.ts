@@ -12,6 +12,7 @@ import {
   unfriendById,
   suspendUser,
   resumeUser,
+  editUser,
 } from '../controllers/userController';
 
 const userRouter = express.Router();
@@ -39,5 +40,6 @@ userRouter.get(
   isAuthenticated,
   getUserSentFriendRequestsById,
 );
+userRouter.patch('/edit', isAuthenticated, editUser);
 
 export default userRouter;

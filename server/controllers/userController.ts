@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import User from '../models/user';
 import Group from '../models/group';
 import { FriendRequest } from '../models/request';
+import bcrypt from 'bcrypt';
 
 type Relationship = 'Stranger' | 'Friend' | 'Pending';
 
@@ -535,6 +536,60 @@ export const resumeUser = async (req: Request, res: Response) => {
       .json({ message: 'User account reactivated successfully' });
   } catch (error) {
     console.error('Error reactivating user account:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// Edit user
+export const editUser = async (req: Request, res: Response) => {
+  try {
+    const userId = req.session.userId;
+    const { username, displayName, email, password, confirmPassword } = req.body;
+    const profileImage = req.file; // Assuming you're using multer for file uploads
+
+    // Validate the user ID format
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Validate password and confirm password
+    if (password && password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
+    // Update fields if they are provided
+    if (username) user.username = username;
+    if (displayName) user.displayName = displayName;
+    if (email) user.email = email;
+    if (password) user.password = await bcrypt.hash(password, 10);
+    if (profileImage) {
+      user.profileImage = {
+        data: profileImage.buffer,
+        contentType: profileImage.mimetype,
+      };
+    }
+
+    // Save the updated user
+    await user.save();
+
+    // Return the updated user data
+    return res.status(200).json({
+      _id: user._id,
+      username: user.username,
+      displayName: user.displayName,
+      email: user.email,
+      virtualProfileImage: user.profileImage && user.profileImage.contentType && user.profileImage.data
+        ? `data:${user.profileImage.contentType};base64,${user.profileImage.data.toString('base64')}`
+        : undefined,
+    });
+  } catch (error) {
+    console.error('Error updating user:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
