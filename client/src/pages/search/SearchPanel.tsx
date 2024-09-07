@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { AuthorPfp } from '../../components/Post';
 import Tabs, { Tab } from '../../components/Tabs';
 import CompactedGroup from '../../components/CompactedGroup';
-import { User } from '../../types/post';
+import { parseBasicUser, User } from '../../types/post';
 import { URL_BASE } from '../../config';
 import { mergeClassNames } from '../../utils';
 import { Group, parseGroup } from '../../types/group';
@@ -26,9 +26,9 @@ const TabSections = () => {
       method: 'GET',
       credentials: 'include',
     });
-    const data = await res.json();
-    setUsers(data as User[]);
-    console.log(data);
+    const data: any[] = await res.json();
+    const users = data.map((user) => parseBasicUser(user));
+    setUsers(users);
   };
 
   const fetchAllGroups = async () => {
@@ -41,7 +41,6 @@ const TabSections = () => {
     const data: any[] = await res.json();
     const groups = data.map((grp) => parseGroup(grp));
     setGroups(groups);
-    console.log(groups);
   };
 
   useEffect(() => {
@@ -79,6 +78,8 @@ const People: FC<{ users: User[] }> = ({ users }) => {
 
 const PeopleComp: FC<{ data: User }> = ({ data }) => {
   const navigate = useNavigate();
+
+  console.log(`/users/${data.id}`);
 
   return (
     <div

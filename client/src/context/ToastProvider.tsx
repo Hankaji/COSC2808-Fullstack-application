@@ -50,7 +50,8 @@ const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     if (toastContainerRef.current) {
-      toastContainerRef.current.scrollTop = toastContainerRef.current.scrollHeight;
+      toastContainerRef.current.scrollTop =
+        toastContainerRef.current.scrollHeight;
     }
   }, [toasts]);
 
@@ -106,7 +107,7 @@ const ToastProvider: FC<PropsWithChildren> = ({ children }) => {
   return (
     <ToastContext.Provider value={{ show, showAsync }}>
       {children}
-      <div 
+      <div
         ref={toastContainerRef}
         className="space-y-2 fixed bottom-4 right-4 z-50 max-h-[calc(100vh-2rem)] overflow-y-auto"
       >

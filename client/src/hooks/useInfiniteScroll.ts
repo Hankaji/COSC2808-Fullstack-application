@@ -1,21 +1,24 @@
-import { useEffect, useRef } from 'react';
+import { MutableRefObject, useEffect, useRef } from 'react';
 
 interface UseInfiniteScrollProps {
+  scrollableRef?: MutableRefObject<HTMLDivElement>;
   onLoadMore: () => void;
   hasMore: boolean;
   threshold?: number;
 }
 
 export const useInfiniteScroll = ({
+  scrollableRef,
   onLoadMore,
   hasMore,
   threshold = 100,
 }: UseInfiniteScrollProps) => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
+    // If scrollableRef isnt defined dont continue
+    if (!scrollableRef) return;
+
     const handleScroll = () => {
-      const container = containerRef.current;
+      const container = scrollableRef.current;
       if (!container || !hasMore) return;
 
       const { scrollTop, scrollHeight, clientHeight } = container;
@@ -24,7 +27,7 @@ export const useInfiniteScroll = ({
       }
     };
 
-    const container = containerRef.current;
+    const container = scrollableRef.current;
     if (container) {
       container.addEventListener('scroll', handleScroll);
     }
@@ -35,6 +38,4 @@ export const useInfiniteScroll = ({
       }
     };
   }, [onLoadMore, hasMore, threshold]);
-
-  return containerRef;
 };

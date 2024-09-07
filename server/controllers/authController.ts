@@ -42,7 +42,7 @@ export const register = async (req: Request, res: Response) => {
 			email,
 			password: hashedPassword,
 			profileImage,
-			createdAt: new Date()
+			createdAt: new Date(),
 		});
 		await newUser.save();
 
@@ -78,12 +78,10 @@ export const login = async (req: Request, res: Response) => {
 
 			// Check if the user is suspended
 			if ((user as any).status === "Suspended") {
-				return res
-					.status(403)
-					.json({
-						message:
-							"Account is suspended. Please contact the Admin to get support.",
-					});
+				return res.status(403).json({
+					message:
+						"Account is suspended. Please contact the Admin to get support.",
+				});
 			}
 		} else {
 			isAdmin = true;
@@ -106,6 +104,8 @@ export const login = async (req: Request, res: Response) => {
 			userId: req.session.userId,
 			username: req.session.username,
 			isAdmin: req.session.isAdmin,
+			// @ts-ignore
+			virtualProfileImage: user.virtualProfileImage || "",
 		});
 	} catch (error: any) {
 		console.error("Error logging in user:", error);

@@ -2,6 +2,7 @@ import { FormEvent, useState, useContext, FC } from 'react';
 import { useParams } from 'react-router-dom';
 import { Globe, ChevronDown, Image, X } from 'lucide-react';
 import { ToastContext } from '../context/ToastProvider';
+import useAuth from '../hooks/useAuth';
 
 interface Props {
   onPostUpload?: () => void;
@@ -15,8 +16,9 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
   const [isPosting, setIsPosting] = useState(false);
 
   const toast = useContext(ToastContext);
+  const { auth } = useAuth();
 
-  const handleVisibilityChange = (event: { preventDefault: () => void; }) => {
+  const handleVisibilityChange = (event: { preventDefault: () => void }) => {
     event.preventDefault(); // Prevent form submission
     setVisibility((prev) => (prev === 'Public' ? 'Friend' : 'Public'));
   };
@@ -107,10 +109,9 @@ const PostCreationPanel: FC<Props> = ({ onPostUpload }) => {
       className="flex flex-col justify-start items-start border-border border-2 border-solid rounded-lg p-4 gap-4 w-full bg-card"
     >
       <div className="flex gap-4 w-full">
-        {/* TODO fix image */}
         <img
           className="rounded-full bg-gray-500 size-16"
-          src="https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6"
+          src={auth.user?.virtualProfileImage}
           alt="User avatar"
         />
         <textarea
