@@ -48,7 +48,9 @@ const Tabs: FC<Props> = ({ tabs, defaultTab = 0 }) => {
           );
         })}
       </div>
-      {filteredTabs[selected]?.element}
+      <div className="overflow-y-scroll size-full scrollbar-hide">
+        {filteredTabs[selected]?.element}
+      </div>
     </>
   );
 };

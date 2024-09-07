@@ -22,7 +22,7 @@ const Layout: FC<
             {children}
           </main>
           {stickyRightSideCmp && (
-            <aside className="w-[30%] max-w-[300px] h-screen">
+            <aside className="w-[30%] max-w-[300px] h-screen overflow-y-scroll">
               {stickyRightSideCmp}
             </aside>
           )}

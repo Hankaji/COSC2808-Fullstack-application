@@ -149,7 +149,7 @@ const GroupHeader: FC<GroupHeaderProps> = ({
           )}
           {!auth.user?.isAdmin && !isJoined && (
             <button
-              onClick={(e) => {
+              onClick={(_) => {
                 toast.showAsync(onJoin, {
                   loading: {
                     title: 'Sending request...',
