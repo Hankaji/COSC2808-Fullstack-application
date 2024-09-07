@@ -13,12 +13,17 @@ export interface Posts {
   __v: number;
 }
 
+export interface CommentEditHistory {
+  content: string;
+  createdAt: Date;
+}
+
 export interface Comment {
   author_id: User;
   content: string;
   reactions: Reaction[];
   createdAt: Date;
-  editHistory: any[];
+  editHistory: CommentEditHistory[];
   id: string;
 }
 
@@ -31,6 +36,7 @@ export interface User {
 
 export type Reaction = {
   author: User;
+  id: string;
   type: ReactionTypes;
 };
 
@@ -50,9 +56,7 @@ export const parsePost = (data: any) => {
     content: data.content,
     images: data.images,
     visibility: data.visibility,
-    reactions: (data.reactions as string[]).map((react) =>
-      parseReaction(react),
-    ),
+    reactions: (data.reactions as any[]).map((react) => parseReaction(react)),
     comments: (data.comments as any[]).map((cmt) => parseComment(cmt)),
     editHistory: data.editHistory,
     createdAt: new Date(data.createdAt),
@@ -67,16 +71,26 @@ export const parseComment = (data: any) => {
       parseReaction(react),
     ),
     createdAt: new Date(data.createdAt),
-    editHistory: data.editHistory,
+    editHistory: (data.editHistory as any[]).map((his) =>
+      parseCommentEditHistory(his),
+    ),
     id: data._id,
   } as Comment;
 };
 
-export const parseReaction = (data: any) => {
+export const parseCommentEditHistory = (data: any): CommentEditHistory => {
   return {
-    author: parseBasicUser(data.author),
+    content: data.content,
+    createdAt: new Date(data.createdAt),
+  };
+};
+
+export const parseReaction = (data: any): Reaction => {
+  return {
+    author: parseBasicUser(data.author_id),
+    id: data._id,
     type: ReactionTypes[data.type.toUpperCase() as keyof typeof ReactionTypes],
-  } as Reaction;
+  };
 };
 
 export const parseBasicUser = (data: any) => {
@@ -84,6 +98,6 @@ export const parseBasicUser = (data: any) => {
     id: data._id,
     username: data.username,
     displayName: data.displayName,
-    profileImage: data.virtualProfileImage,
+    profileImage: data.virtualProfileImage || data.profileImage,
   } as User;
 };
