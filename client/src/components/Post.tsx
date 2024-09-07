@@ -284,31 +284,21 @@ const PostComponent: FC<Props> = ({
       {isPopup && <PostPopup closePopup={setIsPopup} data={data} />}
       {/* popup for delete confirmation */}
       <PopupModal
-        widthPercent={0.5}
-        heightPercent={0.5}
         className="custom-class"
         backdropBlur={5}
         modelRender={
           // Style for modal
-          <div className="fixed inset-0 flex items-center justify-center bg-transparent">
-            <div className="p-6 block-container flex-col text-foreground bg-background border-solid border-border border-2 rounded-lg shadow-lg">
-              <h2>Are you sure you want to delete this post?</h2>
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={() => { }}
-                  className="mr-2 px-4 py-2 bg-gray-300 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    handleDelete();
-                  }}
-                  className="px-4 py-2 bg-danger hover:bg-secondary transition-colors rounded"
-                >
-                  Delete
-                </button>
-              </div>
+          <div className="p-6 block-container flex-col text-foreground bg-background border-solid border-border border-2 rounded-lg shadow-lg">
+            <h2>Are you sure you want to delete this post?</h2>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => {
+                  handleDelete();
+                }}
+                className="px-4 py-2 bg-danger hover:bg-secondary transition-colors rounded"
+              >
+                Delete
+              </button>
             </div>
           </div>
         }
@@ -324,52 +314,40 @@ const PostComponent: FC<Props> = ({
       </PopupModal>
       {/* popup for edit configuration */}
       <PopupModal
-        widthPercent={0.5}
-        heightPercent={0.5}
         className="custom-class"
         backdropBlur={5}
         modelRender={
           // Style for modal
-          <div className="fixed inset-0 flex items-center justify-center bg-transparent">
-            <div className="p-6 block-container flex-col w-[500px] bg-background border-border border-2 border-solid text-foreground rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold">Edit Post</h2>
-              <textarea
-                className="w-full p-2 h-40 mt-2 border-solid border-border border-2 bg-background resize-none rounded"
-                value={postContent}
-                onChange={(e) => setPostContent(e.target.value)}
-                onClick={(e) => e.stopPropagation()} // Prevent click propagation
-              />
+          <div className="p-6 block-container flex-col w-[500px] bg-background border-border border-2 border-solid text-foreground rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold">Edit Post</h2>
+            <textarea
+              className="w-full p-2 h-40 mt-2 border-solid border-border border-2 bg-background resize-none rounded"
+              value={postContent}
+              onChange={(e) => setPostContent(e.target.value)}
+              onClick={(e) => e.stopPropagation()} // Prevent click propagation
+            />
+            <button
+              className="mt-2 px-4 py-2 bg-primary hover:bg-secondary transition-colors text-white rounded"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent click propagation
+                setPostVisibility(
+                  postVisibility === 'Public' ? 'Friend' : 'Public',
+                );
+              }}
+            >
+              {postVisibility === 'Public'
+                ? 'Change to Friend'
+                : 'Change to Public'}
+            </button>
+            <div className="flex justify-end mt-4">
               <button
-                className="mt-2 px-4 py-2 bg-primary hover:bg-secondary transition-colors text-white rounded"
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent click propagation
-                  setPostVisibility(
-                    postVisibility === 'Public' ? 'Friend' : 'Public',
-                  );
+                onClick={() => {
+                  handleEdit();
                 }}
+                className="px-4 py-2 bg-success hover:bg-secondary transition-colors text-white rounded"
               >
-                {postVisibility === 'Public'
-                  ? 'Change to Friend'
-                  : 'Change to Public'}
+                Confirm
               </button>
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={() => {
-                    setIsEditPopup(false);
-                  }}
-                  className="mr-2 px-4 py-2 bg-info hover:bg-secondary transition-colors rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    handleEdit();
-                  }}
-                  className="px-4 py-2 bg-success hover:bg-secondary transition-colors text-white rounded"
-                >
-                  Confirm
-                </button>
-              </div>
             </div>
           </div>
         }
@@ -385,35 +363,31 @@ const PostComponent: FC<Props> = ({
       </PopupModal>
       {/* Edit Histor */}
       <PopupModal
-        widthPercent={0.5}
-        heightPercent={0.5}
         className="custom-class"
         backdropBlur={5}
         modelRender={
-          <div className="fixed inset-0 flex items-center justify-center bg-transparent">
-            <div className="p-6 block-container flex-col w-6/12 h-8/12 bg-background border-border border-2 border-solid text-foreground rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold">Edit History</h2>
-              <div className="overflow-y-auto max-h-60">
-                {Array.isArray(editHistory) && editHistory.length > 0 ? (
-                  editHistory
-                    .slice()
-                    .reverse()
-                    .map((history, index) => (
-                      <div key={index} className="mb-4 flex flex-col gap-1">
-                        <p className="flex gap-2 items-center font-semibold text-muted-foreground/50">
-                          Edited on:{' '}
-                          {new Date(history.createdAt).toLocaleString()}{' '}
-                          <p className="bg-secondary text-secondary-foreground rounded-lg px-2 text-sm max-w-fit">
-                            {history.visibility}
-                          </p>
+          <div className="p-6 block-container flex-col w-[40vw] size-full bg-background border-border border-2 border-solid text-foreground rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold">Edit History</h2>
+            <div className="overflow-y-auto max-h-60">
+              {Array.isArray(editHistory) && editHistory.length > 0 ? (
+                editHistory
+                  .slice()
+                  .reverse()
+                  .map((history, index) => (
+                    <div key={index} className="mb-4 flex flex-col gap-1">
+                      <p className="flex gap-2 items-center font-semibold text-muted-foreground/50">
+                        Edited on:{' '}
+                        {new Date(history.createdAt).toLocaleString()}{' '}
+                        <p className="bg-secondary text-secondary-foreground rounded-lg px-2 text-sm max-w-fit">
+                          {history.visibility}
                         </p>
-                        <ExcerptContent content={history.content} />
-                      </div>
-                    ))
-                ) : (
-                  <p>No edit history available.</p>
-                )}
-              </div>
+                      </p>
+                      <ExcerptContent content={history.content} />
+                    </div>
+                  ))
+              ) : (
+                <p>No edit history available.</p>
+              )}
             </div>
           </div>
         }
