@@ -1,11 +1,11 @@
-import { FC, useCallback, useEffect, useState } from 'react';
-import Layout from '../../../components/Layout';
-import type { Account } from '../../../types';
-import Tabs, { Tab } from '../../../components/Tabs';
-import { URL_BASE } from '../../../config';
-import UserList from './UserList';
-import { parseAccount } from '../../../types/account';
-import useToast from '../../../hooks/useToast';
+import { FC, useCallback, useEffect, useState } from "react";
+import Layout from "../../../components/Layout";
+import type { Account } from "../../../types";
+import Tabs, { Tab } from "../../../components/Tabs";
+import { URL_BASE } from "../../../config";
+import UserList from "./UserList";
+import { parseAccount } from "../../../types/account";
+import useToast from "../../../hooks/useToast";
 
 const AdminUsersPage: FC = () => {
   const toast = useToast();
@@ -16,11 +16,10 @@ const AdminUsersPage: FC = () => {
   const fetchAllUsers = useCallback(async () => {
     const endpoint = `${URL_BASE}/users`;
     const res = await fetch(endpoint, {
-      method: 'GET',
-      credentials: 'include',
+      method: "GET",
+      credentials: "include",
     });
     const result = await res.json();
-    console.log('result :', result);
     setAllUsers(result.map((acc: any) => parseAccount(acc)));
   }, []);
 
@@ -31,11 +30,11 @@ const AdminUsersPage: FC = () => {
 
         try {
           const res = await fetch(endpoint, {
-            credentials: 'include',
+            credentials: "include",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-            method: 'PATCH',
+            method: "PATCH",
           });
           if (res.ok) {
             await fetchAllUsers();
@@ -49,13 +48,13 @@ const AdminUsersPage: FC = () => {
 
       toast.showAsync(suspendUser, {
         loading: {
-          title: 'Loading...',
+          title: "Loading...",
         },
         success: (_: any) => ({
           title: `Suspended ${user.displayName} successfully`,
         }),
         error: (_: any) => ({
-          title: 'Something wrong happened',
+          title: "Something wrong happened",
         }),
       });
     },
@@ -68,11 +67,11 @@ const AdminUsersPage: FC = () => {
         const endpoint = `${URL_BASE}/users/resume/${user.id}`;
         try {
           const res = await fetch(endpoint, {
-            credentials: 'include',
+            credentials: "include",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-            method: 'PATCH',
+            method: "PATCH",
           });
           if (res.ok) {
             await fetchAllUsers();
@@ -86,13 +85,13 @@ const AdminUsersPage: FC = () => {
 
       toast.showAsync(resumeUser, {
         loading: {
-          title: 'Loading...',
+          title: "Loading...",
         },
         success: (_: any) => ({
           title: `Resumed ${user.displayName} successfully`,
         }),
         error: (_: any) => ({
-          title: 'Something wrong happened',
+          title: "Something wrong happened",
         }),
       });
     },
@@ -101,7 +100,7 @@ const AdminUsersPage: FC = () => {
 
   const tabs: Tab[] = [
     {
-      name: 'Active Users',
+      name: "Active Users",
       element: (
         <UserList
           list={allUsers.filter((acc) => !acc.isSuspended)}
@@ -110,7 +109,7 @@ const AdminUsersPage: FC = () => {
       ),
     },
     {
-      name: 'Suspended Users',
+      name: "Suspended Users",
       element: (
         <UserList
           list={allUsers.filter((acc) => acc.isSuspended)}

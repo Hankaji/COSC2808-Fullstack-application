@@ -7,18 +7,18 @@ import {
   SquarePlus,
   User,
   UsersRound,
-} from 'lucide-react';
-import type { FC } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { URL_BASE } from '../config';
-import useAuth from '../hooks/useAuth';
-import useToast from '../hooks/useToast';
-import { mergeClassNames } from '../utils';
+} from "lucide-react";
+import type { FC } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { URL_BASE } from "../config";
+import useAuth from "../hooks/useAuth";
+import useToast from "../hooks/useToast";
+import { mergeClassNames } from "../utils";
 
 type SidebarItemBase = {
   Logo: LucideIcon;
   name: string;
-  type?: 'user' | 'admin';
+  type?: "user" | "admin";
 };
 
 type SidebarInternalLinkItem = SidebarItemBase & {
@@ -32,51 +32,51 @@ type SidebarActionItem = SidebarItemBase & {
 const internalLinkItems: SidebarInternalLinkItem[] = [
   {
     Logo: Home,
-    name: 'Home',
-    path: '/',
-    type: 'user',
+    name: "Home",
+    path: "/",
+    type: "user",
   },
   {
     Logo: Search,
-    name: 'Search',
-    path: '/search',
-    type: 'user',
+    name: "Search",
+    path: "/search",
+    type: "user",
   },
   {
     Logo: Bell,
-    name: 'Notifications',
-    path: '/notifications',
-    type: 'user',
+    name: "Notifications",
+    path: "/notifications",
+    type: "user",
   },
   {
     Logo: User,
-    name: 'Friends',
-    path: '/friends',
-    type: 'user',
+    name: "Friends",
+    path: "/friends",
+    type: "user",
   },
   {
     Logo: UsersRound,
-    name: 'Groups',
-    path: '/groups',
-    type: 'user',
+    name: "Groups",
+    path: "/groups",
+    type: "user",
   },
   {
     Logo: SquarePlus,
-    name: 'Create group',
-    path: '/groups/create',
-    type: 'user',
+    name: "Create group",
+    path: "/groups/create",
+    type: "user",
   },
   {
     Logo: User,
-    name: 'Users',
-    path: '/admin/users',
-    type: 'admin',
+    name: "Users",
+    path: "/admin/users",
+    type: "admin",
   },
   {
     Logo: UsersRound,
-    name: 'Groups',
-    path: '/admin/groups',
-    type: 'admin',
+    name: "Groups",
+    path: "/admin/groups",
+    type: "admin",
   },
 ];
 
@@ -90,22 +90,22 @@ const Sidebar = () => {
   const bottomActions: SidebarActionItem[] = [
     {
       Logo: LogOut,
-      name: 'Logout',
+      name: "Logout",
       onClick: () => {
         const logoutRequest = async () => {
           const endpoint = `${URL_BASE}/logout`;
           const res = await fetch(endpoint, {
-            method: 'POST',
-            credentials: 'include',
+            method: "POST",
+            credentials: "include",
           });
 
           if (res.ok) {
             setAuth({});
             toast.show({
-              title: 'Logged out successfully',
-              type: 'info',
+              title: "Logged out successfully",
+              type: "info",
             });
-            navigate('/login');
+            navigate("/login");
           }
         };
 
@@ -120,7 +120,7 @@ const Sidebar = () => {
       <Link to="/" className="cursor-pointer flex items-center gap-3">
         <img
           className="size-10 object-cover mx-auto"
-          style={{ maskSize: 'cover', WebkitMaskSize: 'cover' }}
+          style={{ maskSize: "cover", WebkitMaskSize: "cover" }}
           src="/logo.svg"
           alt="SnapMate logo"
         />
@@ -130,8 +130,8 @@ const Sidebar = () => {
       {/* Navigation items */}
       <ul className="flex flex-col gap-3 w-full">
         {internalLinkItems.map((item, idx) => {
-          if (item.type === 'admin' && !auth.user?.isAdmin) return null;
-          if (item.type === 'user' && auth.user?.isAdmin) return null;
+          if (item.type === "admin" && !auth.user?.isAdmin) return null;
+          if (item.type === "user" && auth.user?.isAdmin) return null;
 
           return (
             <li key={idx}>
@@ -178,8 +178,8 @@ const SidebarButton: FC<SidebarButtonProps> = ({
       <Link
         to={href}
         className={mergeClassNames(
-          'flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all',
-          isActive ? 'bg-secondary' : '',
+          "flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all",
+          isActive ? "bg-secondary" : "",
         )}
       >
         <Logo size={28} />
@@ -191,12 +191,11 @@ const SidebarButton: FC<SidebarButtonProps> = ({
   return (
     <button
       className={mergeClassNames(
-        'flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all',
-        isActive ? 'bg-secondary' : '',
+        "flex justify-start items-center gap-4 hover:bg-secondary py-3 px-4 w-full rounded-lg transition-all",
+        isActive ? "bg-secondary" : "",
       )}
       onClick={(e) => {
         e.preventDefault();
-        console.log(onClick);
         onClick && onClick();
       }}
     >
