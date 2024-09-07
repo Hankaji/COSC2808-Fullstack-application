@@ -79,7 +79,7 @@ const DropDownMenu: FC<MenuProps> = ({
   }, [isOpen]);
 
   return (
-    <div className="relative w-full">
+    <div className="relative">
       <div
         ref={triggerRef}
         onClick={(e) => {
