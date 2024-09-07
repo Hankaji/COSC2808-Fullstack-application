@@ -192,8 +192,10 @@ const ViewAllPeople = () => {
           setMembers((members) =>
             members.filter((member) => member.id !== memberId),
           );
+        } else {
+          throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(removeRequest, {
@@ -290,8 +292,10 @@ const ViewRequests = () => {
 
         if (res.ok) {
           setReqs((req) => req.filter((req) => req.id !== reqId));
+        } else {
+          throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(acceptRequest, {
@@ -318,8 +322,10 @@ const ViewRequests = () => {
 
         if (res.ok) {
           setReqs((req) => req.filter((req) => req.id !== reqId));
+        } else {
+          throw Error;
         }
-      } catch (error) {}
+      } catch (error) { }
     };
 
     toast.showAsync(rejectRequest, {

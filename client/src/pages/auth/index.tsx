@@ -203,6 +203,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               navigate('/login');
             } else if (res.status >= 400 && res.status < 500) {
               setErrors([data.message]);
+              throw Error;
             }
           } catch (e) {
             throw new Error('Failed to register');
@@ -249,6 +250,7 @@ const LoginRegisterForm = ({ initialState = formState.LOGIN }: loginProps) => {
               return navigate('/');
             } else if (res.status >= 400 && res.status < 500) {
               setErrors([data.message]);
+              throw Error;
             }
           } catch (e) {
             throw new Error('Failed to login');

@@ -83,7 +83,11 @@ const GroupFormPanel = () => {
         });
 
         const data = await res.json();
-        return data;
+        if (res.ok) {
+          return data;
+        } else {
+          throw Error;
+        }
       } catch (error) {
         throw error;
       }

@@ -40,7 +40,6 @@ import {
 import PopupModal from './PopupModal';
 import { ToastContext } from '../context/ToastProvider';
 import { URL_BASE } from '../config';
-import { isEditable } from '@testing-library/user-event/dist/utils';
 import useAuth from '../hooks/useAuth';
 import useToast from '../hooks/useToast';
 
@@ -446,6 +445,8 @@ const PostPopup: FC<{
           const data = await res.json();
           const comment = parseComment(data.comment);
           setCommentList((prev) => [comment, ...prev]);
+        } else {
+          throw Error;
         }
       } catch (error) {}
     };
@@ -674,6 +675,8 @@ const CommentComp: FC<CommentProp> = ({
           });
 
           setIsEditing(false);
+        } else {
+          throw Error;
         }
       } catch (error) {}
     };
@@ -704,6 +707,8 @@ const CommentComp: FC<CommentProp> = ({
         console.log(res);
         if (res.ok) {
           onCommentDeleteSuccess(data.id);
+        } else {
+          throw Error;
         }
       } catch (error) {}
     };
