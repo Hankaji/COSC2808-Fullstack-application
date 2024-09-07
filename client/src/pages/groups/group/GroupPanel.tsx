@@ -1,14 +1,14 @@
-import { useLoaderData, useParams } from 'react-router';
-import PostCreationPanel from '../../../components/PostCreationPanel';
-import { mergeClassNames } from '../../../utils';
-import PostsView from '../../../components/PostsView';
-import { Group, GroupVisibility, parseGroup } from '../../../types/group';
-import { FC, useEffect, useState } from 'react';
-import useAuth from '../../../hooks/useAuth';
-import { URL_BASE } from '../../../config';
-import useToast from '../../../hooks/useToast';
-import { parsePost, Posts } from '../../../types/post';
-import Loading from '../../../components/ui/Loading';
+import { useLoaderData, useParams } from "react-router";
+import PostCreationPanel from "../../../components/PostCreationPanel";
+import { mergeClassNames } from "../../../utils";
+import PostsView from "../../../components/PostsView";
+import { Group, GroupVisibility, parseGroup } from "../../../types/group";
+import { FC, useEffect, useState } from "react";
+import useAuth from "../../../hooks/useAuth";
+import { URL_BASE } from "../../../config";
+import useToast from "../../../hooks/useToast";
+import { parsePost, Posts } from "../../../types/post";
+import Loading from "../../../components/ui/Loading";
 
 const GroupPanel = () => {
   const groupData = useLoaderData() as Group;
@@ -36,10 +36,10 @@ const GroupPanel = () => {
     try {
       const endpoint = `${URL_BASE}/requests/group_requests`;
       const res = await fetch(endpoint, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           group_id: groupId,
@@ -47,9 +47,8 @@ const GroupPanel = () => {
       });
 
       const data = await res.json();
-      console.log(data);
       return data;
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const fetchPosts = async () => {
@@ -57,21 +56,19 @@ const GroupPanel = () => {
       setPosts(undefined);
       const endpoint = `${URL_BASE}/posts/group/${groupData.id}`;
       const res = await fetch(endpoint, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
 
       const data: any[] = await res.json();
-      console.log(data);
 
       // Parse data as Posts
       const posts = data.map((post) => parsePost(post));
-      console.log(posts);
 
       if (res.ok) {
         setPosts(posts);
       }
-    } catch (_) {}
+    } catch (_) { }
   };
 
   useEffect(() => {
@@ -152,9 +149,9 @@ const GroupHeader: FC<GroupHeaderProps> = ({
         <div className="h-0 min-w-fit">
           <img
             className={mergeClassNames(
-              'bg-gray-500 object-cover',
-              'relative aspect-square rounded-full size-24 -translate-y-1/2',
-              'border-background border-solid border-4',
+              "bg-gray-500 object-cover",
+              "relative aspect-square rounded-full size-24 -translate-y-1/2",
+              "border-background border-solid border-4",
             )}
             src={avatarImg}
             alt="group avatar"
@@ -173,13 +170,13 @@ const GroupHeader: FC<GroupHeaderProps> = ({
               onClick={(e) => {
                 toast.showAsync(onJoin, {
                   loading: {
-                    title: 'Sending request...',
+                    title: "Sending request...",
                   },
                   success: (_) => ({
-                    title: 'Request sent',
+                    title: "Request sent",
                   }),
                   error: (_) => ({
-                    title: 'Coulnt send request',
+                    title: "Coulnt send request",
                   }),
                 });
               }}

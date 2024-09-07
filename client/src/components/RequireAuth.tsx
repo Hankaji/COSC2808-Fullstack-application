@@ -1,6 +1,6 @@
-import { FC, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router';
-import useAuth from '../hooks/useAuth';
+import { FC, useEffect } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router";
+import useAuth from "../hooks/useAuth";
 
 interface Props {
   requireAdminAccess?: boolean;
@@ -18,8 +18,7 @@ const RequireAuth: FC<Props> = ({ requireAdminAccess }) => {
         if (auth.user.isAdmin) {
           return;
         } else {
-          console.log('unauthorized');
-          navigate('/unauthorized', {
+          navigate("/unauthorized", {
             state: {
               from: location,
             },
@@ -31,7 +30,7 @@ const RequireAuth: FC<Props> = ({ requireAdminAccess }) => {
     }
 
     // Else navigate them back to login page
-    navigate('/login', {
+    navigate("/login", {
       state: {
         from: location,
       },
@@ -41,8 +40,8 @@ const RequireAuth: FC<Props> = ({ requireAdminAccess }) => {
 
   // If admin, redirect to Admin Users page if it's in the "/" path
   useEffect(() => {
-    if (auth.user?.isAdmin && location.pathname === '/') {
-      navigate('/admin/users');
+    if (auth.user?.isAdmin && location.pathname === "/") {
+      navigate("/admin/users");
     }
   }, [auth.user?.isAdmin, location.pathname, navigate]);
 

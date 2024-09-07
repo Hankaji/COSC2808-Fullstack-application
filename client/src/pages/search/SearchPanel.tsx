@@ -1,12 +1,12 @@
-import { FC, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { AuthorPfp } from '../../components/Post';
-import Tabs, { Tab } from '../../components/Tabs';
-import CompactedGroup from '../../components/CompactedGroup';
-import { User } from '../../types/post';
-import { URL_BASE } from '../../config';
-import { mergeClassNames } from '../../utils';
-import { Group, parseGroup } from '../../types/group';
+import { FC, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { AuthorPfp } from "../../components/Post";
+import Tabs, { Tab } from "../../components/Tabs";
+import CompactedGroup from "../../components/CompactedGroup";
+import { User } from "../../types/post";
+import { URL_BASE } from "../../config";
+import { mergeClassNames } from "../../utils";
+import { Group, parseGroup } from "../../types/group";
 
 const SearchPanel = () => {
   return (
@@ -23,25 +23,23 @@ const TabSections = () => {
   const fetchAllUsers = async () => {
     const endpoint = `${URL_BASE}/users`;
     const res = await fetch(endpoint, {
-      method: 'GET',
-      credentials: 'include',
+      method: "GET",
+      credentials: "include",
     });
     const data = await res.json();
     setUsers(data as User[]);
-    console.log(data);
   };
 
   const fetchAllGroups = async () => {
     const endpoint = `${URL_BASE}/groups`;
     const res = await fetch(endpoint, {
-      method: 'GET',
-      credentials: 'include',
+      method: "GET",
+      credentials: "include",
     });
 
     const data: any[] = await res.json();
     const groups = data.map((grp) => parseGroup(grp));
     setGroups(groups);
-    console.log(groups);
   };
 
   useEffect(() => {
@@ -51,11 +49,11 @@ const TabSections = () => {
 
   const tabs: Tab[] = [
     {
-      name: 'People',
+      name: "People",
       element: <People users={users} />,
     },
     {
-      name: 'Groups',
+      name: "Groups",
       element: <AllGroups groups={groups} />,
     },
   ];
@@ -91,8 +89,8 @@ const PeopleComp: FC<{ data: User }> = ({ data }) => {
       <AuthorPfp data={data} />
       <button
         className={mergeClassNames(
-          'py-1 px-4 bg-white text-black font-bold rounded-lg hover:bg-secondary hover:text-foreground transition-colors',
-          'ml-auto',
+          "py-1 px-4 bg-white text-black font-bold rounded-lg hover:bg-secondary hover:text-foreground transition-colors",
+          "ml-auto",
         )}
       >
         Add friend

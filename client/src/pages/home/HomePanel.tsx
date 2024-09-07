@@ -1,29 +1,29 @@
-import { FC, useCallback, useEffect, useState } from 'react';
-import { Posts } from '../../types/post';
-import PostCreationPanel from '../../components/PostCreationPanel';
-import PostsView from '../../components/PostsView';
-import { URL_BASE } from '../../config';
-import useAuth from '../../hooks/useAuth';
+import { FC, useCallback, useEffect, useState } from "react";
+import { Posts } from "../../types/post";
+import PostCreationPanel from "../../components/PostCreationPanel";
+import PostsView from "../../components/PostsView";
+import { URL_BASE } from "../../config";
+import useAuth from "../../hooks/useAuth";
 
 const mockData: Posts[] = [
   {
-    id: '1',
+    id: "1",
     user: {
       profileImage:
-        'https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6',
-      username: 'UngaBunga',
-      displayName: 'Anonymous',
-      id: '',
+        "https://preview.redd.it/lhxag30v58d31.jpg?width=640&crop=smart&auto=webp&s=bcf582e90ffb150dfd3f905fbfbe44deb30e56e6",
+      username: "UngaBunga",
+      displayName: "Anonymous",
+      id: "",
     },
-    content: 'Check out my new artwork',
+    content: "Check out my new artwork",
     images: [
-      'https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small',
+      "https://pbs.twimg.com/media/GUwiAFWagAAmQ5I?format=jpg&name=small",
     ],
     reactions: [],
     comments: [],
     editHistory: [],
     group_id: null,
-    visibility: '',
+    visibility: "",
     createdAt: new Date(),
     updatedAt: new Date(),
     __v: 0,
@@ -32,7 +32,6 @@ const mockData: Posts[] = [
 
 const HomePanel: FC<{ className?: string }> = ({ className }) => {
   const { auth } = useAuth();
-  console.log('This is auth: ' + JSON.stringify(auth.user));
 
   const endpoint = `${URL_BASE}/posts`; // Placeholder, not real endpoint
 
@@ -42,8 +41,8 @@ const HomePanel: FC<{ className?: string }> = ({ className }) => {
   const getPosts = useCallback(async () => {
     try {
       const response = await fetch(endpoint, {
-        method: 'GET',
-        credentials: 'include',
+        method: "GET",
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -51,7 +50,6 @@ const HomePanel: FC<{ className?: string }> = ({ className }) => {
       }
 
       const data = await response.json();
-      console.log(data);
       // setPostData((prev: any) => [...prev, ...data.posts]);
     } catch (err) {
       console.error(err);

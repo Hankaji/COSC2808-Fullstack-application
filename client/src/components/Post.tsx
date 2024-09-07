@@ -79,12 +79,11 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   const handleDelete = async () => {
     try {
       const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
-        method: 'DELETE',
-        credentials: 'include',
+        method: "DELETE",
+        credentials: "include",
       });
 
       if (response.ok) {
-        console.log("Post deleted successfully");
         show({
           title: "Success",
           description: "Post deleted successfully",
@@ -120,7 +119,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
   const handleEdit = async () => {
     try {
       const response = await fetch(`http://localhost:8080/posts/${data.id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
@@ -132,7 +131,6 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       });
 
       if (response.ok) {
-        console.log("Post edited successfully");
         show({
           title: "Success",
           description: "Post edited successfully",
@@ -156,8 +154,7 @@ const PostComponent: FC<Props> = ({ className, data }) => {
       });
     }
   };
-  console.log("Post: ");
-  console.log(data);
+  console.log(data.id);
   return (
     <>
       <div
@@ -229,16 +226,13 @@ const PostComponent: FC<Props> = ({ className, data }) => {
               </h2>
               <div className="flex justify-end mt-4">
                 <button
-                  onClick={() => {
-                    console.log("Cancel button clicked");
-                  }}
+                  onClick={() => { }}
                   className="mr-2 px-4 py-2 bg-gray-300 rounded"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => {
-                    console.log("Delete button clicked");
                     handleDelete();
                   }}
                   className="px-4 py-2 bg-red-500 text-white rounded"
@@ -388,8 +382,8 @@ const PostImages: FC<{ imgData: string[] | undefined }> = ({ imgData }) => {
                   <div
                     key={idx}
                     className={mergeClassNames(
-                      'transition-all size-3 bg-white rounded-full',
-                      currentIdx === idx ? 'p-2' : 'bg-opacity-50',
+                      "transition-all size-3 bg-white rounded-full",
+                      currentIdx === idx ? "p-2" : "bg-opacity-50",
                     )}
                   ></div>
                 );
@@ -628,12 +622,10 @@ const Reactions: FC<ReactionsProps> = ({
         },
         body: JSON.stringify({
           type: formattedType,
-          // Add any other necessary data here
         }),
       });
 
       if (response.ok) {
-        console.log("Reacted successfully");
       } else {
         console.error("Failed to react");
       }
@@ -650,7 +642,6 @@ const Reactions: FC<ReactionsProps> = ({
       });
 
       if (response.ok) {
-        console.log("Deleted successfully");
       } else {
         console.error("Failed to react");
       }
@@ -778,7 +769,13 @@ const ReactionButton: FC<ReactionBtnProps> = ({
   );
 };
 
-export { CommentSection, PostImages, AuthorPfp, FallBackPfp, CommentComp as Comment };
+export {
+  CommentSection,
+  PostImages,
+  AuthorPfp,
+  FallBackPfp,
+  CommentComp as Comment,
+};
 export type { Posts, User, Reaction };
 const Post = PostComponent;
 export default Post;
