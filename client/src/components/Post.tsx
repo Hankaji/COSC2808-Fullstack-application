@@ -37,6 +37,7 @@ import {
   parseComment,
 } from '../types/post';
 import { mergeClassNames } from '../utils';
+import ExcerptContent from './ExcerptContent';
 import PopupModal from './PopupModal';
 import {
   DropDownItem,
@@ -91,15 +92,18 @@ const PostComponent: FC<Props> = ({
   const { show } = toastContext;
   const fetchPostHistory = async (postId: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/posts/${postId}/history`, {
-        method: 'GET',
-        credentials: 'include', // Include credentials if needed
-      });
-  
+      const response = await fetch(
+        `http://localhost:8080/posts/${postId}/history`,
+        {
+          method: 'GET',
+          credentials: 'include', // Include credentials if needed
+        },
+      );
+
       if (!response.ok) {
         throw new Error(`Error fetching post history: ${response.statusText}`);
       }
-  
+
       const historyData = await response.json();
       console.log('Fetched post history:', historyData); // Debugging statement
       return historyData;
@@ -258,7 +262,7 @@ const PostComponent: FC<Props> = ({
         </div>
         {/* Content */}
         <div className="flex flex-col justify-start items-start gap-2">
-          <p>{data.content}</p>
+          <ExcerptContent content={data.content} />
           <PostImages imgData={data.images} />
         </div>
         {/* Post actions */}
@@ -379,6 +383,7 @@ const PostComponent: FC<Props> = ({
           Open Modal
         </button>
       </PopupModal>
+      {/* Edit Histor */}
       <PopupModal
         widthPercent={0.5}
         heightPercent={0.5}
@@ -390,13 +395,21 @@ const PostComponent: FC<Props> = ({
               <h2 className="text-2xl font-bold">Edit History</h2>
               <div className="overflow-y-auto max-h-60">
                 {Array.isArray(editHistory) && editHistory.length > 0 ? (
-                  editHistory.slice().reverse().map((history, index) => (
-                    <div key={index} className="mb-4 flex flex-col gap-1">
-                      <p className="flex gap-2 items-center font-semibold text-muted-foreground/50">Edited on: {new Date(history.createdAt).toLocaleString()} <p className='bg-secondary text-secondary-foreground rounded-lg px-2 text-sm max-w-fit'>{history.visibility}</p>
-                      </p>
-                      <p>{history.content}</p>
-                    </div>
-                  ))
+                  editHistory
+                    .slice()
+                    .reverse()
+                    .map((history, index) => (
+                      <div key={index} className="mb-4 flex flex-col gap-1">
+                        <p className="flex gap-2 items-center font-semibold text-muted-foreground/50">
+                          Edited on:{' '}
+                          {new Date(history.createdAt).toLocaleString()}{' '}
+                          <p className="bg-secondary text-secondary-foreground rounded-lg px-2 text-sm max-w-fit">
+                            {history.visibility}
+                          </p>
+                        </p>
+                        <ExcerptContent content={history.content} />
+                      </div>
+                    ))
                 ) : (
                   <p>No edit history available.</p>
                 )}
@@ -594,8 +607,8 @@ const PostPopup: FC<{
           <AuthorPfp data={data.user} />
         </div>
         {/* Content */}
-        <div className="flex flex-col justify-start items-start gap-2">
-          <p>{data.content}</p>
+        <div className="flex flex-col justify-start items-start gap-2 break-all max-h-20">
+          <p className="overflow-y-auto">{data.content}</p>
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
@@ -823,19 +836,22 @@ const CommentComp: FC<CommentProp> = ({
           backdropBlur={2}
           modelRender={
             <div className="block-container w-[40vw] flex-col items-start overflow-clip">
-              {data.editHistory.map((his) => {
-                return (
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="flex gap-1 items-center text-sm text-muted-foreground/75 font-semibold text-nowrap">
-                      <Clock size={16} />
-                      {`${his.createdAt.getDay()}/${his.createdAt.getMonth()} - ${his.createdAt.getHours()}:${his.createdAt.getMinutes()}`}
-                    </span>
-                    <span className="text-wrap break-words text-ellipsis truncate">
-                      {his.content}
-                    </span>
-                  </div>
-                );
-              })}
+              {data.editHistory
+                .slice()
+                .reverse()
+                .map((his) => {
+                  return (
+                    <div className="flex items-center justify-center gap-2 overflow-y-scroll">
+                      <span className="flex gap-1 items-center text-sm text-muted-foreground/75 font-semibold text-nowrap">
+                        <Clock size={16} />
+                        {`${his.createdAt.getDay()}/${his.createdAt.getMonth()} - ${his.createdAt.getHours()}:${his.createdAt.getMinutes()}`}
+                      </span>
+                      <span className="text-wrap break-words text-ellipsis truncate">
+                        {his.content}
+                      </span>
+                    </div>
+                  );
+                })}
             </div>
           }
         >
