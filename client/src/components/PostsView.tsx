@@ -62,10 +62,6 @@ const PostsView = forwardRef<PostsViewRef, Props>(
           const data: any[] = await res.json();
           const fetchedPosts = data.map((post) => parsePost(post));
 
-          // console.log(`${fetchEndpoint}?${params.toString()}`);
-          // console.log(data);
-          // console.log(fetchedPosts);
-
           // 10 is the limit per page
           if (fetchedPosts.length < 10) {
             setHasMore(false); // If no more posts, set hasMore to false

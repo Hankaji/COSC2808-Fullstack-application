@@ -511,8 +511,6 @@ const PostPopup: FC<{
           },
         });
 
-        console.log(res);
-
         if (res.ok) {
           const data = await res.json();
           const comment = parseComment(data.comment);
@@ -777,7 +775,6 @@ const CommentComp: FC<CommentProp> = ({
           credentials: 'include',
         });
 
-        console.log(res);
         if (res.ok) {
           onCommentDeleteSuccess(data.id);
         } else {
@@ -1036,7 +1033,6 @@ const Reactions: FC<ReactionsProps> = ({
     // Set default reaction if there is one from user
     reactions.forEach((reaction) => {
       if (reaction.author.id === auth.user!.userId) {
-        console.log(reaction.type);
         setReactedReaction(reaction.type);
       }
     });
