@@ -21,6 +21,7 @@ const JoinedGroupList = () => {
         });
 
         const data: any[] = await res.json();
+        console.log(data);
         const groups = data.map((grp) => {
           return {
             id: grp.id,
@@ -28,9 +29,9 @@ const JoinedGroupList = () => {
             description: grp.description,
             visibility:
               GroupVisibility[
-                (
-                  grp.visibility as string
-                ).toUpperCase() as keyof typeof GroupVisibility
+              (
+                grp.visibility as string
+              ).toUpperCase() as keyof typeof GroupVisibility
               ],
             admins: grp.admins,
             groupImage: grp.virtualGroupImage,

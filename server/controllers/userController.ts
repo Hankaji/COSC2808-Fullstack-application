@@ -291,7 +291,7 @@ export const getUserGroupsById = async (req: Request, res: Response) => {
     const groups = await Group.find({
       $or: [{ members: userId }, { admins: userId }],
     })
-      .select('name description visibility admins')
+      .select('name description visibility admins groupImage')
       .exec();
 
     // Format the response to include virtual fields
@@ -302,9 +302,12 @@ export const getUserGroupsById = async (req: Request, res: Response) => {
       visibility: group.visibility,
       admins: group.admins,
       // @ts-ignore
-      virtualGroupImage: group.virtualGroupImage,
-      // @ts-ignore
-      virtualCoverImage: group.virtualCoverImage,
+      virtualGroupImage:
+        group.groupImage &&
+        group.groupImage.contentType &&
+        group.groupImage.data
+          ? `data:${group.groupImage.contentType};base64,${group.groupImage.data.toString('base64')}`
+          : undefined,
     }));
 
     // Return the list of groups
