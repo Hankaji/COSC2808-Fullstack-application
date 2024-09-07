@@ -42,6 +42,7 @@ import { ToastContext } from '../context/ToastProvider';
 import { URL_BASE } from '../config';
 import useAuth from '../hooks/useAuth';
 import useToast from '../hooks/useToast';
+import { fetchPostHistory } from './fetchPostHistory';
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   data: Posts;
@@ -68,8 +69,10 @@ const PostComponent: FC<Props> = ({
   const [postVisibility, setPostVisibility] = useState<'Public' | 'Friend'>(
     data.visibility as 'Public' | 'Friend',
   ); // State for post visibility
+  const [editHistory, setEditHistory] = useState<any[]>([]); // State for edit history
   const openModalButtonRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button
   const openModalButtonEditRef = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button for editing
+  const openModalButtonRefHistory = useRef<HTMLButtonElement>(null); // Ref for the "Open Modal" button for edit history
   const toastContext = useContext(ToastContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -86,6 +89,22 @@ const PostComponent: FC<Props> = ({
   };
 
   const { show } = toastContext;
+
+  // Fetch edit history when the edit history modal is opened
+  const handleEditHistoryClick = async () => {
+    try {
+      const history = await fetchPostHistory(data.id);
+      setEditHistory(history);
+      openModalButtonRefHistory.current?.click(); // Trigger the "Open Modal" button click for edit history
+    } catch (error) {
+      console.error('Error fetching edit history:', error);
+      show({
+        title: 'Error',
+        description: 'Failed to fetch edit history',
+        type: 'error',
+      });
+    }
+  };
 
   // handle the Delete for post
   const handleDelete = async () => {
@@ -207,6 +226,11 @@ const PostComponent: FC<Props> = ({
                       }}
                     >
                       Delete
+                    </DropDownItem>
+                    <DropDownItem
+                      onClick={handleEditHistoryClick} // Fetch and display edit history
+                    >
+                      Edit History
                     </DropDownItem>
                   </DropDownMenuContent>
                 }
@@ -334,6 +358,41 @@ const PostComponent: FC<Props> = ({
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded"
           ref={openModalButtonEditRef}
+          style={{ display: 'none' }} // Make the button invisible
+        >
+          Open Modal
+        </button>
+      </PopupModal>
+      <PopupModal
+        widthPercent={0.5}
+        heightPercent={0.5}
+        className="custom-class"
+        backdropBlur={5}
+        modelRender={
+          <div className="fixed inset-0 flex items-center justify-center bg-transparent">
+            <div className="p-6 block-container flex-col w-6/12 h-8/12 bg-background border-border border-2 border-solid text-foreground rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold">Edit History</h2>
+              <div className="overflow-y-auto max-h-60">
+                {Array.isArray(editHistory) && editHistory.length > 0 ? (
+                  editHistory.slice().reverse().map((history, index) => (
+                    <div key={index} className="mb-4 flex flex-col gap-1">
+                      <p className="flex gap-2 items-center font-semibold text-muted-foreground/50">Edited on: {new Date(history.createdAt).toLocaleString()} <p className='bg-secondary text-secondary-foreground rounded-lg px-2 text-sm max-w-fit'>{history.visibility}</p>
+                      </p>
+                      <p>{history.content}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p>No edit history available.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        }
+      >
+        {/* This button is hidden and is used to trigger the modal by external components */}
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded"
+          ref={openModalButtonRefHistory}
           style={{ display: 'none' }} // Make the button invisible
         >
           Open Modal
