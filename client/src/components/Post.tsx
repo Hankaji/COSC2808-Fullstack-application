@@ -747,19 +747,22 @@ const CommentComp: FC<CommentProp> = ({
           backdropBlur={2}
           modelRender={
             <div className="block-container w-[40vw] flex-col items-start overflow-clip">
-              {data.editHistory.map((his) => {
-                return (
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="flex gap-1 items-center text-sm text-muted-foreground/75 font-semibold text-nowrap">
-                      <Clock size={16} />
-                      {`${his.createdAt.getDay()}/${his.createdAt.getMonth()} - ${his.createdAt.getHours()}:${his.createdAt.getMinutes()}`}
-                    </span>
-                    <span className="text-wrap break-words text-ellipsis truncate">
-                      {his.content}
-                    </span>
-                  </div>
-                );
-              })}
+              {data.editHistory
+                .slice()
+                .reverse()
+                .map((his) => {
+                  return (
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="flex gap-1 items-center text-sm text-muted-foreground/75 font-semibold text-nowrap">
+                        <Clock size={16} />
+                        {`${his.createdAt.getDay()}/${his.createdAt.getMonth()} - ${his.createdAt.getHours()}:${his.createdAt.getMinutes()}`}
+                      </span>
+                      <span className="text-wrap break-words text-ellipsis truncate">
+                        {his.content}
+                      </span>
+                    </div>
+                  );
+                })}
             </div>
           }
         >
