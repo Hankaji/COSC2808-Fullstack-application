@@ -222,11 +222,14 @@ const PostComponent: FC<Props> = ({
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
-          <Reactions
-            reactions={data.reactions}
-            context="post"
-            postId={data.id}
-          />
+          {/* Only user can reactio to post */}
+          {!auth.user?.isAdmin && (
+            <Reactions
+              reactions={data.reactions}
+              context="post"
+              postId={data.id}
+            />
+          )}
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
             {data.comments.length}
@@ -429,6 +432,7 @@ const PostPopup: FC<{
   const userCommentRef = useRef<HTMLDivElement>(null);
 
   const toast = useToast();
+  const { auth } = useAuth();
 
   const [commentList, setCommentList] = useState<Comment[]>(data.comments);
 
@@ -522,11 +526,14 @@ const PostPopup: FC<{
         </div>
         {/* Post actions */}
         <div className="flex gap-4">
-          <Reactions
-            reactions={data.reactions}
-            context="post"
-            postId={data.id}
-          />
+          {/* Only user can react to post */}
+          {!auth.user?.isAdmin && (
+            <Reactions
+              reactions={data.reactions}
+              context="post"
+              postId={data.id}
+            />
+          )}
           <button className="flex transition-colors gap-1 p-2 hover:text-info hover:bg-info/25 rounded-full">
             <MessageCircle className="" />
             {data.comments.length}
@@ -534,42 +541,45 @@ const PostPopup: FC<{
         </div>
         <div className="border-border border-solid border-2"></div>
         {/* Comment input textarea */}
-        <div className=" relative flex items-center max-h-[999px] transition-all duration-500 justify-start gap-1 text-lg bg-background py-2 px-4 border-b-border border-b-2 border-solid focus-within:border-primary">
-          <div
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            onInput={() => {
-              setIsEditing(true);
-              setComment(userCommentRef.current?.textContent || '');
-            }}
-            onBlur={() => {
-              setIsEditing(false);
-            }}
-            ref={userCommentRef}
-            contentEditable
-            className="w-full h-max p-0 text-wrap break-words break-all transition-all duration-500 resize-none bg-background text-lg rounded-lg outline-none"
-          ></div>
-          <span
-            onClick={() => {
-              userCommentRef.current?.focus();
-            }}
-            className="absolute left-0 pl-4 cursor-default select-none text-muted"
-          >
-            {comment.trim() === '' && !isEditing && 'Post a comments'}
-          </span>
-          <button
-            onClick={() => {
-              if (!userCommentRef.current) return;
-              addComment(userCommentRef.current.textContent!);
-              userCommentRef.current.textContent = '';
-            }}
-            className="py-1 px-4 rounded-lg bg-primary"
-          >
-            Post
-          </button>
-        </div>
+        {/* Only user can post comment */}
+        {!auth.user?.isAdmin && (
+          <div className=" relative flex items-center max-h-[999px] transition-all duration-500 justify-start gap-1 text-lg bg-background py-2 px-4 border-b-border border-b-2 border-solid focus-within:border-primary">
+            <div
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onInput={() => {
+                setIsEditing(true);
+                setComment(userCommentRef.current?.textContent || '');
+              }}
+              onBlur={() => {
+                setIsEditing(false);
+              }}
+              ref={userCommentRef}
+              contentEditable
+              className="w-full h-max p-0 text-wrap break-words break-all transition-all duration-500 resize-none bg-background text-lg rounded-lg outline-none"
+            ></div>
+            <span
+              onClick={() => {
+                userCommentRef.current?.focus();
+              }}
+              className="absolute left-0 pl-4 cursor-default select-none text-muted"
+            >
+              {comment.trim() === '' && !isEditing && 'Post a comments'}
+            </span>
+            <button
+              onClick={() => {
+                if (!userCommentRef.current) return;
+                addComment(userCommentRef.current.textContent!);
+                userCommentRef.current.textContent = '';
+              }}
+              className="py-1 px-4 rounded-lg bg-primary"
+            >
+              Post
+            </button>
+          </div>
+        )}
         {/* Comments */}
         <CommentSection
           onCommentEditSuccess={onCommentEditSuccess}
@@ -667,8 +677,6 @@ const CommentComp: FC<CommentProp> = ({
           },
         });
 
-        console.log(res);
-
         if (res.ok) {
           data.editHistory.push({
             content: data.content,
@@ -756,9 +764,6 @@ const CommentComp: FC<CommentProp> = ({
             contentEditable
             className="w-full h-max p-0 text-wrap break-words break-all transition-all duration-500 resize-none bg-background text-lg rounded-lg outline-none"
           ></div>
-          {/* <span className="absolute left-0 pl-4 cursor-default select-none text-muted"> */}
-          {/*   {comment.trim() === '' && !isEditing && 'Post a comments'} */}
-          {/* </span> */}
           <button
             onClick={() => {
               setIsEditing(false);
@@ -780,25 +785,27 @@ const CommentComp: FC<CommentProp> = ({
       {/* Comment actions */}
       <div className="flex gap-4 justify-start items-center">
         {/* Reactions */}
-        <button className="flex transition-colors gap-1 rounded">
+        {!auth.user?.isAdmin && (
           <Reactions
             reactions={data.reactions}
             context="comment"
             postId={postId}
             commentId={data.id}
           />
-        </button>
+        )}
         {isCurrentUserEditable && (
           <>
             {/* Edit */}
-            <button
-              onClick={() => {
-                setIsEditing(true);
-              }}
-              className="flex transition-colors px-2 hover:text-info hover:bg-info/25 rounded-lg"
-            >
-              Edit
-            </button>
+            {!auth.user?.isAdmin && (
+              <button
+                onClick={() => {
+                  setIsEditing(true);
+                }}
+                className="flex transition-colors px-2 hover:text-info hover:bg-info/25 rounded-lg"
+              >
+                Edit
+              </button>
+            )}
             {/* Delete */}
             <button
               onClick={onCommentDelete}
