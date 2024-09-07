@@ -17,16 +17,16 @@ const GroupPanel = () => {
 
   const postViewRef = useRef<PostsViewRef>(null);
 
+  // Find if current user has joined the group
+  const thisUserInGroup = groupData.members.filter(
+    (mem) => mem.id === auth.user?.userId,
+  );
+
   const canView = (): boolean => {
     if (auth.user?.isAdmin) {
       return true;
     }
     if (groupData.visibility === GroupVisibility.PRIVATE) {
-      // Find if current user has joined the group
-      const thisUserInGroup = groupData.members.filter(
-        (mem) => mem.id === auth.user?.userId,
-      );
-
       // Length = 0 means user is not in group
       if (thisUserInGroup.length === 0) return false;
     }
@@ -70,12 +70,14 @@ const GroupPanel = () => {
       />
       {canView() ? (
         <>
-          <PostCreationPanel
-            onPostUpload={() => {
-              postViewRef.current?.reset();
-              postViewRef.current?.fetchPosts();
-            }}
-          />
+          {thisUserInGroup.length === 0 ? null : (
+            <PostCreationPanel
+              onPostUpload={() => {
+                postViewRef.current?.reset();
+                postViewRef.current?.fetchPosts();
+              }}
+            />
+          )}
           <PostsView
             ref={postViewRef}
             fetchEndpoint={`${URL_BASE}/posts/group/${groupData.id}`}
