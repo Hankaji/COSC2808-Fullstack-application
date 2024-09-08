@@ -15,7 +15,7 @@
   COSC2808-Fullstack-application
 </h1>
 
-SnapMate is a social media app built with the MERN stack (MongoDB, Express, React, Node.js) as part of the COSC2808-Fullstack-application project. It lets users create and share posts, manage profiles, and connect with friends. With features like user authentication and real-time updates, SnapMate offers a smooth and modern user experience.
+SnapMate is a social media app built with the MERN stack (MongoDB, Express, React, Node.js) as part of the COSC2808-Fullstack-application project. It lets users create and share posts, manage profiles, and connect with friends. With features like user authentication and real-time updates, SnapMate offers a smooth and modern user experience. You can watch a [demo](https://www.youtube.com/watch?v=-0PlkwV9u4A) of our application here.
 
 <p align="center" >
   <img src="./public/Preview_1.png" alt="Preview 1" width=400 />
@@ -68,7 +68,7 @@ Create an `.env` file in the `server/` folder and put the following content in i
 MONGO_URI=<Your mongodb database link>
 ```
 
-> Note: Make sure to change the <Your mongodb database link> to desired and valid link otherwise the application's server won't run
+> Note: Make sure to change the \<Your mongodb database link> to desired and valid link otherwise the application's server won't run
 
 <a name="features"></a>
 # ✨ Features
