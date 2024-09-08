@@ -424,9 +424,9 @@ export const getPostHistoryById = async (req: Request, res: Response) => {
       const images =
         historyEntry.images.length > 0
           ? historyEntry.images.map(
-              (img) =>
-                `data:${img.contentType};base64,${img.data!.toString('base64')}`,
-            )
+            (img) =>
+              `data:${img.contentType};base64,${img.data!.toString('base64')}`,
+          )
           : lastImages;
       const visibility = historyEntry.visibility || lastVisibility;
 
@@ -436,6 +436,7 @@ export const getPostHistoryById = async (req: Request, res: Response) => {
       lastVisibility = visibility;
 
       // Push the processed history entry
+      // @ts-ignore
       processedHistory.unshift({
         content,
         images,
@@ -469,6 +470,7 @@ export const createPost = async (req: Request, res: Response) => {
       if (!mongoose.Types.ObjectId.isValid(group_id)) {
         return res.status(400).json({ message: 'Invalid group ID' });
       }
+      // @ts-ignore
       groupId = new mongoose.Types.ObjectId(group_id);
     }
 
@@ -925,7 +927,7 @@ export const addReactionToPost = async (req: Request, res: Response) => {
 export const editReactionOnPost = async (req: Request, res: Response) => {
   try {
     const postId = req.params.id;
-    const userId = req.session.userId;
+    const userId = req.session.userId!;
     const { type } = req.body;
 
     // Validate the post ID format
@@ -996,7 +998,7 @@ export const deleteReactionFromPost = async (req: Request, res: Response) => {
 
     // Find the reaction by userId
     const reaction = post.reactions.find(
-      (reaction) => reaction.author_id.toString() === userId.toString(),
+      (reaction) => reaction.author_id.toString() === userId!.toString(),
     );
 
     if (!reaction) {
@@ -1212,7 +1214,7 @@ export const deleteReactionFromComment = async (
 
     // Find the reaction by userId
     const reaction = comment.reactions.find(
-      (reaction) => reaction.author_id.toString() === userId.toString(),
+      (reaction) => reaction.author_id.toString() === userId!.toString(),
     );
 
     if (!reaction) {

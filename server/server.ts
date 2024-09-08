@@ -14,11 +14,32 @@ import requestRouter from './routes/requestRoutes';
 import postRouter from './routes/postRoutes';
 
 dotenv.config();
+import dotenv from 'dotenv';
+import express from 'express';
+import session from 'express-session';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import mongoose from 'mongoose';
+
+import connectDB from './models/dbConnection';
+import authRouter from './routes/authRoutes';
+import userRouter from './routes/userRoutes';
+import groupRouter from './routes/groupRoutes';
+import requestRouter from './routes/requestRoutes';
+import postRouter from './routes/postRoutes';
+
+dotenv.config();
 const app = express();
 const port = 8080;
 
 declare module 'express-session' {
   interface SessionData {
+    userId: mongoose.Types.ObjectId;
+    username: String;
+    isAdmin: boolean;
+  }
+  interface session {
     userId: mongoose.Types.ObjectId;
     username: String;
     isAdmin: boolean;
