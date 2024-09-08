@@ -47,7 +47,7 @@ app.use(
   }),
 );
 
-app.get('/', (req: express.Request, res: express.Response) => {
+app.get('/', (_req: express.Request, res: express.Response) => {
   res.send('Server is running!');
 });
 
@@ -57,8 +57,9 @@ app.use('/groups', groupRouter);
 app.use('/requests', requestRouter);
 app.use('/posts', postRouter);
 
-await connectDB();
-
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}/`);
-});
+(async () => {
+  await connectDB();
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}/`);
+  });
+})();

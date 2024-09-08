@@ -860,6 +860,11 @@ export const addReactionToPost = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid post ID' });
     }
 
+    // Ensure userId is defined
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
     // Validate the reaction type
     const validReactions = ['Like', 'Love', 'Haha', 'Angry'];
     if (!validReactions.includes(type)) {
@@ -874,7 +879,7 @@ export const addReactionToPost = async (req: Request, res: Response) => {
 
     // Check if the user has already reacted
     const existingReaction = post.reactions.find(
-      (reaction) => reaction.author_id == userId,
+      (reaction) => reaction.author_id.toString() === userId.toString(),
     );
 
     if (existingReaction) {
@@ -895,7 +900,7 @@ export const addReactionToPost = async (req: Request, res: Response) => {
     await post.save();
 
     // Notify the post owner
-    if (post.user_id != userId) {
+    if (post.user_id.toString() !== userId.toString()) {
       // Find the user who reacted to get the displayName
       const reactingUser = await User.findById(userId).select('displayName');
       if (reactingUser) {
@@ -933,6 +938,11 @@ export const editReactionOnPost = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid post ID' });
     }
 
+    // Ensure userId is defined
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
     // Validate the reaction type
     const validReactions = ['Like', 'Love', 'Haha', 'Angry'];
     if (!validReactions.includes(type)) {
@@ -954,7 +964,7 @@ export const editReactionOnPost = async (req: Request, res: Response) => {
     }
 
     // Check if the current user is the author of the reaction
-    if (reaction.author_id != userId) {
+    if (reaction.author_id.toString() !== userId.toString()) {
       return res
         .status(403)
         .json({ message: 'You are not authorized to edit this reaction' });
@@ -988,6 +998,11 @@ export const deleteReactionFromPost = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid post ID' });
     }
 
+    // Ensure userId is defined
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
     // Find the post by ID
     const post = await Post.findById(postId);
     if (!post) {
@@ -1004,7 +1019,7 @@ export const deleteReactionFromPost = async (req: Request, res: Response) => {
     }
 
     // Check if the current user is the author of the reaction or an admin
-    if (reaction.author_id != userId && !isAdmin) {
+    if (reaction.author_id.toString() !== userId.toString() && !isAdmin) {
       return res
         .status(403)
         .json({ message: 'You are not authorized to delete this reaction' });
@@ -1131,6 +1146,11 @@ export const editReactionOnComment = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid reaction ID' });
     }
 
+    // Ensure userId is defined
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
     // Validate the reaction type
     const validReactions = ['Like', 'Love', 'Haha', 'Angry'];
     if (!validReactions.includes(type)) {
@@ -1156,7 +1176,7 @@ export const editReactionOnComment = async (req: Request, res: Response) => {
     }
 
     // Check if the current user is the author of the reaction
-    if (reaction.author_id != userId) {
+    if (reaction.author_id.toString() !== userId.toString()) {
       return res
         .status(403)
         .json({ message: 'You are not authorized to edit this reaction' });
@@ -1177,10 +1197,7 @@ export const editReactionOnComment = async (req: Request, res: Response) => {
 };
 
 // Delete a reaction from a comment
-export const deleteReactionFromComment = async (
-  req: Request,
-  res: Response,
-) => {
+export const deleteReactionFromComment = async (req: Request, res: Response) => {
   try {
     const postId = req.params.id;
     const commentId = req.params.comment_id;
@@ -1198,6 +1215,11 @@ export const deleteReactionFromComment = async (
       return res.status(400).json({ message: 'Invalid comment ID' });
     }
 
+    // Ensure userId is defined
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
     // Find the post by ID
     const post = await Post.findById(postId);
     if (!post) {
@@ -1210,17 +1232,14 @@ export const deleteReactionFromComment = async (
       return res.status(404).json({ message: 'Comment not found' });
     }
 
-    // Find the reaction by userId
-    const reaction = comment.reactions.find(
-      (reaction) => reaction.author_id.toString() === userId.toString(),
-    );
-
+    // Find the reaction by reaction_id within the comment's reactions array
+    const reaction = comment.reactions.id(reactionId);
     if (!reaction) {
       return res.status(404).json({ message: 'Reaction not found' });
     }
 
     // Check if the current user is the author of the reaction or an admin
-    if (reaction.author_id != userId && !isAdmin) {
+    if (reaction.author_id.toString() !== userId.toString() && !isAdmin) {
       return res
         .status(403)
         .json({ message: 'You are not authorized to delete this reaction' });

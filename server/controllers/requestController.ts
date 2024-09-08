@@ -388,6 +388,7 @@ export const acceptGroupRequest = async (req: Request, res: Response) => {
   }
 };
 
+
 // Reject a group member request
 export const rejectGroupRequest = async (req: Request, res: Response) => {
   try {
@@ -414,11 +415,9 @@ export const rejectGroupRequest = async (req: Request, res: Response) => {
 
     // Check if the current user is an admin of the group
     if (!group.admins.includes(currentUserId!)) {
-      return res
-        .status(403)
-        .json({
-          message: 'You are not authorized to reject this group request',
-        });
+      return res.status(403).json({
+        message: 'You are not authorized to reject this group request',
+      });
     }
 
     // Update the status of the group request to "Rejected"
@@ -440,9 +439,7 @@ export const rejectGroupRequest = async (req: Request, res: Response) => {
     await requester.save();
 
     // Return success response
-    return res
-      .status(200)
-      .json({ message: 'Group request rejected successfully' });
+    return res.status(200).json({ message: 'Group request rejected successfully' });
   } catch (error) {
     console.error('Error rejecting group request:', error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -451,7 +448,7 @@ export const rejectGroupRequest = async (req: Request, res: Response) => {
 
 // ========== Group Creation Requests ==========
 // Get all group creation requests
-export const getGroupCreationRequests = async (req: Request, res: Response) => {
+export const getGroupCreationRequests = async (_req: Request, res: Response) => {
   try {
     // Find all pending group creation requests
     const pendingRequests = await GroupCreationRequest.find({
@@ -486,10 +483,7 @@ export const getGroupCreationRequests = async (req: Request, res: Response) => {
 };
 
 // Create group creation request
-export const createGroupCreationRequest = async (
-  req: Request,
-  res: Response,
-) => {
+export const createGroupCreationRequest = async (req: Request, res: Response) => {
   try {
     // Get the current user's ID from the session
     const userId = req.session.userId;
@@ -502,16 +496,12 @@ export const createGroupCreationRequest = async (
     // Validate the input fields
     const { name, description, visibility } = req.body;
     if (!name || !description || !visibility) {
-      return res
-        .status(400)
-        .json({ message: 'Name, description, and visibility are required' });
+      return res.status(400).json({ message: 'Name, description, and visibility are required' });
     }
 
     // Check visibility enum
     if (!['Public', 'Private'].includes(visibility)) {
-      return res
-        .status(400)
-        .json({ message: "Visibility must be either 'Public' or 'Private'" });
+      return res.status(400).json({ message: "Visibility must be either 'Public' or 'Private'" });
     }
 
     // Handle file uploads safely
@@ -554,9 +544,7 @@ export const createGroupCreationRequest = async (
     await groupCreationRequest.save();
 
     // Return success response
-    return res
-      .status(201)
-      .json({ message: 'Group creation request submitted successfully' });
+    return res.status(201).json({ message: 'Group creation request submitted successfully' });
   } catch (error) {
     console.error('Error creating group creation request:', error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -564,10 +552,7 @@ export const createGroupCreationRequest = async (
 };
 
 // Accept group creation request
-export const acceptGroupCreationRequest = async (
-  req: Request,
-  res: Response,
-) => {
+export const acceptGroupCreationRequest = async (req: Request, res: Response) => {
   try {
     // Get the request ID from the request parameters
     const requestId = req.params.id;
@@ -580,9 +565,7 @@ export const acceptGroupCreationRequest = async (
     // Find the group creation request by ID
     const groupCreationRequest = await GroupCreationRequest.findById(requestId);
     if (!groupCreationRequest) {
-      return res
-        .status(404)
-        .json({ message: 'Group creation request not found' });
+      return res.status(404).json({ message: 'Group creation request not found' });
     }
 
     // Update the status of the group creation request to "Accepted"
@@ -615,12 +598,10 @@ export const acceptGroupCreationRequest = async (
     }
 
     // Return success response
-    return res
-      .status(200)
-      .json({
-        message: 'Group creation request accepted successfully',
-        groupId: newGroup._id,
-      });
+    return res.status(200).json({
+      message: 'Group creation request accepted successfully',
+      groupId: newGroup._id,
+    });
   } catch (error) {
     console.error('Error accepting group creation request:', error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -628,10 +609,7 @@ export const acceptGroupCreationRequest = async (
 };
 
 // Reject group creation request
-export const rejectGroupCreationRequest = async (
-  req: Request,
-  res: Response,
-) => {
+export const rejectGroupCreationRequest = async (req: Request, res: Response) => {
   try {
     // Get the request ID from the request parameters
     const requestId = req.params.id;
@@ -644,9 +622,7 @@ export const rejectGroupCreationRequest = async (
     // Find the group creation request by ID
     const groupCreationRequest = await GroupCreationRequest.findById(requestId);
     if (!groupCreationRequest) {
-      return res
-        .status(404)
-        .json({ message: 'Group creation request not found' });
+      return res.status(404).json({ message: 'Group creation request not found' });
     }
 
     // Update the status of the group creation request to "Rejected"
@@ -666,9 +642,7 @@ export const rejectGroupCreationRequest = async (
     }
 
     // Return success response
-    return res
-      .status(200)
-      .json({ message: 'Group creation request rejected successfully' });
+    return res.status(200).json({ message: 'Group creation request rejected successfully' });
   } catch (error) {
     console.error('Error rejecting group creation request:', error);
     return res.status(500).json({ message: 'Internal server error' });

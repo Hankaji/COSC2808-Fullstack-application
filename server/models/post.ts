@@ -84,7 +84,8 @@ postSchema.virtual('virtualImages').get(function () {
       if (image.contentType != null && image.data != null) {
         return `data:${image.contentType};base64,${image.data.toString('base64')}`;
       }
-    });
+      return null; // Explicitly return null if contentType or data is missing
+    }).filter(image => image !== null); // Filter out null values
   }
   return undefined;
 });

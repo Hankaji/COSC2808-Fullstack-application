@@ -4,10 +4,10 @@ const storage = multer.memoryStorage();
 const fileUpload = multer({
   storage: storage,
   limits: {
-    // Limit file size to 5MB
+    // Limit file size to 10MB
     fileSize: 10 * 1024 * 1024,
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {

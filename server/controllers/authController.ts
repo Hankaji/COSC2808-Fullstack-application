@@ -47,7 +47,7 @@ export const register = async (req: Request, res: Response) => {
     await newUser.save();
 
     // Return the new user data
-    res
+    return res
       .status(201)
       .json({ message: 'User registered successfully', user: newUser });
   } catch (error: any) {
@@ -113,23 +113,26 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = (req: Request, res: Response) => {
+export const logout = (req: Request, res: Response): void => {
   try {
-    // Destroy the session
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Error during logout:', err);
-        return res.status(500).json({ message: 'Internal server error' });
-      }
-
-      // Clear the cookie
-      res.clearCookie('connect.sid'); // Assuming you're using the default session cookie name
-
-      // Return success response
-      return res.status(200).json({ message: 'Logout successful' });
-    });
-  } catch (error: any) {
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Error during logout:', err);
+          res.status(500).json({ message: 'Internal server error' });
+        } else {
+          // Clear the cookie
+          res.clearCookie('connect.sid'); // Assuming you're using the default session cookie name
+          // Return success response
+          res.status(200).json({ message: 'Logout successful' });
+        }
+      });
+    } else {
+      // If there's no session, just send a success response
+      res.status(200).json({ message: 'Logout successful' });
+    }
+  } catch (error) {
     console.error('Error logging out user:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
