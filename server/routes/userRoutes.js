@@ -1,0 +1,21 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const authentication_1 = require("../middleware/authentication");
+const userController_1 = require("../controllers/userController");
+const userRouter = express_1.default.Router();
+userRouter.get('/', authentication_1.isAuthenticated, userController_1.getUsers);
+userRouter.patch('/notifications/:notificationId', authentication_1.isAuthenticated, userController_1.readNotification);
+userRouter.delete('/unfriend/:id', authentication_1.isAuthenticated, userController_1.unfriendById);
+userRouter.patch('/suspend/:id', authentication_1.isAuthenticated, authentication_1.isAdmin, userController_1.suspendUser);
+userRouter.patch('/resume/:id', authentication_1.isAuthenticated, authentication_1.isAdmin, userController_1.resumeUser);
+userRouter.get('/:id', authentication_1.isAuthenticated, userController_1.getUserById);
+userRouter.get('/:id/friends', authentication_1.isAuthenticated, userController_1.getUserFriendsById);
+userRouter.get('/:id/friends/recommend', authentication_1.isAuthenticated, userController_1.getFriendRecommendationsById);
+userRouter.get('/:id/groups', authentication_1.isAuthenticated, userController_1.getUserGroupsById);
+userRouter.get('/:id/notifications', authentication_1.isAuthenticated, userController_1.getUserNotificationsById);
+userRouter.get('/:id/friend-requests', authentication_1.isAuthenticated, userController_1.getUserSentFriendRequestsById);
+exports.default = userRouter;

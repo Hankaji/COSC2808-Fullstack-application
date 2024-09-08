@@ -23,6 +23,11 @@ declare module 'express-session' {
     username: String;
     isAdmin: boolean;
   }
+  interface session {
+    userId: mongoose.Types.ObjectId;
+    username: String;
+    isAdmin: boolean;
+  }
 }
 
 app.use(
