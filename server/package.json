@@ -3,7 +3,7 @@
   "name": "server",
   "version": "1.0.0",
   "description": "To install dependencies:",
-  "main": "index.js",
+  "main": "server.ts",
   "scripts": {
     "start": "ts-node server.ts",
     "dev": "ts-node-dev --respawn server.ts",
