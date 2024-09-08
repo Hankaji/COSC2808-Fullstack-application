@@ -15,7 +15,7 @@
   COSC2808-Fullstack-application
 </h1>
 
-SnapMate is a social media app built with the MERN stack (MongoDB, Express, React, Node.js) as part of the [course_name] project. It lets users create and share posts, manage profiles, and connect with friends. With features like user authentication and real-time updates, SnapMate offers a smooth and modern user experience.
+SnapMate is a social media app built with the MERN stack (MongoDB, Express, React, Node.js) as part of the COSC2808-Fullstack-application project. It lets users create and share posts, manage profiles, and connect with friends. With features like user authentication and real-time updates, SnapMate offers a smooth and modern user experience.
 
 <p align="center" >
   <img src="./public/Preview_1.png" alt="Preview 1" width=400 />
@@ -107,7 +107,7 @@ You can start using our app right away without much trouble like many other soci
 > Note: These users are only available in database provided by us
 
 | Username     | Passwords       | Admin Privilege |
-| ------------ |:---------------:|:---------------:|
+| ------------ |:----------------|:---------------:|
 | ***admin***  | ***admin123***  |✅|
 | phuchoang    | phuchoang123    |❌|
 | cuongtran    | cuongtran123    |❌|
